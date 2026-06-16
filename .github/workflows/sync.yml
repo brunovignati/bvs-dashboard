@@ -1,0 +1,22 @@
+name: BVS Analytics — Sync Connectif to Supabase
+
+on:
+  schedule:
+    - cron: '0 2 * * *'   # Cada noche 3am España (2am UTC verano)
+  workflow_dispatch:        # También ejecutable a mano desde GitHub
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install requests
+
+      - name: Sincronizar Connectif → Supabase
+        run: python sync_connectif_to_supabase.py
