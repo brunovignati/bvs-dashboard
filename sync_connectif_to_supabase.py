@@ -56,7 +56,7 @@ ON_CONFLICT = {
     "push_campaigns":   "year,month,workflow",
     "subscribers":      "year,month,status",
     "push_subscribers": "year,month",
-    "segments":         "segment",
+    "segments":         "year,month,segment",
     "compradores":      "year,month,brand",
     "sticky":           "workflow",
     "envios":           "day_of_week",
@@ -318,7 +318,8 @@ def t_segments(rows):
     dedup = {}
 
     for row in result:
-        dedup[row["segment"]] = row
+        key = (row["year"], row["month"], row["segment"])
+        dedup[key] = row
 
     return list(dedup.values())
 
