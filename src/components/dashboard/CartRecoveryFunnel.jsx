@@ -1,109 +1,156 @@
-﻿import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { useCartAbandonment } from "@/lib/useEntities";
-import { fmtCurrency, fmtNumber } from "@/lib/dashboardData";
+import { fmtCurrency, fmtNumber, monthLabel } from "@/lib/dashboardData";
 import SectionHeader from "./SectionHeader";
 import InsightCard from "./InsightCard";
 import { ShoppingCart } from "lucide-react";
 import { motion } from "framer-motion";
 
-
 const CustomTooltip = ({ active, payload, label }) => {
- if (!active || !payload?.length) return null;
- return (
-   <div className="bg-card/95 backdrop-blur border border-border rounded-xl p-3 shadow-xl">
-     <p className="text-xs font-semibold mb-1.5">{label}</p>
-     {payload.map((p, i) => (
-       <div key={i} className="flex items-center gap-2 text-xs">
-         <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
-         <span className="text-muted-foreground">{p.name}:</span>
-         <span className="font-mono font-medium">{typeof p.value === 'number' ? p.value.toLocaleString('es-ES') : p.value}</span>
-       </div>
-     ))}
-   </div>
- );
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="bg-card/95 backdrop-blur border border-border rounded-xl p-3 shadow-xl">
+      <p className="text-xs font-semibold mb-1.5">{label}</p>
+      {payload.map((p, i) => (
+        <div key={i} className="flex items-center gap-2 text-xs">
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
+          <span className="text-muted-foreground">{p.name}:</span>
+          <span className="font-mono font-medium">
+            {p.name === 'Revenue' ? `€${Number(p.value).toLocaleString('es-ES')}` : fmtNumber(p.value)}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
 };
 
+function cleanName(name = '') {
+  return name
+    .replace(/^WF \| /i, '')
+    .replace(/^CONVERSION - /i, '')
+    .replace(/\[MEJORADO\]/gi, '')
+    .replace(/\[TEST A\/B\]/gi, '[A/B]')
+    .replace(/SERIE 3 EMAILS/gi, 'CA')
+    .replace(/RECUPERACIÓN DE CARRITOS ABANDONADOS/gi, 'Carrito')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 50);
+}
 
 export default function CartRecoveryFunnel() {
- const { data: cartAbandonment = [] } = useCartAbandonment();
- const may = cartAbandonment.filter(d => d.month === 5).sort((a, b) => a.emailName.localeCompare(b.emailName));
- const jun = cartAbandonment.filter(d => d.month === 6).sort((a, b) => a.emailName.localeCompare(b.emailName));
+  const { data: cartAbandonment = [] } = useCartAbandonment();
 
+  if (cartAbandonment.length === 0) return null;
 
- const funnelData = [
-   { step: "CA1 - May", Enviados: may[0]?.sent || 0, Aperturas: may[0]?.opens || 0, Clics: may[0]?.clicks || 0, Compras: may[0]?.purchases || 0 },
-   { step: "CA2 - May", Enviados: may[1]?.sent || 0, Aperturas: may[1]?.opens || 0, Clics: may[1]?.clicks || 0, Compras: may[1]?.purchases || 0 },
-   { step: "CA3 - May", Enviados: may[2]?.sent || 0, Aperturas: may[2]?.opens || 0, Clics: may[2]?.clicks || 0, Compras: may[2]?.purchases || 0 },
-   { step: "CA1 - Jun", Enviados: jun[0]?.sent || 0, Aperturas: jun[0]?.opens || 0, Clics: jun[0]?.clicks || 0, Compras: jun[0]?.purchases || 0 },
-   { step: "CA2 - Jun", Enviados: jun[1]?.sent || 0, Aperturas: jun[1]?.opens || 0, Clics: jun[1]?.clicks || 0, Compras: jun[1]?.purchases || 0 },
-   { step: "CA3 - Jun", Enviados: jun[2]?.sent || 0, Aperturas: jun[2]?.opens || 0, Clics: jun[2]?.clicks || 0, Compras: jun[2]?.purchases || 0 },
- ];
+  const totalRevenue   = cartAbandonment.reduce((s, d) => s + (d.revenue   || 0), 0);
+  const totalPurchases = cartAbandonment.reduce((s, d) => s + (d.purchases || 0), 0);
+  const avgTicket      = totalPurchases > 0 ? totalRevenue / totalPurchases : 0;
 
+  // ── Top workflows agregados ──────────────────────────────
+  const byWorkflow = {};
+  for (const d of cartAbandonment) {
+    const key = d.emailName || 'Sin nombre';
+    if (!byWorkflow[key]) byWorkflow[key] = { name: cleanName(key), revenue: 0, purchases: 0, sent: 0, opens: 0 };
+    byWorkflow[key].revenue   += d.revenue   || 0;
+    byWorkflow[key].purchases += d.purchases || 0;
+    byWorkflow[key].sent      += d.sent      || 0;
+    byWorkflow[key].opens     += d.opens     || 0;
+  }
+  const topWorkflows = Object.values(byWorkflow)
+    .sort((a, b) => b.revenue - a.revenue)
+    .slice(0, 6);
 
- // Conversion rates per step
- const convRates = cartAbandonment.map(d => ({
-   name: d.emailName.replace('V! ', '').replace(' - Carrito abandonado para Todos', ''),
-   month: d.month === 5 ? 'May' : 'Jun',
-   openRate: d.sent > 0 ? ((d.opens / d.sent) * 100).toFixed(1) : '–',
-   ctr: d.sent > 0 ? ((d.clicks / d.sent) * 100).toFixed(2) : '–',
-   convRate: d.clicks > 0 ? ((d.purchases / d.clicks) * 100).toFixed(1) : '–',
-   revenue: fmtCurrency(d.revenue),
- }));
+  // ── Evolución mensual ────────────────────────────────────
+  const byMonth = {};
+  for (const d of cartAbandonment) {
+    const key = `${d.year}-${String(d.month).padStart(2, '0')}`;
+    if (!byMonth[key]) byMonth[key] = { name: `${monthLabel(d.month)} ${String(d.year).slice(2)}`, revenue: 0, purchases: 0 };
+    byMonth[key].revenue   += d.revenue   || 0;
+    byMonth[key].purchases += d.purchases || 0;
+  }
+  const monthlyData = Object.entries(byMonth)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([, v]) => v);
 
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.35 }}
+      className="bg-card border border-border rounded-2xl p-5"
+    >
+      <SectionHeader
+        title="Recuperación de Carritos Abandonados"
+        subtitle={`${fmtNumber(totalPurchases)} compras recuperadas · ${fmtCurrency(totalRevenue)} revenue · Ticket medio €${avgTicket.toFixed(0)}`}
+        icon={ShoppingCart}
+        badge="Carritos"
+      />
 
- const totalRevenue = cartAbandonment.reduce((s, d) => s + d.revenue, 0);
- const totalPurchases = cartAbandonment.reduce((s, d) => s + d.purchases, 0);
+      {/* KPIs rápidos */}
+      <div className="grid grid-cols-3 gap-3 mb-4">
+        <div className="bg-muted/50 rounded-xl p-3 text-center">
+          <p className="text-[10px] text-muted-foreground uppercase">Revenue total</p>
+          <p className="text-lg font-bold font-heading text-emerald-500">{fmtCurrency(totalRevenue)}</p>
+        </div>
+        <div className="bg-muted/50 rounded-xl p-3 text-center">
+          <p className="text-[10px] text-muted-foreground uppercase">Compras recuperadas</p>
+          <p className="text-lg font-bold font-heading">{fmtNumber(totalPurchases)}</p>
+        </div>
+        <div className="bg-muted/50 rounded-xl p-3 text-center">
+          <p className="text-[10px] text-muted-foreground uppercase">Ticket medio</p>
+          <p className="text-lg font-bold font-heading">€{avgTicket.toFixed(0)}</p>
+        </div>
+      </div>
 
+      {/* Evolución mensual */}
+      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Revenue mensual de carritos recuperados</p>
+      <div className="h-48 mb-5">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={monthlyData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
+            <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
+              interval={Math.max(0, Math.floor(monthlyData.length / 8))} />
+            <YAxis tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
+              tickFormatter={(v) => `€${(v / 1000).toFixed(0)}K`} />
+            <Tooltip content={<CustomTooltip />} />
+            <Bar dataKey="revenue" name="Revenue" fill="hsl(160,84%,39%)" radius={[3, 3, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
 
- return (
-   <motion.div
-     initial={{ opacity: 0, y: 20 }}
-     animate={{ opacity: 1, y: 0 }}
-     transition={{ delay: 0.35 }}
-     className="bg-card border border-border rounded-2xl p-5"
-   >
-     <SectionHeader
-       title="Funnel de Carritos Abandonados"
-       subtitle={`May–Jun 2026 · ${fmtNumber(totalPurchases)} compras · ${fmtCurrency(totalRevenue)} revenue`}
-       icon={ShoppingCart}
-       badge="Funnel"
-     />
+      {/* Top workflows */}
+      <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Top workflows por revenue acumulado</p>
+      <div className="space-y-2">
+        {topWorkflows.map((wf, i) => (
+          <div key={i} className="flex items-center gap-3">
+            <div className="w-4 text-[10px] text-muted-foreground text-right shrink-0">{i + 1}</div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs truncate">{wf.name}</span>
+                <span className="text-xs font-mono font-semibold shrink-0 text-emerald-500">{fmtCurrency(wf.revenue)}</span>
+              </div>
+              <div className="mt-1 h-1.5 bg-muted/60 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-emerald-500/70 rounded-full"
+                  style={{ width: `${totalRevenue > 0 ? (wf.revenue / topWorkflows[0].revenue) * 100 : 0}%` }}
+                />
+              </div>
+              <div className="flex gap-3 mt-0.5">
+                <span className="text-[9px] text-muted-foreground">{fmtNumber(wf.purchases)} compras</span>
+                {wf.sent > 0 && <span className="text-[9px] text-muted-foreground">{((wf.opens / wf.sent) * 100).toFixed(0)}% apertura</span>}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
 
-
-     <div className="h-56 mb-4">
-       <ResponsiveContainer width="100%" height="100%">
-         <BarChart data={funnelData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
-           <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
-           <XAxis dataKey="step" tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false} />
-           <YAxis tick={{ fontSize: 10, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false} />
-           <Tooltip content={<CustomTooltip />} />
-           <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
-           <Bar dataKey="Enviados" fill="hsl(220,14%,80%)" radius={[3, 3, 0, 0]} />
-           <Bar dataKey="Aperturas" fill="hsl(217,91%,60%)" radius={[3, 3, 0, 0]} />
-           <Bar dataKey="Compras" fill="hsl(160,84%,39%)" radius={[3, 3, 0, 0]} />
-         </BarChart>
-       </ResponsiveContainer>
-     </div>
-
-
-     {/* Conversion metrics */}
-     <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-4">
-       {convRates.map((cr, i) => (
-         <div key={i} className="p-3 bg-muted/50 rounded-xl text-center">
-           <p className="text-[10px] text-muted-foreground uppercase">{cr.name} · {cr.month}</p>
-           <p className="text-sm font-bold font-heading mt-1">{cr.convRate}%</p>
-           <p className="text-[10px] text-muted-foreground">clic → compra</p>
-           <p className="text-xs font-mono text-primary mt-0.5">{cr.revenue}</p>
-         </div>
-       ))}
-     </div>
-
-
-     <InsightCard
-       type="success"
-       title="Secuencia CA Altamente Efectiva"
-       description={`CA1 convierte al ${convRates[0]?.convRate}% clic→compra. La secuencia completa recupera ${fmtCurrency(totalRevenue)} con un ticket medio de €${(totalRevenue / totalPurchases).toFixed(0)}. La persistencia del CA3 demuestra que el tercer recordatorio aún genera valor incremental.`}
-     />
-   </motion.div>
- );
+      <div className="mt-4">
+        <InsightCard
+          type="success"
+          title="Motor de Revenue"
+          description={`Los carritos abandonados recuperan ${fmtCurrency(totalRevenue)} con un ticket medio de €${avgTicket.toFixed(0)}. La secuencia de emails (CA1→CA2→CA3) es uno de los workflows con mayor ROI de todo el sistema.`}
+        />
+      </div>
+    </motion.div>
+  );
 }
