@@ -2,13 +2,15 @@ import { ComposedChart, Area, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, R
 import { useMonthlyMetrics, useCompradores } from "@/lib/useEntities";
 import { monthLabel, fmtCurrency } from "@/lib/dashboardData";
 import SectionHeader from "./SectionHeader";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
 
-const NUTRA_COLOR = "hsl(217,91%,60%)";
-const VET_COLOR   = "hsl(160,84%,39%)";
-const TICKET_COLOR = "hsl(35,92%,56%)";
+const NUTRA_COLOR    = "hsl(217,91%,60%)";
+const VET_COLOR      = "hsl(160,84%,39%)";
+const TICKET_COLOR   = "hsl(35,92%,56%)";
+const FORECAST_COLOR = "hsl(262,83%,68%)";
 
+// ─── Tooltips ───────────────────────────────────────────────
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
@@ -26,6 +28,72 @@ const CustomTooltip = ({ active, payload, label }) => {
     </div>
   );
 };
+
+const ForecastTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null;
+  const actual   = payload.find(p => p.dataKey === 'actual');
+  const forecast = payload.find(p => p.dataKey === 'forecast');
+  const lower    = payload.find(p => p.dataKey === 'forecastLower');
+  const band     = payload.find(p => p.dataKey === 'forecastBand');
+  return (
+    <div className="bg-card/95 backdrop-blur border border-border rounded-xl p-3 shadow-xl">
+      <p className="text-xs font-semibold mb-1.5">{label}</p>
+      {actual && (
+        <div className="flex items-center gap-2 text-xs">
+          <div className="w-2 h-2 rounded-full" style={{ backgroundColor: NUTRA_COLOR }} />
+          <span className="text-muted-foreground">Histórico:</span>
+          <span className="font-mono font-medium">{fmtCurrency(actual.value)}</span>
+        </div>
+      )}
+      {forecast && lower && band && (
+        <>
+          <div className="flex items-center gap-2 text-xs">
+            <div className="w-2 h-2 rounded-full" style={{ backgroundColor: FORECAST_COLOR }} />
+            <span className="text-muted-foreground">Proyección:</span>
+            <span className="font-mono font-medium">{fmtCurrency(forecast.value)}</span>
+          </div>
+          <div className="text-[10px] text-muted-foreground mt-0.5 pl-4">
+            IC 95%: {fmtCurrency(lower.value)} – {fmtCurrency(Number(lower.value) + Number(band.value))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+// ─── Regresión lineal + intervalo de predicción IC 95% ──────
+function linearReg(values) {
+  const n = values.length;
+  if (n < 3) return null;
+  const xMean = (n - 1) / 2;
+  const yMean = values.reduce((s, v) => s + v, 0) / n;
+  const sxx   = values.reduce((s, _, i) => s + (i - xMean) ** 2, 0);
+  const sxy   = values.reduce((s, v, i) => s + (i - xMean) * (v - yMean), 0);
+  if (sxx === 0) return null;
+  const slope     = sxy / sxx;
+  const intercept = yMean - slope * xMean;
+  const sse       = values.reduce((s, v, i) => s + (v - (intercept + slope * i)) ** 2, 0);
+  const se        = Math.sqrt(sse / (n - 2));
+  const yMeanAll  = yMean;
+  const ssTot     = values.reduce((s, v) => s + (v - yMeanAll) ** 2, 0);
+  const r2        = ssTot > 0 ? 1 - sse / ssTot : 0;
+  return { slope, intercept, se, sxx, xMean, n, r2 };
+}
+
+function predict(reg, x) {
+  if (!reg) return null;
+  const { slope, intercept, se, sxx, xMean, n } = reg;
+  const df     = n - 2;
+  const t      = df >= 30 ? 2.042 : df >= 25 ? 2.064 : df >= 20 ? 2.086 : df >= 15 ? 2.131 : 2.228;
+  const yHat   = intercept + slope * x;
+  const margin = t * se * Math.sqrt(1 + 1 / n + (x - xMean) ** 2 / sxx);
+  return {
+    forecast: Math.max(0, yHat),
+    lower:    Math.max(0, yHat - margin),
+    upper:    Math.max(0, yHat + margin),
+    band:     Math.max(0, 2 * margin),
+  };
+}
 
 function sortByYearMonth(arr) {
   return [...arr].sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month);
@@ -60,7 +128,6 @@ export default function RevenueChart() {
     };
   });
 
-  // Ticket medio trend (Nutracéuticos)
   const tickets     = sortedNutra.map(d => d.avgPurchase || 0).filter(v => v > 0);
   const lastTicket  = tickets[tickets.length - 1] || 0;
   const firstTicket = tickets[0] || 0;
@@ -71,6 +138,54 @@ export default function RevenueChart() {
   const subtitle = firstNutra && lastNutra
     ? `${monthLabel(firstNutra.month)} ${firstNutra.year} – ${monthLabel(lastNutra.month)} ${lastNutra.year} · ${sortedNutra.length} meses Nutracéuticos · ${sortedVet.length} meses Vet Shop`
     : 'Datos en tiempo real';
+
+  // ── Forecasting ─────────────────────────────────────────────
+  const nutraRevenues = sortedNutra.map(d => d.revenue || 0);
+  const reg           = linearReg(nutraRevenues);
+
+  const futurePredictions = [];
+  if (lastNutra && reg) {
+    let yr = lastNutra.year;
+    let mo = lastNutra.month;
+    for (let k = 1; k <= 4; k++) {
+      mo++;
+      if (mo > 12) { mo = 1; yr++; }
+      const pred = predict(reg, nutraRevenues.length - 1 + k);
+      futurePredictions.push({ name: `${monthLabel(mo)} ${String(yr).slice(2)}`, ...pred });
+    }
+  }
+
+  // Dataset para gráfico de forecast: últimos 12 meses reales + 4 proyectados
+  const histSlice   = sortedNutra.slice(-12);
+  const lastHist    = histSlice[histSlice.length - 1];
+  const lastActual  = lastHist?.revenue || 0;
+
+  const forecastChartData = reg && histSlice.length > 0 ? [
+    ...histSlice.slice(0, -1).map(d => ({
+      name:   `${monthLabel(d.month)} ${String(d.year).slice(2)}`,
+      actual: d.revenue || 0,
+    })),
+    // Punto de unión: histórico + inicio de la banda (ancho 0)
+    {
+      name:          `${monthLabel(lastHist.month)} ${String(lastHist.year).slice(2)}`,
+      actual:        lastActual,
+      forecast:      lastActual,
+      forecastLower: lastActual,
+      forecastBand:  0,
+    },
+    // Puntos proyectados
+    ...futurePredictions.map(p => ({
+      name:          p.name,
+      forecast:      Math.round(p.forecast),
+      forecastLower: Math.round(p.lower),
+      forecastBand:  Math.round(p.band),
+    })),
+  ] : [];
+
+  const trendSlope = reg ? reg.slope : 0;
+  const trendMonthly = trendSlope >= 0
+    ? `+${fmtCurrency(trendSlope)}/mes`
+    : `${fmtCurrency(trendSlope)}/mes`;
 
   return (
     <motion.div
@@ -85,7 +200,7 @@ export default function RevenueChart() {
         icon={TrendingUp}
       />
 
-      {/* KPIs de ticket medio */}
+      {/* KPIs ticket medio */}
       {ticketTrend !== null && (
         <div className="mb-3 flex gap-4">
           <div className="text-xs text-muted-foreground">
@@ -158,6 +273,71 @@ export default function RevenueChart() {
           Estimado = compras atribuidas × ticket medio. Son subconjuntos del revenue total, no aditivos.
         </p>
       </div>
+
+      {/* ── Forecasting ──────────────────────────────────────── */}
+      {reg && futurePredictions.length > 0 && (
+        <div className="mt-5 pt-4 border-t border-border">
+          {/* Header + KPI chips */}
+          <div className="flex items-start justify-between gap-3 mb-3">
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5" style={{ color: FORECAST_COLOR }} />
+                Proyección Revenue — Nutracéuticos
+              </p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                Regresión lineal · IC 95% · R²={reg.r2.toFixed(2)} · tendencia {trendMonthly}
+              </p>
+            </div>
+            <div className="flex gap-2 flex-wrap justify-end shrink-0">
+              {futurePredictions.map(p => (
+                <div key={p.name} className="text-center bg-muted/40 rounded-lg px-2.5 py-1.5 border border-border/50">
+                  <p className="text-[9px] text-muted-foreground font-semibold whitespace-nowrap">{p.name}</p>
+                  <p className="text-sm font-bold font-heading" style={{ color: FORECAST_COLOR }}>
+                    {fmtCurrency(p.forecast)}
+                  </p>
+                  <p className="text-[9px] text-muted-foreground">
+                    {fmtCurrency(p.lower)}–{fmtCurrency(p.upper)}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Gráfico forecast */}
+          <div className="h-52">
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={forecastChartData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="fcBandGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%"  stopColor={FORECAST_COLOR} stopOpacity={0.20} />
+                    <stop offset="100%" stopColor={FORECAST_COLOR} stopOpacity={0.04} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
+                  tickFormatter={(v) => `€${(v/1000).toFixed(0)}K`} />
+                <Tooltip content={<ForecastTooltip />} />
+                {/* Banda de confianza (truco stackId: base transparente + banda coloreada) */}
+                <Area dataKey="forecastLower" stackId="ci" fill="transparent" stroke="none" legendType="none" />
+                <Area dataKey="forecastBand"  stackId="ci" name="IC 95%" fill="url(#fcBandGrad)"
+                  stroke={FORECAST_COLOR} strokeWidth={0.5} strokeDasharray="4 4" legendType="square" />
+                {/* Línea histórica */}
+                <Line dataKey="actual" name="Histórico" stroke={NUTRA_COLOR} strokeWidth={2.5}
+                  dot={{ r: 2.5, fill: NUTRA_COLOR }} connectNulls={false} />
+                {/* Línea de proyección */}
+                <Line dataKey="forecast" name="Proyección" stroke={FORECAST_COLOR} strokeWidth={2}
+                  strokeDasharray="6 3" dot={{ r: 3, fill: FORECAST_COLOR }} connectNulls={false} />
+                <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
+              </ComposedChart>
+            </ResponsiveContainer>
+          </div>
+
+          <p className="text-[10px] text-muted-foreground mt-1.5">
+            ⚠ Basado en tendencia lineal de los últimos {nutraRevenues.length} meses. No contempla estacionalidad ni promociones puntuales.
+          </p>
+        </div>
+      )}
     </motion.div>
   );
 }
