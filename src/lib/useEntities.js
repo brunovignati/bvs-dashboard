@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from './supabase'
 
-// Mapeo snake_case (Supabase) → camelCase (componentes originales de Base44)
+// Mapeo snake_case (Supabase) â camelCase (componentes originales de Base44)
 function mapRow(row) {
   if (!row) return row
   return {
@@ -18,6 +18,8 @@ function mapRow(row) {
     dayOfWeek:     row.day_of_week    ?? row.dayOfWeek,
     dayName:       row.day_name       ?? row.dayName,
     purchasesAttr: row.purchases_attr ?? row.purchasesAttr,
+    contentName:   row.content_name   ?? row.contentName,
+    openRate:      row.open_rate      ?? row.openRate,
   }
 }
 
@@ -123,6 +125,38 @@ export function useVentasPush() {
   return useQuery({
     queryKey: ['ventas_push'],
     queryFn: () => fetchTable('ventas_push', 'year', true),
+    initialData: [],
+  })
+}
+
+export function useDailyRevenue() {
+  return useQuery({
+    queryKey: ['daily_revenue'],
+    queryFn: () => fetchTable('daily_revenue', 'year', true, 5000),
+    initialData: [],
+  })
+}
+
+export function useDailyEmail() {
+  return useQuery({
+    queryKey: ['daily_email'],
+    queryFn: () => fetchTable('daily_email', 'year', true, 10000),
+    initialData: [],
+  })
+}
+
+export function useDailyPush() {
+  return useQuery({
+    queryKey: ['daily_push'],
+    queryFn: () => fetchTable('daily_push', 'year', true, 5000),
+    initialData: [],
+  })
+}
+
+export function useDailySticky() {
+  return useQuery({
+    queryKey: ['daily_sticky'],
+    queryFn: () => fetchTable('daily_sticky', 'year', true, 10000),
     initialData: [],
   })
 }
