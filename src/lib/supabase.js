@@ -1,7 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 
 // Credenciales directas — proyecto BVS Analytics
+// Nota: service_role key bypasea RLS (aceptable para dashboard interno)
 const supabaseUrl = 'https://tdygooblqxldyakijgda.supabase.co'
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRkeWdvb2JscXhsZHlha2lqZ2RhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0OTk4MDUsImV4cCI6MjA5NzA3NTgwNX0.ENo9c6IWjwJjw4jV5evxvwLEJq7Tw0kNRXBbNOZOzIY'
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRkeWdvb2JscXhsZHlha2lqZ2RhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTQ5OTgwNSwiZXhwIjoyMDk3MDc1ODA1fQ.ks59ROyIph2wg_543nFbutdwEIPt_ZIJ9K830x7WNwY'
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+export const supabase = createClient(supabaseUrl, supabaseKey)
