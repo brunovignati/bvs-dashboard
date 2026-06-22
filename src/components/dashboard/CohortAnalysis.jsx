@@ -3,7 +3,7 @@ import { useBuyerCohorts, useCompradores } from "@/lib/useEntities";
 import { monthLabel, fmtNumber, fmtCurrency } from "@/lib/dashboardData";
 import SectionHeader from "./SectionHeader";
 import InsightCard from "./InsightCard";
-import { Users, Package } from "lucide-react";
+import { Users, Package, Grid3X3 } from "lucide-react";
 import { motion } from "framer-motion";
 
 const CustomTooltip = ({ active, payload, label }) => {
@@ -30,6 +30,26 @@ const CustomTooltip = ({ active, payload, label }) => {
   );
 };
 
+// ─── Color para celdas de retención ────────────────────────
+function retentionColor(rate) {
+  if (rate === null || rate === undefined) return null;
+  if (rate >= 0.78) return 'hsl(160,84%,32%)';
+  if (rate >= 0.65) return 'hsl(160,84%,42%)';
+  if (rate >= 0.52) return 'hsl(84,74%,38%)';
+  if (rate >= 0.40) return 'hsl(48,96%,42%)';
+  if (rate >= 0.25) return 'hsl(25,95%,46%)';
+  return 'hsl(0,72%,46%)';
+}
+
+const LEGEND = [
+  { label: '≥78%', color: 'hsl(160,84%,32%)' },
+  { label: '65–78%', color: 'hsl(160,84%,42%)' },
+  { label: '52–65%', color: 'hsl(84,74%,38%)' },
+  { label: '40–52%', color: 'hsl(48,96%,42%)' },
+  { label: '25–40%', color: 'hsl(25,95%,46%)' },
+  { label: '<25%', color: 'hsl(0,72%,46%)' },
+];
+
 export default function CohortAnalysis() {
   const { data: buyerCohorts = [] } = useBuyerCohorts();
   const { data: compradores  = [] } = useCompradores();
@@ -47,11 +67,11 @@ export default function CohortAnalysis() {
       : '0',
   }));
 
-  const avgRecurring   = cohortData.length > 0
+  const avgRecurring = cohortData.length > 0
     ? cohortData.reduce((s, d) => s + parseFloat(d.recurringPct), 0) / cohortData.length : 0;
-  const latestPct      = cohortData.length > 0 ? parseFloat(cohortData[cohortData.length - 1].recurringPct) : 0;
-  const firstPct       = cohortData.length > 0 ? parseFloat(cohortData[0].recurringPct) : 0;
-  const trendDir       = latestPct >= firstPct ? "mejorando" : "decayendo";
+  const latestPct = cohortData.length > 0 ? parseFloat(cohortData[cohortData.length - 1].recurringPct) : 0;
+  const firstPct  = cohortData.length > 0 ? parseFloat(cohortData[0].recurringPct) : 0;
+  const trendDir  = latestPct >= firstPct ? "mejorando" : "decayendo";
 
   const cohortFirst = sortedCohorts[0];
   const cohortLast  = sortedCohorts[sortedCohorts.length - 1];
@@ -72,6 +92,53 @@ export default function CohortAnalysis() {
 
   const totalCompBuyers  = sortedComp.reduce((s, d) => s + (d.buyers  || 0), 0);
   const totalCompRevenue = sortedComp.reduce((s, d) => s + (d.revenue || 0), 0);
+
+  // ── Cohort retention matrix ──────────────────────────────────
+  // Filas = cohorte (mes de entrada), cols = M+0…M+12
+  // Valor M+k = % recurrentes del mes de observación (proxy de retención)
+  const MAX_COLS = 13;
+
+  const monthDataMap = {};
+  for (const d of sortedCohorts) {
+    const key   = `${d.year}-${String(d.month).padStart(2, '0')}`;
+    const total = (d.firstTime || 0) + (d.recurring || 0);
+    monthDataMap[key] = {
+      year: d.year, month: d.month,
+      firstTime: d.firstTime || 0,
+      total,
+      recurringRate: total > 0 ? (d.recurring || 0) / total : 0,
+    };
+  }
+  const allMonthKeys = Object.keys(monthDataMap).sort();
+
+  const matrixRows = allMonthKeys.map((cohortKey) => {
+    const cohort    = monthDataMap[cohortKey];
+    const cohortIdx = allMonthKeys.indexOf(cohortKey);
+    const cols      = [];
+    for (let k = 0; k < MAX_COLS; k++) {
+      const obsIdx = cohortIdx + k;
+      if (obsIdx >= allMonthKeys.length) {
+        cols.push(null); // sin datos futuros aún
+      } else if (k === 0) {
+        cols.push('baseline');
+      } else {
+        const obsData = monthDataMap[allMonthKeys[obsIdx]];
+        cols.push(obsData ? obsData.recurringRate : null);
+      }
+    }
+    return {
+      label: `${monthLabel(cohort.month)} ${String(cohort.year).slice(2)}`,
+      size:  cohort.firstTime,
+      cols,
+    };
+  });
+
+  // Retención media en M+1, M+3, M+6 (sobre filas con datos suficientes)
+  const avg = (k) => {
+    const vals = matrixRows.map(r => r.cols[k]).filter(v => v !== null && v !== 'baseline');
+    return vals.length > 0 ? vals.reduce((s, v) => s + v, 0) / vals.length : null;
+  };
+  const avgM1 = avg(1); const avgM3 = avg(3); const avgM6 = avg(6);
 
   if (cohortData.length === 0 && compradores.length === 0) return null;
 
@@ -128,9 +195,102 @@ export default function CohortAnalysis() {
         </>
       )}
 
+      {/* ── Matriz de retención ─────────────────────────────── */}
+      {matrixRows.length > 0 && (
+        <div className="mt-5 pt-4 border-t border-border">
+          <div className="flex items-start justify-between mb-1 gap-2">
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                <Grid3X3 className="w-3.5 h-3.5" />
+                Matriz de Retención por Cohorte
+              </p>
+              <p className="text-[10px] text-muted-foreground mt-0.5">
+                % recurrentes en los meses tras el alta · M+0 = mes de entrada de la cohorte
+              </p>
+            </div>
+            {/* KPIs de retención media */}
+            <div className="flex gap-3 shrink-0">
+              {[['M+1', avgM1], ['M+3', avgM3], ['M+6', avgM6]].map(([label, val]) =>
+                val !== null ? (
+                  <div key={label} className="text-center bg-muted/40 rounded-lg px-3 py-1.5">
+                    <p className="text-[9px] text-muted-foreground font-semibold">{label} media</p>
+                    <p className="text-sm font-bold" style={{ color: retentionColor(val) || 'inherit' }}>
+                      {(val * 100).toFixed(0)}%
+                    </p>
+                  </div>
+                ) : null
+              )}
+            </div>
+          </div>
+
+          <div className="overflow-x-auto mt-3 -mx-1">
+            <table className="border-collapse">
+              <thead>
+                <tr>
+                  <th className="text-left text-[9px] font-semibold text-muted-foreground py-1.5 pr-3 pl-1 sticky left-0 bg-card z-10 whitespace-nowrap">
+                    Cohorte
+                  </th>
+                  <th className="text-right text-[9px] font-semibold text-muted-foreground py-1.5 px-2 whitespace-nowrap">
+                    n=
+                  </th>
+                  {Array.from({ length: MAX_COLS }, (_, k) => (
+                    <th key={k} className="text-center text-[9px] font-semibold text-muted-foreground py-1.5 px-0.5 whitespace-nowrap" style={{ minWidth: '2.75rem' }}>
+                      M+{k}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {matrixRows.map((row, i) => (
+                  <tr key={i} className="border-t border-border/20">
+                    <td className="text-[10px] font-semibold text-foreground py-0.5 pr-3 pl-1 sticky left-0 bg-card z-10 whitespace-nowrap">
+                      {row.label}
+                    </td>
+                    <td className="text-right text-[9px] text-muted-foreground font-mono py-0.5 px-2 whitespace-nowrap">
+                      {fmtNumber(row.size)}
+                    </td>
+                    {row.cols.map((val, k) => {
+                      const isBaseline = val === 'baseline';
+                      const rate       = isBaseline ? null : val;
+                      const bg         = isBaseline ? 'hsl(220,14%,38%)' : retentionColor(rate);
+                      return (
+                        <td key={k} className="py-0.5 px-0.5">
+                          {bg !== null ? (
+                            <div
+                              className="flex items-center justify-center text-[9px] font-bold text-white rounded"
+                              style={{ backgroundColor: bg, minWidth: '2.75rem', height: '1.25rem' }}
+                            >
+                              {isBaseline ? '●' : `${(rate * 100).toFixed(0)}%`}
+                            </div>
+                          ) : (
+                            <div className="rounded bg-muted/15" style={{ minWidth: '2.75rem', height: '1.25rem' }} />
+                          )}
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Leyenda */}
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2.5">
+            <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wide">Recurrencia:</span>
+            {LEGEND.map(({ label, color }) => (
+              <div key={label} className="flex items-center gap-1">
+                <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: color }} />
+                <span className="text-[9px] text-muted-foreground">{label}</span>
+              </div>
+            ))}
+            <span className="text-[9px] text-muted-foreground ml-1">· Celdas grises = datos futuros no disponibles</span>
+          </div>
+        </div>
+      )}
+
       {/* BVS Vet Shop — evolución compradores */}
       {compData.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-border">
+        <div className="mt-5 pt-4 border-t border-border">
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
               <Package className="w-3.5 h-3.5" />

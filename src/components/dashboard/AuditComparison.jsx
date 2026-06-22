@@ -215,7 +215,7 @@ export default function AuditComparison() {
         <div className="mt-4">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
             <FlaskConical className="w-3.5 h-3.5" />
-            Comparación Bayesiana: Automatizaciones (V!) vs Newsletters
+            Comparación Bayesiana: Automatizaciones vs Newsletters
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {convAB && (
