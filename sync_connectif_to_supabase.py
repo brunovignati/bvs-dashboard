@@ -139,9 +139,13 @@ def parse_csv(content):
     return rows
 
 def find_report(latest_map, *keywords):
+    # Prefijo "=" = match exacto; sin prefijo = substring
     for kw in keywords:
+        exact = kw.startswith('=')
+        kw_clean = kw[1:] if exact else kw
         for name, exp in latest_map.items():
-            if kw.lower() in name.lower():
+            match = (name.lower() == kw_clean.lower()) if exact else (kw_clean.lower() in name.lower())
+            if match:
                 return exp
     return None
 
@@ -178,17 +182,17 @@ def t_monthly_metrics(rows):
     return result
 
 def t_email_campaigns(rows):
-    result = []
+    dedup = {}
     for r in rows:
         if not r.get('month') or not r.get('year'):
             continue
-        # FIX 3: ignorar filas resumen sin nombre de campaña
         if not r.get('emailName') and not r.get('emailWorkflow'):
             continue
         name = r.get('emailName') or r.get('emailWorkflow')
-        result.append({
-            "year": int(r['year']), "month": int(r['month']),
-            "email_name":     str(name)[:255],
+        key = (int(r['year']), int(r['month']), str(name)[:255])
+        row = {
+            "year": key[0], "month": key[1],
+            "email_name":     key[2],
             "email_workflow": str(r.get('emailWorkflow', ''))[:255],
             "sent":      safe_float(r, 'numberOfEmailsSent'),
             "opens":     safe_float(r, 'numberOfUniqueEmailOpens'),
@@ -197,7 +201,11 @@ def t_email_campaigns(rows):
             "purchases": safe_float(r, 'numberOfPurchases'),
             "revenue":   safe_float(r, 'totalPurchaseAmount'),
             "updated_at": NOW.isoformat(),
-        })
+        }
+        # si hay duplicado, quedarse con el que tiene más revenue
+        if key not in dedup or row['revenue'] > dedup[key]['revenue']:
+            dedup[key] = row
+    result = list(dedup.values())
     return result
 
 def t_cart_abandonment(rows):
@@ -449,7 +457,7 @@ def upsert_supabase(table, records, batch_size=100):
 
 REPORT_MAP = [
     ("monthly_metrics",  ["nutrace", "compras mensual"],                    t_monthly_metrics),
-    ("email_campaigns",  ["metricas looker", "métricas looker"],            t_email_campaigns),
+    ("email_campaigns",  ["tricas looker", "audit newsletters"],                      t_email_campaigns),
     ("cart_abandonment", ["carritos abandonados", "carrito abandon"],       t_cart_abandonment),
     ("buyer_cohorts",    ["primerizos"],                                    t_buyer_cohorts),
     ("push_campaigns",   ["push ds", "métricas push"],                     t_push_campaigns),
@@ -461,7 +469,7 @@ REPORT_MAP = [
     ("envios",           ["envíos", "envios", "env os"],                    t_envios),
     ("ventas_push",      ["ventas push"],                                   t_ventas_push),
     ("rendimiento_push", ["rendimiento push"],                              t_rendimiento_push),
-    ("carrito",          ["v! carrito", " carrito"],                        t_carrito),
+    ("carrito",          ["=carrito"],                                       t_carrito),
 ]
 
 # ══════════════════════════════════════════════
