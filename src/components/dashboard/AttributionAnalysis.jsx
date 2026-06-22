@@ -139,6 +139,43 @@ export default function AttributionAnalysis() {
             : 'Sin datos de atribución suficientes.'}
         />
       </div>
+
+      {/* Funnel visual de atribución */}
+      {totAll > 0 && (
+        <div className="mt-5 pt-4 border-t border-border">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+            Funnel de atribución — compras por último canal de contacto
+          </p>
+          <div className="space-y-2">
+            {[
+              { name: "Total compras atribuidas", value: totAll,   color: "hsl(220,14%,50%)", pct: 100 },
+              { name: "Email",                    value: totEmail, color: COLORS[0],           pct: totAll > 0 ? (totEmail / totAll) * 100 : 0 },
+              { name: "Web Content",              value: totWeb,   color: COLORS[2],           pct: totAll > 0 ? (totWeb   / totAll) * 100 : 0 },
+              { name: "Push",                     value: totPush,  color: COLORS[1],           pct: totAll > 0 ? (totPush  / totAll) * 100 : 0 },
+            ].map((item, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <div className="w-24 text-[10px] text-right text-muted-foreground shrink-0">{item.name}</div>
+                <div className="flex-1 bg-muted/40 rounded-full h-6 relative overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-700 flex items-center pl-3"
+                    style={{ width: `${Math.max(item.pct, 2)}%`, backgroundColor: item.color + (i === 0 ? 'aa' : 'cc') }}
+                  >
+                    <span className="text-[10px] font-semibold text-white whitespace-nowrap">
+                      {fmtNumber(item.value)}
+                    </span>
+                  </div>
+                </div>
+                <div className="w-10 text-[10px] text-muted-foreground text-right shrink-0">
+                  {item.pct.toFixed(0)}%
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-[9px] text-muted-foreground/70 mt-2">
+            Last-touch · Nutracéuticos BVS · Los canales son mutuamente excluyentes por compra
+          </p>
+        </div>
+      )}
     </motion.div>
   );
 }

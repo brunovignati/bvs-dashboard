@@ -1,12 +1,13 @@
 import { useState, useMemo } from "react";
 import { useEmailCampaigns } from "@/lib/useEntities";
-import { fmtCurrency, fmtNumber } from "@/lib/dashboardData";
+import { fmtCurrency, fmtNumber, normalCDF } from "@/lib/dashboardData";
 import SectionHeader from "./SectionHeader";
 import InsightCard from "./InsightCard";
-import { FileSearch, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
+import { FileSearch, ChevronUp, ChevronDown, ChevronsUpDown, FlaskConical } from "lucide-react";
 import { motion } from "framer-motion";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
+// ─── Sort icon ─────────────────────────────────────────────
 function SortIcon({ col, sortKey, sortDir }) {
   if (sortKey !== col) return <ChevronsUpDown className="w-3 h-3 ml-1 inline opacity-30" />;
   return sortDir === 'asc'
@@ -14,6 +15,64 @@ function SortIcon({ col, sortKey, sortDir }) {
     : <ChevronDown className="w-3 h-3 ml-1 inline text-primary" />;
 }
 
+// ─── Bayesian A/B helpers ───────────────────────────────────
+// Beta-Binomial posterior, normal approximation
+// P(A > B) ≈ normalCDF((pHatA - pHatB) / sqrt(seA² + seB²))
+function bayesAB(succA, nA, succB, nB) {
+  if (nA < 5 || nB < 5) return null;
+  const pA  = (succA + 1) / (nA + 2);
+  const pB  = (succB + 1) / (nB + 2);
+  const seA = Math.sqrt((pA * (1 - pA)) / (nA + 2));
+  const seB = Math.sqrt((pB * (1 - pB)) / (nB + 2));
+  const denom = Math.sqrt(seA ** 2 + seB ** 2);
+  if (denom === 0) return null;
+  const z = (pA - pB) / denom;
+  return { pWin: normalCDF(z), pA, pB };
+}
+
+function probLabel(p) {
+  if (p >= 0.95) return { text: "Ganador claro ✓",      color: "text-emerald-500" };
+  if (p >= 0.85) return { text: "Probablemente mejor",  color: "text-emerald-400" };
+  if (p >= 0.70) return { text: "Ligeramente mejor",    color: "text-amber-400" };
+  if (p <= 0.05) return { text: "Claramente peor ✗",    color: "text-red-500" };
+  if (p <= 0.15) return { text: "Probablemente peor",   color: "text-red-400" };
+  if (p <= 0.30) return { text: "Ligeramente peor",     color: "text-amber-400" };
+  return { text: "Sin diferencia clara",                  color: "text-muted-foreground" };
+}
+
+function BayesCard({ title, pWin, pA, pB, labelA, labelB, formatRate }) {
+  if (pWin === null) return null;
+  const { text, color } = probLabel(pWin);
+  const pct      = (pWin * 100).toFixed(1);
+  const barWidth = Math.max(0, Math.min(100, pWin * 100));
+  return (
+    <div className="bg-muted/40 border border-border rounded-xl p-4 space-y-3">
+      <div className="flex items-center gap-2">
+        <FlaskConical className="w-4 h-4 text-primary flex-shrink-0" />
+        <p className="text-xs font-semibold">{title}</p>
+      </div>
+      <div className="space-y-1.5">
+        <div className="flex justify-between text-[10px] text-muted-foreground">
+          <span>{labelA}: <strong className="text-foreground">{formatRate(pA)}</strong></span>
+          <span>{labelB}: <strong className="text-foreground">{formatRate(pB)}</strong></span>
+        </div>
+        <div className="relative h-3 rounded-full bg-muted overflow-hidden">
+          <div
+            className="absolute top-0 left-0 h-full rounded-full transition-all"
+            style={{ width: `${barWidth}%`, background: barWidth >= 70 ? '#10b981' : barWidth <= 30 ? '#ef4444' : '#f59e0b' }}
+          />
+          <div className="absolute top-0 left-1/2 h-full w-px bg-border/60" />
+        </div>
+        <div className="flex justify-between items-center">
+          <span className={`text-xs font-bold ${color}`}>P(Auto &gt; NL) = {pct}%</span>
+          <span className={`text-[10px] font-medium ${color}`}>{text}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Componente principal ───────────────────────────────────
 export default function AuditComparison() {
   const { data: emailData = [] } = useEmailCampaigns();
   const [sortKey, setSortKey] = useState("revenue");
@@ -42,12 +101,8 @@ export default function AuditComparison() {
   }, [base, sortKey, sortDir]);
 
   const handleSort = (key) => {
-    if (sortKey === key) {
-      setSortDir(d => d === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortKey(key);
-      setSortDir('desc');
-    }
+    if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortKey(key); setSortDir('desc'); }
   };
 
   const totalRevenue   = sorted.reduce((s, d) => s + (d.revenue   || 0), 0);
@@ -55,13 +110,22 @@ export default function AuditComparison() {
 
   const automation = sorted.filter(d => (d.emailName || '').startsWith('V!') || (d.emailWorkflow || '').startsWith('V!'));
   const newsletters = sorted.filter(d => !(d.emailName || '').startsWith('V!') && !(d.emailWorkflow || '').startsWith('V!'));
-  const autoRevenue = automation.reduce((s, d) => s + (d.revenue || 0), 0);
-  const nlRevenue   = newsletters.reduce((s, d) => s + (d.revenue || 0), 0);
-  const autoSent    = automation.reduce((s, d) => s + (d.sent     || 0), 0);
-  const nlSent      = newsletters.reduce((s, d) => s + (d.sent    || 0), 0);
-  const autoRpc     = autoSent > 0 ? autoRevenue / autoSent : 0;
-  const nlRpc       = nlSent   > 0 ? nlRevenue   / nlSent   : 0;
-  const ratio       = nlRpc    > 0 ? autoRpc / nlRpc         : 0;
+
+  const autoRevenue   = automation.reduce((s, d) => s + (d.revenue   || 0), 0);
+  const nlRevenue     = newsletters.reduce((s, d) => s + (d.revenue   || 0), 0);
+  const autoSent      = automation.reduce((s, d) => s + (d.sent      || 0), 0);
+  const nlSent        = newsletters.reduce((s, d) => s + (d.sent     || 0), 0);
+  const autoPurchases = automation.reduce((s, d) => s + (d.purchases || 0), 0);
+  const nlPurchases   = newsletters.reduce((s, d) => s + (d.purchases || 0), 0);
+  const autoOpens     = automation.reduce((s, d) => s + (d.opens     || 0), 0);
+  const nlOpens       = newsletters.reduce((s, d) => s + (d.opens    || 0), 0);
+
+  const autoRpc = autoSent > 0 ? autoRevenue / autoSent : 0;
+  const nlRpc   = nlSent   > 0 ? nlRevenue   / nlSent   : 0;
+  const ratio   = nlRpc    > 0 ? autoRpc / nlRpc         : 0;
+
+  const convAB = bayesAB(autoPurchases, autoSent, nlPurchases, nlSent);
+  const openAB = bayesAB(autoOpens,     autoSent, nlOpens,     nlSent);
 
   const thClass = "text-[10px] uppercase tracking-widest font-semibold text-muted-foreground py-3 cursor-pointer select-none hover:text-foreground transition-colors";
 
@@ -78,6 +142,7 @@ export default function AuditComparison() {
         badge="Auditoría"
       />
 
+      {/* Tabla ordenable */}
       <motion.div className="bg-card border border-border rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <Table>
@@ -108,11 +173,11 @@ export default function AuditComparison() {
             </TableHeader>
             <TableBody>
               {sorted.slice(0, 15).map((row, i) => {
-                const openRate = row.sent > 0 ? (row.opens / row.sent) * 100 : 0;
-                const ctr      = row.sent > 0 ? (row.clicks / row.sent) * 100 : 0;
-                const roas     = row.sent > 0 ? (row.revenue || 0) / row.sent : 0;
+                const openRate  = row.sent > 0 ? (row.opens / row.sent) * 100 : 0;
+                const ctr       = row.sent > 0 ? (row.clicks / row.sent) * 100 : 0;
+                const roas      = row.sent > 0 ? (row.revenue || 0) / row.sent : 0;
                 const shortName = (row.emailName || '').replace('EMAIL| APP PUSH | PUSH ', '').replace('V! ', '');
-                const isLowCtr = ctr < 1 && row.sent > 100;
+                const isLowCtr  = ctr < 1 && row.sent > 100;
                 return (
                   <TableRow key={i} className="border-border/50 hover:bg-muted/30 transition-colors">
                     <TableCell className="text-sm py-2.5 font-semibold">
@@ -141,6 +206,40 @@ export default function AuditComparison() {
         </div>
       </motion.div>
 
+      {/* Bayesian A/B — Automatizaciones vs Newsletters */}
+      {(convAB || openAB) && (
+        <div className="mt-4">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
+            <FlaskConical className="w-3.5 h-3.5" />
+            Comparación Bayesiana: Automatizaciones (V!) vs Newsletters
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {convAB && (
+              <BayesCard
+                title="Tasa de Conversión (compras / envíos)"
+                pWin={convAB.pWin}
+                pA={convAB.pA}
+                pB={convAB.pB}
+                labelA="Automatizaciones"
+                labelB="Newsletters"
+                formatRate={(p) => `${(p * 100).toFixed(3)}%`}
+              />
+            )}
+            {openAB && (
+              <BayesCard
+                title="Tasa de Apertura (opens / envíos)"
+                pWin={openAB.pWin}
+                pA={openAB.pA}
+                pB={openAB.pB}
+                labelA="Automatizaciones"
+                labelB="Newsletters"
+                formatRate={(p) => `${(p * 100).toFixed(1)}%`}
+              />
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
         <InsightCard
           type="success"
@@ -150,7 +249,7 @@ export default function AuditComparison() {
         <InsightCard
           type="info"
           title="Remarketing: Joya Oculta"
-          description={`Los workflows de remarketing de producto y categoría muestran CTR excepcionales (>5%). Son los workflows con mejor ratio clicks→compra, indicando alta intención de compra. Los badges "CTR bajo" señalan workflows con <1% de CTR que pueden necesitar revisión.`}
+          description={`Los workflows de remarketing de producto y categoría muestran CTR excepcionales (>5%). Son los workflows con mejor ratio clicks→compra. Los badges "CTR bajo" marcan workflows con <1% CTR que pueden necesitar revisión de subject line o segmentación.`}
         />
       </div>
     </motion.div>

@@ -38,7 +38,7 @@ export default function Dashboard() {
           if (entry.isIntersecting) setActiveSection(entry.target.dataset.section);
         });
       },
-      { rootMargin: "-100px 0px -60% 0px", threshold: 0.1 }
+      { rootMargin: "-160px 0px -60% 0px", threshold: 0.1 }
     );
     Object.values(sectionRefs.current).forEach((el) => { if (el) observer.observe(el); });
     return () => observer.disconnect();
@@ -48,10 +48,17 @@ export default function Dashboard() {
     <ComparisonProvider>
       <div className="flex min-h-screen bg-background">
         <DashboardNav active={activeSection} onNavigate={scrollToSection} />
-        <main className="flex-1 min-w-0">
-          <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 space-y-8">
+        <main className="flex-1 min-w-0 flex flex-col">
 
-            <ComparisonPanel />
+          {/* ── Header sticky: Comparador de Periodos ── */}
+          <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-border">
+            <div className="max-w-6xl mx-auto px-4 md:px-6 py-2">
+              <ComparisonPanel />
+            </div>
+          </div>
+
+          {/* ── Contenido principal (scrollable) ── */}
+          <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 space-y-8 w-full">
 
             <section ref={setRef("overview")} data-section="overview">
               <StorytellingHero />
