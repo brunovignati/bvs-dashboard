@@ -108,8 +108,12 @@ export default function AuditComparison() {
   const totalRevenue   = sorted.reduce((s, d) => s + (d.revenue   || 0), 0);
   const totalPurchases = sorted.reduce((s, d) => s + (d.purchases || 0), 0);
 
-  const automation = sorted.filter(d => (d.emailName || '').startsWith('V!') || (d.emailWorkflow || '').startsWith('V!'));
-  const newsletters = sorted.filter(d => !(d.emailName || '').startsWith('V!') && !(d.emailWorkflow || '').startsWith('V!'));
+  // Newsletters = envíos masivos con fecha en el nombre (ej: "BVS 26-06-24", "26.06.24")
+  // Automatizaciones = workflows sin fecha (carrito abandonado, bienvenida, remarketing, etc.)
+  const DATE_RE = /\d{2}[-./]\d{2}[-./]\d{2,4}/;
+  const isNewsletter = (d) => DATE_RE.test(d.emailName || '') || DATE_RE.test(d.emailWorkflow || '');
+  const automation = sorted.filter(d => !isNewsletter(d));
+  const newsletters = sorted.filter(d => isNewsletter(d));
 
   const autoRevenue   = automation.reduce((s, d) => s + (d.revenue   || 0), 0);
   const nlRevenue     = newsletters.reduce((s, d) => s + (d.revenue   || 0), 0);
@@ -244,7 +248,7 @@ export default function AuditComparison() {
         <InsightCard
           type="success"
           title="Automatizaciones: Mayor Eficiencia"
-          description={`Los workflows automatizados (V!) generan ${fmtCurrency(autoRevenue)} con ${fmtNumber(autoSent)} envíos (€${autoRpc.toFixed(3)}/envío). Las newsletters masivas producen ${fmtCurrency(nlRevenue)} con ${fmtNumber(nlSent)} envíos (€${nlRpc.toFixed(3)}/envío). Las automatizaciones son ${ratio.toFixed(1)}x más eficientes por envío.`}
+          description={`Los workflows automatizados (carrito, bienvenida, remarketing) generan ${fmtCurrency(autoRevenue)} con ${fmtNumber(autoSent)} envíos (€${autoRpc.toFixed(3)}/envío). Las newsletters masivas producen ${fmtCurrency(nlRevenue)} con ${fmtNumber(nlSent)} envíos (€${nlRpc.toFixed(3)}/envío). Las automatizaciones son ${ratio > 0 ? ratio.toFixed(1) + 'x' : 'N/A'} más eficientes por envío.`}
         />
         <InsightCard
           type="info"
