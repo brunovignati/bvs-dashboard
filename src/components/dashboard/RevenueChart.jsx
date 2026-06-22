@@ -1,8 +1,9 @@
+import { useState } from "react";
 import { ComposedChart, Area, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
-import { useMonthlyMetrics, useCompradores } from "@/lib/useEntities";
+import { useMonthlyMetrics, useCompradores, useDailyRevenue } from "@/lib/useEntities";
 import { monthLabel, fmtCurrency } from "@/lib/dashboardData";
 import SectionHeader from "./SectionHeader";
-import { TrendingUp, Sparkles } from "lucide-react";
+import { TrendingUp, Sparkles, CalendarDays } from "lucide-react";
 import { motion } from "framer-motion";
 
 const NUTRA_COLOR    = "hsl(217,91%,60%)";
@@ -10,7 +11,7 @@ const VET_COLOR      = "hsl(160,84%,39%)";
 const TICKET_COLOR   = "hsl(35,92%,56%)";
 const FORECAST_COLOR = "hsl(262,83%,68%)";
 
-// ─── Tooltips ───────────────────────────────────────────────
+// âââ Tooltips âââââââââââââââââââââââââââââââââââââââââââââââ
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
@@ -21,7 +22,7 @@ const CustomTooltip = ({ active, payload, label }) => {
           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: p.color }} />
           <span className="text-muted-foreground">{p.name}:</span>
           <span className="font-mono font-medium">
-            {p.name === 'Ticket Medio' ? `€${Number(p.value).toFixed(0)}` : `€${Number(p.value).toLocaleString('es-ES')}`}
+            {p.name === 'Ticket Medio' ? `â¬${Number(p.value).toFixed(0)}` : `â¬${Number(p.value).toLocaleString('es-ES')}`}
           </span>
         </div>
       ))}
@@ -41,7 +42,7 @@ const ForecastTooltip = ({ active, payload, label }) => {
       {actual && (
         <div className="flex items-center gap-2 text-xs">
           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: NUTRA_COLOR }} />
-          <span className="text-muted-foreground">Histórico:</span>
+          <span className="text-muted-foreground">HistÃ³rico:</span>
           <span className="font-mono font-medium">{fmtCurrency(actual.value)}</span>
         </div>
       )}
@@ -49,11 +50,11 @@ const ForecastTooltip = ({ active, payload, label }) => {
         <>
           <div className="flex items-center gap-2 text-xs">
             <div className="w-2 h-2 rounded-full" style={{ backgroundColor: FORECAST_COLOR }} />
-            <span className="text-muted-foreground">Proyección:</span>
+            <span className="text-muted-foreground">ProyecciÃ³n:</span>
             <span className="font-mono font-medium">{fmtCurrency(forecast.value)}</span>
           </div>
           <div className="text-[10px] text-muted-foreground mt-0.5 pl-4">
-            IC 95%: {fmtCurrency(lower.value)} – {fmtCurrency(Number(lower.value) + Number(band.value))}
+            IC 95%: {fmtCurrency(lower.value)} â {fmtCurrency(Number(lower.value) + Number(band.value))}
           </div>
         </>
       )}
@@ -61,7 +62,7 @@ const ForecastTooltip = ({ active, payload, label }) => {
   );
 };
 
-// ─── Regresión lineal + intervalo de predicción IC 95% ──────
+// âââ RegresiÃ³n lineal + intervalo de predicciÃ³n IC 95% ââââââ
 function linearReg(values) {
   const n = values.length;
   if (n < 3) return null;
@@ -99,14 +100,73 @@ function sortByYearMonth(arr) {
   return [...arr].sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month);
 }
 
+
+const MONTHS_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+
+function DailyRevenueChart({ data }) {
+  const [range, setRange] = useState(90);
+  const sorted = [...data].sort((a,b) => a.year !== b.year ? a.year-b.year : a.month !== b.month ? a.month-b.month : a.day-b.day);
+  const sliced = range === 0 ? sorted : sorted.slice(-range);
+  const chartData = sliced.map(d => ({
+    name: `${d.day} ${MONTHS_ES[(d.month||1)-1]} ${String(d.year).slice(2)}`,
+    Revenue: d.revenue || 0,
+  }));
+  const total = sliced.reduce((s,d) => s+(d.revenue||0), 0);
+  const avg   = sliced.length > 0 ? total/sliced.length : 0;
+  const maxDay = sliced.reduce((mx,d) => (d.revenue||0) > (mx?.revenue||0) ? d : mx, null);
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex gap-3 text-xs text-muted-foreground">
+          <span>Total: <span className="font-semibold text-foreground">{fmtCurrency(total)}</span></span>
+          <span>Media/día: <span className="font-semibold text-foreground">{fmtCurrency(avg)}</span></span>
+          {maxDay && <span>Mejor día: <span className="font-semibold text-foreground">{maxDay.day}/{maxDay.month}/{maxDay.year} ({fmtCurrency(maxDay.revenue)})</span></span>}
+        </div>
+        <div className="flex gap-1">
+          {[30,90,0].map(r => (
+            <button key={r} onClick={() => setRange(r)}
+              className={`text-[10px] px-2 py-0.5 rounded border transition-colors ${range===r ? 'bg-primary text-primary-foreground border-primary' : 'border-border text-muted-foreground hover:border-primary/50'}`}>
+              {r===0 ? 'Todo' : `${r}d`}
+            </button>
+          ))}
+        </div>
+      </div>
+      {data.length === 0 ? (
+        <p className="text-sm text-muted-foreground text-center py-8">Sin datos diarios aún — sync pendiente</p>
+      ) : (
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
+              <defs>
+                <linearGradient id="dailyRevGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={NUTRA_COLOR} stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor={NUTRA_COLOR} stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false}/>
+              <XAxis dataKey="name" tick={{ fontSize: 8, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
+                interval={Math.max(1, Math.floor(chartData.length/10))}/>
+              <YAxis tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
+                tickFormatter={v => `€${(v/1000).toFixed(0)}K`}/>
+              <Tooltip formatter={(v) => [fmtCurrency(v), 'Revenue']} labelStyle={{ fontSize: 11 }}/>
+              <Area type="monotone" dataKey="Revenue" stroke={NUTRA_COLOR} fill="url(#dailyRevGrad)"
+                strokeWidth={1.5} dot={false} connectNulls={false}/>
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function RevenueChart() {
-  const { data: metrics     = [] } = useMonthlyMetrics(); // Nutracéuticos
+  const { data: metrics     = [] } = useMonthlyMetrics(); // NutracÃ©uticos
   const { data: compradores = [] } = useCompradores();    // BVS Vet Shop
 
   const sortedNutra = sortByYearMonth(metrics);
   const sortedVet   = sortByYearMonth(compradores);
 
-  // Mapa unificado por año-mes
+  // Mapa unificado por aÃ±o-mes
   const allKeys  = new Set([
     ...sortedNutra.map(d => `${d.year}-${d.month}`),
     ...sortedVet.map(d   => `${d.year}-${d.month}`),
@@ -119,7 +179,7 @@ export default function RevenueChart() {
     const n = nutraMap[key];
     return {
       name:          `${monthLabel(month)} ${String(year).slice(2)}`,
-      Nutracéuticos: n?.revenue      ?? null,
+      NutracÃ©uticos: n?.revenue      ?? null,
       'Vet Shop':    vetMap[key]?.revenue ?? null,
       TicketMedio:   n?.avgPurchase  ?? null,
       EmailAttr:     n ? Math.round((n.emailAttr || 0) * (n.avgPurchase || 0)) : null,
@@ -136,10 +196,10 @@ export default function RevenueChart() {
   const firstNutra = sortedNutra[0];
   const lastNutra  = sortedNutra[sortedNutra.length - 1];
   const subtitle = firstNutra && lastNutra
-    ? `${monthLabel(firstNutra.month)} ${firstNutra.year} – ${monthLabel(lastNutra.month)} ${lastNutra.year} · ${sortedNutra.length} meses Nutracéuticos · ${sortedVet.length} meses Vet Shop`
+    ? `${monthLabel(firstNutra.month)} ${firstNutra.year} â ${monthLabel(lastNutra.month)} ${lastNutra.year} Â· ${sortedNutra.length} meses NutracÃ©uticos Â· ${sortedVet.length} meses Vet Shop`
     : 'Datos en tiempo real';
 
-  // ── Forecasting ─────────────────────────────────────────────
+  // ââ Forecasting âââââââââââââââââââââââââââââââââââââââââââââ
   const nutraRevenues = sortedNutra.map(d => d.revenue || 0);
   const reg           = linearReg(nutraRevenues);
 
@@ -155,7 +215,7 @@ export default function RevenueChart() {
     }
   }
 
-  // Dataset para gráfico de forecast: últimos 12 meses reales + 4 proyectados
+  // Dataset para grÃ¡fico de forecast: Ãºltimos 12 meses reales + 4 proyectados
   const histSlice   = sortedNutra.slice(-12);
   const lastHist    = histSlice[histSlice.length - 1];
   const lastActual  = lastHist?.revenue || 0;
@@ -165,7 +225,7 @@ export default function RevenueChart() {
       name:   `${monthLabel(d.month)} ${String(d.year).slice(2)}`,
       actual: d.revenue || 0,
     })),
-    // Punto de unión: histórico + inicio de la banda (ancho 0)
+    // Punto de uniÃ³n: histÃ³rico + inicio de la banda (ancho 0)
     {
       name:          `${monthLabel(lastHist.month)} ${String(lastHist.year).slice(2)}`,
       actual:        lastActual,
@@ -195,7 +255,7 @@ export default function RevenueChart() {
       className="bg-card border border-border rounded-2xl p-5"
     >
       <SectionHeader
-        title="Evolución Revenue por Marca"
+        title="EvoluciÃ³n Revenue por Marca"
         subtitle={subtitle}
         icon={TrendingUp}
       />
@@ -204,11 +264,11 @@ export default function RevenueChart() {
       {ticketTrend !== null && (
         <div className="mb-3 flex gap-4">
           <div className="text-xs text-muted-foreground">
-            Ticket medio actual (Nutracéuticos):
-            <span className="font-mono font-semibold text-foreground ml-1">€{lastTicket.toFixed(0)}</span>
+            Ticket medio actual (NutracÃ©uticos):
+            <span className="font-mono font-semibold text-foreground ml-1">â¬{lastTicket.toFixed(0)}</span>
           </div>
           <div className="text-xs text-muted-foreground">
-            Variación histórica:
+            VariaciÃ³n histÃ³rica:
             <span className={`font-mono font-semibold ml-1 ${parseFloat(ticketTrend) >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
               {parseFloat(ticketTrend) >= 0 ? '+' : ''}{ticketTrend}%
             </span>
@@ -216,7 +276,7 @@ export default function RevenueChart() {
         </div>
       )}
 
-      {/* Gráfico principal: Revenue por marca + Ticket Medio */}
+      {/* GrÃ¡fico principal: Revenue por marca + Ticket Medio */}
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={chartData} margin={{ top: 5, right: 40, left: 10, bottom: 0 }}>
@@ -230,12 +290,12 @@ export default function RevenueChart() {
             <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
               interval={Math.max(1, Math.floor(chartData.length / 8))} />
             <YAxis yAxisId="left" tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
-              tickFormatter={(v) => `€${(v/1000).toFixed(0)}K`} />
+              tickFormatter={(v) => `â¬${(v/1000).toFixed(0)}K`} />
             <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
-              tickFormatter={(v) => `€${v}`} />
+              tickFormatter={(v) => `â¬${v}`} />
             <Tooltip content={<CustomTooltip />} />
             <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
-            <Area yAxisId="left" type="monotone" dataKey="Nutracéuticos"
+            <Area yAxisId="left" type="monotone" dataKey="NutracÃ©uticos"
               stroke={NUTRA_COLOR} fill="url(#nutraGrad)" strokeWidth={2.5}
               dot={{ r: 2, fill: NUTRA_COLOR }} connectNulls={false} />
             <Line yAxisId="left" type="monotone" dataKey="Vet Shop"
@@ -248,10 +308,10 @@ export default function RevenueChart() {
         </ResponsiveContainer>
       </div>
 
-      {/* Gráfico secundario: Revenue atribuido por canal */}
+      {/* GrÃ¡fico secundario: Revenue atribuido por canal */}
       <div className="mt-4">
         <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">
-          Revenue atribuido por canal — Nutracéuticos (estimado last-touch)
+          Revenue atribuido por canal â NutracÃ©uticos (estimado last-touch)
         </p>
         <div className="h-32">
           <ResponsiveContainer width="100%" height="100%">
@@ -260,8 +320,8 @@ export default function RevenueChart() {
               <XAxis dataKey="name" tick={{ fontSize: 8, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
                 interval={Math.max(2, Math.floor(chartData.length / 6))} />
               <YAxis tick={{ fontSize: 8, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
-                tickFormatter={(v) => `€${(v/1000).toFixed(0)}K`} />
-              <Tooltip formatter={(v, name) => [`€${Number(v).toLocaleString('es-ES')}`, name]} />
+                tickFormatter={(v) => `â¬${(v/1000).toFixed(0)}K`} />
+              <Tooltip formatter={(v, name) => [`â¬${Number(v).toLocaleString('es-ES')}`, name]} />
               <Legend iconType="circle" iconSize={6} wrapperStyle={{ fontSize: 10 }} />
               <Bar dataKey="EmailAttr" name="Email"       stackId="a" fill={NUTRA_COLOR} radius={[0,0,0,0]} />
               <Bar dataKey="PushAttr"  name="Push"        stackId="a" fill="hsl(280,65%,60%)" radius={[0,0,0,0]} />
@@ -270,11 +330,11 @@ export default function RevenueChart() {
           </ResponsiveContainer>
         </div>
         <p className="text-[10px] text-muted-foreground mt-1">
-          Estimado = compras atribuidas × ticket medio. Son subconjuntos del revenue total, no aditivos.
+          Estimado = compras atribuidas Ã ticket medio. Son subconjuntos del revenue total, no aditivos.
         </p>
       </div>
 
-      {/* ── Forecasting ──────────────────────────────────────── */}
+      {/* ââ Forecasting ââââââââââââââââââââââââââââââââââââââââ */}
       {reg && futurePredictions.length > 0 && (
         <div className="mt-5 pt-4 border-t border-border">
           {/* Header + KPI chips */}
@@ -282,10 +342,10 @@ export default function RevenueChart() {
             <div>
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5" style={{ color: FORECAST_COLOR }} />
-                Proyección Revenue — Nutracéuticos
+                ProyecciÃ³n Revenue â NutracÃ©uticos
               </p>
               <p className="text-[10px] text-muted-foreground mt-0.5">
-                Regresión lineal · IC 95% · R²={reg.r2.toFixed(2)} · tendencia {trendMonthly}
+                RegresiÃ³n lineal Â· IC 95% Â· RÂ²={reg.r2.toFixed(2)} Â· tendencia {trendMonthly}
               </p>
             </div>
             <div className="flex gap-2 flex-wrap justify-end shrink-0">
@@ -296,14 +356,14 @@ export default function RevenueChart() {
                     {fmtCurrency(p.forecast)}
                   </p>
                   <p className="text-[9px] text-muted-foreground">
-                    {fmtCurrency(p.lower)}–{fmtCurrency(p.upper)}
+                    {fmtCurrency(p.lower)}â{fmtCurrency(p.upper)}
                   </p>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Gráfico forecast */}
+          {/* GrÃ¡fico forecast */}
           <div className="h-52">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={forecastChartData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
@@ -316,17 +376,17 @@ export default function RevenueChart() {
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
                 <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false} />
                 <YAxis tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
-                  tickFormatter={(v) => `€${(v/1000).toFixed(0)}K`} />
+                  tickFormatter={(v) => `â¬${(v/1000).toFixed(0)}K`} />
                 <Tooltip content={<ForecastTooltip />} />
                 {/* Banda de confianza (truco stackId: base transparente + banda coloreada) */}
                 <Area dataKey="forecastLower" stackId="ci" fill="transparent" stroke="none" legendType="none" />
                 <Area dataKey="forecastBand"  stackId="ci" name="IC 95%" fill="url(#fcBandGrad)"
                   stroke={FORECAST_COLOR} strokeWidth={0.5} strokeDasharray="4 4" legendType="square" />
-                {/* Línea histórica */}
-                <Line dataKey="actual" name="Histórico" stroke={NUTRA_COLOR} strokeWidth={2.5}
+                {/* LÃ­nea histÃ³rica */}
+                <Line dataKey="actual" name="HistÃ³rico" stroke={NUTRA_COLOR} strokeWidth={2.5}
                   dot={{ r: 2.5, fill: NUTRA_COLOR }} connectNulls={false} />
-                {/* Línea de proyección */}
-                <Line dataKey="forecast" name="Proyección" stroke={FORECAST_COLOR} strokeWidth={2}
+                {/* LÃ­nea de proyecciÃ³n */}
+                <Line dataKey="forecast" name="ProyecciÃ³n" stroke={FORECAST_COLOR} strokeWidth={2}
                   strokeDasharray="6 3" dot={{ r: 3, fill: FORECAST_COLOR }} connectNulls={false} />
                 <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
               </ComposedChart>
@@ -334,7 +394,7 @@ export default function RevenueChart() {
           </div>
 
           <p className="text-[10px] text-muted-foreground mt-1.5">
-            ⚠ Basado en tendencia lineal de los últimos {nutraRevenues.length} meses. No contempla estacionalidad ni promociones puntuales.
+            â  Basado en tendencia lineal de los Ãºltimos {nutraRevenues.length} meses. No contempla estacionalidad ni promociones puntuales.
           </p>
         </div>
       )}
