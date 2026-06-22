@@ -49,8 +49,8 @@ export default function DayOfWeekAnalysis() {
       className="bg-card border border-border rounded-2xl p-5"
     >
       <SectionHeader
-        title="Análisis por Día de la Semana"
-        subtitle="Correlación envíos vs compras vs revenue"
+        title="¿Cuándo compran tus clientes?"
+        subtitle="Revenue y compras por día de la semana · Nutracéuticos BVS"
         icon={Calendar}
         badge="Temporal"
       />
@@ -77,10 +77,10 @@ export default function DayOfWeekAnalysis() {
           <div className="mt-4">
             <InsightCard
               type="info"
-              title="Patrón Semanal"
+              title="Cuándo enviar para vender más"
               description={
                 bestDay && worstDay && bestConvDay
-                  ? `${bestDay.name} es el día con más compras (${(bestDay.purchases || 0).toLocaleString('es-ES')}), mientras ${worstDay.name} tiene menos (${(worstDay.purchases || 0).toLocaleString('es-ES')}). Hay días con alto volumen de envío pero conversión no proporcional, sugiriendo saturación. ${bestConvDay.name} tiene la mejor tasa de conversión (${bestConvDay.convRate.toFixed(2)}%).`
+                  ? `${bestDay.name} concentra el mayor volumen de compras (${(bestDay.purchases || 0).toLocaleString('es-ES')}). La mejor tasa de conversión es el ${bestConvDay.name} (${bestConvDay.convRate.toFixed(2)}% de emails que generan compra). Recomendación: programa los envíos de email el día anterior al de mayor compra — así el cliente tiene el email en bandeja de entrada cuando está listo para comprar.`
                   : 'Analiza el patrón semanal para optimizar el día de envío.'
               }
             />

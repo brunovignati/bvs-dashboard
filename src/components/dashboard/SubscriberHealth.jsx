@@ -4,7 +4,7 @@ import SectionHeader from "./SectionHeader";
 import InsightCard from "./InsightCard";
 import { UserCheck } from "lucide-react";
 import { motion } from "framer-motion";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -78,15 +78,25 @@ export default function SubscriberHealth() {
           <div className="h-48">
             {chartData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 0 }}>
+                <AreaChart data={chartData} margin={{ top: 5, right: 5, left: 5, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="subGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%"  stopColor="hsl(160,84%,39%)" stopOpacity={0.35} />
+                      <stop offset="95%" stopColor="hsl(160,84%,39%)" stopOpacity={0.02} />
+                    </linearGradient>
+                    <linearGradient id="unsubGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%"  stopColor="hsl(0,84%,60%)" stopOpacity={0.35} />
+                      <stop offset="95%" stopColor="hsl(0,84%,60%)" stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
                   <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v/1000).toFixed(0)}K`} />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend iconType="circle" iconSize={6} wrapperStyle={{ fontSize: 10 }} />
-                  <Bar dataKey="Suscritos"   fill="hsl(160,84%,39%)" radius={[3,3,0,0]} />
-                  <Bar dataKey="Desuscritos" fill="hsl(0,84%,60%)"   radius={[3,3,0,0]} />
-                </BarChart>
+                  <Area type="monotone" dataKey="Suscritos"   stroke="hsl(160,84%,39%)" fill="url(#subGrad)"   strokeWidth={2} />
+                  <Area type="monotone" dataKey="Desuscritos" stroke="hsl(0,84%,60%)"   fill="url(#unsubGrad)" strokeWidth={2} />
+                </AreaChart>
               </ResponsiveContainer>
             ) : (
               <div className="h-full flex items-center justify-center text-muted-foreground text-sm">Cargando datos...</div>

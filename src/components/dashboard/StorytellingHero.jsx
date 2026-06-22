@@ -1,33 +1,76 @@
 import { motion } from "framer-motion";
-import { useMonthlyMetrics, useCartAbandonment, useBuyerCohorts, useCompradores } from "@/lib/useEntities";
-import { fmtCurrency, fmtNumber } from "@/lib/dashboardData";
-import { BarChart3, Sparkles } from "lucide-react";
+import { useMonthlyMetrics, useBuyerCohorts, useCompradores } from "@/lib/useEntities";
+import { fmtCurrency, fmtNumber, monthLabel } from "@/lib/dashboardData";
+import { BarChart3, Sparkles, TrendingUp, TrendingDown, Minus } from "lucide-react";
 
+// ─── helpers ───────────────────────────────────────────────
+function sortByYearMonth(arr) {
+  return [...arr].sort((a, b) =>
+    a.year !== b.year ? a.year - b.year : a.month - b.month
+  );
+}
+
+function getLatestAndYoY(sorted) {
+  if (!sorted.length) return { latest: null, yoy: null };
+  const latest = sorted[sorted.length - 1];
+  const yoy = sorted.find(
+    (r) => r.year === latest.year - 1 && r.month === latest.month
+  ) ?? null;
+  return { latest, yoy };
+}
+
+function yoyDelta(current, previous) {
+  if (!previous || previous === 0) return null;
+  return ((current - previous) / Math.abs(previous)) * 100;
+}
+
+function Delta({ pct }) {
+  if (pct === null || pct === undefined) return null;
+  const positive = pct > 0;
+  const color = positive ? "text-emerald-500" : pct === 0 ? "text-muted-foreground" : "text-rose-500";
+  const Icon = pct > 0 ? TrendingUp : pct < 0 ? TrendingDown : Minus;
+  return (
+    <span className={`inline-flex items-center gap-0.5 text-xs font-semibold ${color}`}>
+      <Icon className="w-3 h-3" />
+      {Math.abs(pct).toFixed(1)}% vs año ant.
+    </span>
+  );
+}
+
+// ─── componente principal ───────────────────────────────────
 export default function StorytellingHero() {
-  // ✅ MIGRADO: datos reales de Supabase
-  const { data: metrics       = [] } = useMonthlyMetrics();
-  const { data: cartData      = [] } = useCartAbandonment();
-  const { data: cohorts       = [] } = useBuyerCohorts();
-  const { data: compradores   = [] } = useCompradores();
+  const { data: metrics     = [] } = useMonthlyMetrics();   // Nutracéuticos BVS
+  const { data: compradores = [] } = useCompradores();       // BVS Vet Shop
+  const { data: cohorts     = [] } = useBuyerCohorts();      // AMBAS marcas
 
-  const totalRevenue = metrics.reduce((s, d) => s + (d.revenue || 0), 0);
-  const totalBuyers  = compradores.reduce((s, d) => s + (d.buyers || 0), 0);
-  const avgTicket    = totalBuyers > 0 ? totalRevenue / totalBuyers : 0;
+  // Nutracéuticos — mes más reciente y YoY
+  const sortedMetrics = sortByYearMonth(metrics);
+  const { latest: mLatest, yoy: mYoY } = getLatestAndYoY(sortedMetrics);
 
-  const sortedCohorts = [...cohorts].sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month);
-  const latestCohort  = sortedCohorts[sortedCohorts.length - 1];
-  const recurringPct  = latestCohort
-    ? (latestCohort.recurring / ((latestCohort.firstTime || 0) + latestCohort.recurring)) * 100
-    : 0;
+  const nutraRevenue    = mLatest?.revenue ?? 0;
+  const nutraRevenuePct = yoyDelta(nutraRevenue, mYoY?.revenue);
+  const nutraEmails     = mLatest?.emails_sent ?? 0;
+  const nutraOpenRate   = mLatest?.open_rate ?? 0;
+  const periodo = mLatest
+    ? `${monthLabel(mLatest.month)} ${mLatest.year}`
+    : "Cargando…";
 
-  const cartRevenue = cartData.reduce((s, c) => s + (c.revenue || 0), 0);
+  // BVS Vet Shop — mes más reciente y YoY
+  const sortedComp = sortByYearMonth(compradores);
+  const { latest: cLatest, yoy: cYoY } = getLatestAndYoY(sortedComp);
 
-  const sortedMetrics = [...metrics].sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month);
-  const firstMonth = sortedMetrics[0];
-  const lastMonth  = sortedMetrics[sortedMetrics.length - 1];
-  const periodo = firstMonth && lastMonth
-    ? `${firstMonth.month}/${firstMonth.year} – ${lastMonth.month}/${lastMonth.year}`
-    : 'Cargando...'
+  const vetBuyers    = cLatest?.buyers ?? 0;
+  const vetBuyersPct = yoyDelta(vetBuyers, cYoY?.buyers);
+  const vetRevenue   = cLatest?.revenue ?? 0;
+  const vetAvgTicket = vetBuyers > 0 ? vetRevenue / vetBuyers : 0;
+
+  // Cohortes — mes más reciente (AMBAS marcas)
+  const sortedCohorts = sortByYearMonth(cohorts);
+  const { latest: coLatest } = getLatestAndYoY(sortedCohorts);
+  const coTotal  = (coLatest?.firstTime ?? 0) + (coLatest?.recurring ?? 0);
+  const recurPct = coTotal > 0 ? (coLatest.recurring / coTotal) * 100 : 0;
+
+  const hasData = sortedMetrics.length > 0;
 
   return (
     <motion.div
@@ -40,38 +83,135 @@ export default function StorytellingHero() {
       </div>
 
       <div className="relative z-10">
+        {/* Header */}
         <div className="flex items-center gap-2 mb-3">
           <Sparkles className="w-4 h-4 text-primary" />
-          <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-primary">Data Storytelling</span>
+          <span className="text-[10px] uppercase tracking-[0.2em] font-bold text-primary">
+            Resumen · {periodo}
+          </span>
         </div>
 
-        <h1 className="text-2xl md:text-3xl font-black font-heading tracking-tight mb-2">
-          Panel de Analítica Avanzada
+        <h1 className="text-2xl md:text-3xl font-black font-heading tracking-tight mb-5">
+          Panel de Analítica BVS
         </h1>
 
-        <p className="text-sm text-muted-foreground leading-relaxed max-w-2xl mb-6">
-          Tu ecosistema de marketing generó{' '}
-          <span className="font-bold text-foreground">{fmtCurrency(totalRevenue)}</span> en revenue
-          {totalBuyers > 0 && <> con <span className="font-bold text-foreground">{fmtNumber(totalBuyers)}</span> compradores únicos</>},
-          {avgTicket > 0 && <> un ticket medio de <span className="font-bold text-foreground">€{avgTicket.toFixed(0)}</span></>},
-          {recurringPct > 0 && <> y una tasa de recurrencia del <span className="font-bold text-foreground">{recurringPct.toFixed(0)}%</span></>}.
-          {cartRevenue > 0 && <> Los carritos abandonados recuperaron <span className="font-bold text-foreground">{fmtCurrency(cartRevenue)}</span> adicionales.</>}
-        </p>
+        {!hasData ? (
+          <p className="text-sm text-muted-foreground">Cargando datos…</p>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-        <div className="flex flex-wrap gap-6">
-          <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Periodo Analizado</p>
-            <p className="text-sm font-semibold">{periodo}</p>
+            {/* Bloque 1 — Nutracéuticos BVS */}
+            <div className="rounded-xl bg-card/60 border border-border p-4 space-y-1">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+                Nutracéuticos BVS
+              </p>
+              <p className="text-xl font-black">{fmtCurrency(nutraRevenue)}</p>
+              <Delta pct={nutraRevenuePct} />
+              <div className="pt-2 space-y-1 text-xs text-muted-foreground">
+                <div className="flex justify-between">
+                  <span>Emails enviados</span>
+                  <span className="font-semibold text-foreground">{fmtNumber(nutraEmails)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Tasa apertura</span>
+                  <span className="font-semibold text-foreground">{nutraOpenRate.toFixed(1)}%</span>
+                </div>
+                {mYoY && (
+                  <div className="flex justify-between">
+                    <span>Revenue {monthLabel(mYoY.month)} {mYoY.year}</span>
+                    <span className="font-semibold text-foreground">{fmtCurrency(mYoY.revenue)}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Bloque 2 — BVS Vet Shop */}
+            <div className="rounded-xl bg-card/60 border border-border p-4 space-y-1">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+                BVS Vet Shop
+              </p>
+              <p className="text-xl font-black">{fmtNumber(vetBuyers)} compradores</p>
+              <Delta pct={vetBuyersPct} />
+              <div className="pt-2 space-y-1 text-xs text-muted-foreground">
+                <div className="flex justify-between">
+                  <span>Revenue atribuido</span>
+                  <span className="font-semibold text-foreground">{fmtCurrency(vetRevenue)}</span>
+                </div>
+                {vetAvgTicket > 0 && (
+                  <div className="flex justify-between">
+                    <span>Ticket medio</span>
+                    <span className="font-semibold text-foreground">€{vetAvgTicket.toFixed(0)}</span>
+                  </div>
+                )}
+                {cYoY && (
+                  <div className="flex justify-between">
+                    <span>Compradores {monthLabel(cYoY.month)} {cYoY.year}</span>
+                    <span className="font-semibold text-foreground">{fmtNumber(cYoY.buyers)}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Bloque 3 — Cohortes (ambas marcas) */}
+            <div className="rounded-xl bg-card/60 border border-border p-4 space-y-1">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+                Recurrencia · ambas marcas
+              </p>
+              {coLatest ? (
+                <>
+                  <p className="text-xl font-black">{recurPct.toFixed(0)}% recurrentes</p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {monthLabel(coLatest.month)} {coLatest.year}
+                  </p>
+                  <div className="pt-2 space-y-1 text-xs text-muted-foreground">
+                    <div className="flex justify-between">
+                      <span>Primerizos</span>
+                      <span className="font-semibold text-foreground">{fmtNumber(coLatest.firstTime ?? 0)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Recurrentes</span>
+                      <span className="font-semibold text-foreground">{fmtNumber(coLatest.recurring ?? 0)}</span>
+                    </div>
+                    <p className="text-[9px] text-muted-foreground/60 pt-1">
+                      Universo total BVS — Nutracéuticos + Vet Shop
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <p className="text-xs text-muted-foreground">Sin datos de cohortes</p>
+              )}
+            </div>
+
           </div>
-          <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Meses de Datos</p>
-            <p className="text-sm font-semibold">{metrics.length} meses integrados</p>
+        )}
+
+        {/* Footer — periodo cubierto */}
+        {sortedMetrics.length > 1 && (
+          <div className="mt-4 flex flex-wrap gap-6">
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Histórico Nutracéuticos</p>
+              <p className="text-sm font-semibold">
+                {monthLabel(sortedMetrics[0].month)} {sortedMetrics[0].year} –{" "}
+                {monthLabel(mLatest.month)} {mLatest.year}
+                {" "}({sortedMetrics.length} meses)
+              </p>
+            </div>
+            {sortedComp.length > 0 && (
+              <div>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Histórico Vet Shop</p>
+                <p className="text-sm font-semibold">
+                  {monthLabel(sortedComp[0].month)} {sortedComp[0].year} –{" "}
+                  {monthLabel(cLatest.month)} {cLatest.year}
+                  {" "}({sortedComp.length} meses)
+                </p>
+              </div>
+            )}
+            <div>
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Canales</p>
+              <p className="text-sm font-semibold">Email · Push · Web · Sticky</p>
+            </div>
           </div>
-          <div>
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Canales</p>
-            <p className="text-sm font-semibold">Email · Push · Web · Sticky</p>
-          </div>
-        </div>
+        )}
       </div>
     </motion.div>
   );

@@ -1,5 +1,5 @@
 ﻿import KPICard from "./KPICard";
-import { fmtCurrency, fmtNumber } from "@/lib/dashboardData";
+import { fmtCurrency, fmtNumber, monthLabel } from "@/lib/dashboardData";
 import { useEmailCampaigns, useCartAbandonment, useBuyerCohorts, useMonthlyMetrics } from "@/lib/useEntities";
 import { Mail, ShoppingCart, Users, DollarSign, Target, Repeat } from "lucide-react";
 
@@ -17,6 +17,18 @@ export default function OverviewKPIs() {
  const totalClicks = emailsWithData.reduce((s, e) => s + e.clicks, 0);
  const openRate = totalSent > 0 ? (totalOpens / totalSent) * 100 : 0;
  const clickRate = totalSent > 0 ? (totalClicks / totalSent) * 100 : 0;
+
+ // Rango de fechas dinámico de email_campaigns
+ const emailsSorted = [...emailCampaigns]
+   .filter(e => e.year && e.month)
+   .sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month);
+ const firstEmail = emailsSorted[0];
+ const lastEmail  = emailsSorted[emailsSorted.length - 1];
+ const emailDateRange = firstEmail && lastEmail
+   ? firstEmail.year === lastEmail.year && firstEmail.month === lastEmail.month
+     ? `${monthLabel(firstEmail.month)} ${firstEmail.year}`
+     : `${monthLabel(firstEmail.month)} ${firstEmail.year} – ${monthLabel(lastEmail.month)} ${lastEmail.year}`
+   : 'Sin datos';
 
 
  const sorted = [...metrics].sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month);
@@ -39,7 +51,7 @@ export default function OverviewKPIs() {
      <KPICard
        title="Emails Enviados"
        value={fmtNumber(totalSent)}
-       subtitle="Feb-Mar 2026"
+       subtitle={emailDateRange}
        icon={Mail}
      />
      <KPICard

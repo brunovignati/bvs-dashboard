@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useMonthlyMetrics } from "@/lib/useEntities";
 import { pearsonCorrelation } from "@/lib/dashboardData";
 import SectionHeader from "./SectionHeader";
@@ -5,7 +6,14 @@ import InsightCard from "./InsightCard";
 import { GitMerge } from "lucide-react";
 import { motion } from "framer-motion";
 
+function naturalLang(k1, k2, r) {
+  const dir   = r > 0 ? 'suben juntos' : 'se mueven en sentido opuesto';
+  const str   = Math.abs(r) > 0.8 ? 'muy fuerte' : Math.abs(r) > 0.6 ? 'fuerte' : Math.abs(r) > 0.4 ? 'moderada' : 'débil';
+  return `Cuando ${k1} sube, ${k2} tiende a ${r > 0 ? 'subir' : 'bajar'} también. Correlación ${str} (${r > 0 ? 'positiva' : 'negativa'}): ${dir}.`;
+}
+
 export default function CorrelationMatrix() {
+  const [tooltip, setTooltip] = useState(null);
   // ✅ MIGRADO: datos reales de Supabase
   const { data: rawMetrics = [] } = useMonthlyMetrics();
   const data = [...rawMetrics].sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month);
@@ -70,10 +78,19 @@ export default function CorrelationMatrix() {
               <tr key={k1}>
                 <td className="text-[10px] uppercase tracking-wider text-muted-foreground p-2 font-semibold whitespace-nowrap">{k1}</td>
                 {keys.map((k2, j) => (
-                  <td key={k2} className="p-1">
-                    <div className={`text-center text-xs font-mono font-medium rounded-lg py-2 px-1 ${getColor(matrix[i][j])}`}>
+                  <td key={k2} className="p-1 relative group">
+                    <div
+                      className={`text-center text-xs font-mono font-medium rounded-lg py-2 px-1 cursor-default ${getColor(matrix[i][j])}`}
+                      onMouseEnter={() => i !== j && setTooltip({ k1: k1, k2: k2, r: matrix[i][j] })}
+                      onMouseLeave={() => setTooltip(null)}
+                    >
                       {matrix[i][j].toFixed(2)}
                     </div>
+                    {tooltip && tooltip.k1 === k1 && tooltip.k2 === k2 && i !== j && (
+                      <div className="absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-1 w-48 bg-card border border-border rounded-xl p-2.5 shadow-xl text-[10px] text-foreground pointer-events-none">
+                        {naturalLang(k1, k2, matrix[i][j])}
+                      </div>
+                    )}
                   </td>
                 ))}
               </tr>
