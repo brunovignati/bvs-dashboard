@@ -1,9 +1,9 @@
 """
-BVS Analytics — Sincronizador Connectif → Supabase
-VERSIÓN CORREGIDA v3 — Jun 2026
+BVS Analytics â Sincronizador Connectif â Supabase
+VERSIÃN CORREGIDA v3 â Jun 2026
 Fixes:
   1. UPSERT real con on_conflict por tabla
-  2. Eliminado Audit Newsletters (duplicado de Métricas Looker)
+  2. Eliminado Audit Newsletters (duplicado de MÃ©tricas Looker)
   3. Filtro de filas sin nombre en t_email_campaigns
   4. Corregido slice en upsert_supabase (i:i+batch_size)
 """
@@ -18,9 +18,9 @@ import logging
 import os
 from datetime import datetime
 
-# ─────────────────────────────────────────────
-# CONFIGURACIÓN — credenciales desde variables de entorno o hardcoded
-# ─────────────────────────────────────────────
+# âââââââââââââââââââââââââââââââââââââââââââââ
+# CONFIGURACIÃN â credenciales desde variables de entorno o hardcoded
+# âââââââââââââââââââââââââââââââââââââââââââââ
 CONNECTIF_API_KEY  = os.environ.get("CONNECTIF_API_KEY",  "r11ZJclyFV2LyXsPjtG6ZU:uXYhtDUR37vBR1M12vejPC")
 CONNECTIF_BASE_URL = "https://api.connectif.cloud"
 
@@ -47,7 +47,7 @@ NOW = datetime.now()
 CURRENT_YEAR  = NOW.year
 CURRENT_MONTH = NOW.month
 
-# on_conflict por tabla — columnas que identifican un registro único
+# on_conflict por tabla â columnas que identifican un registro Ãºnico
 ON_CONFLICT = {
     "monthly_metrics":  "year,month",
     "email_campaigns":  "year,month,email_name",
@@ -63,11 +63,15 @@ ON_CONFLICT = {
     "ventas_push":      "year,month,channel",
     "rendimiento_push": "year,month",
     "carrito":          "year,month,email_name",
+    "daily_revenue":    "year,month,day",
+    "daily_email":      "year,month,day,email_name",
+    "daily_push":       "year,month,day,workflow",
+    "daily_sticky":     "year,month,day,content_name",
 }
 
-# ══════════════════════════════════════════════
-# Connectif — descargar exports
-# ══════════════════════════════════════════════
+# ââââââââââââââââââââââââââââââââââââââââââââââ
+# Connectif â descargar exports
+# ââââââââââââââââââââââââââââââââââââââââââââââ
 
 def get_all_exports():
     all_exports = []
@@ -104,7 +108,7 @@ def get_latest_exports(all_exports):
         existing = latest.get(name)
         if not existing or exp.get("finishedAt", "") > existing.get("finishedAt", ""):
             latest[name] = exp
-    log.info(f"Reportes únicos disponibles: {len(latest)}")
+    log.info(f"Reportes Ãºnicos disponibles: {len(latest)}")
     return latest
 
 def download_csv(file_url):
@@ -159,9 +163,9 @@ def safe_float(row, *keys, default=0.0):
                 pass
     return default
 
-# ══════════════════════════════════════════════
+# ââââââââââââââââââââââââââââââââââââââââââââââ
 # Transformadores
-# ══════════════════════════════════════════════
+# ââââââââââââââââââââââââââââââââââââââââââââââ
 
 def t_monthly_metrics(rows):
     result = []
@@ -202,7 +206,7 @@ def t_email_campaigns(rows):
             "revenue":   safe_float(r, 'totalPurchaseAmount'),
             "updated_at": NOW.isoformat(),
         }
-        # si hay duplicado, quedarse con el que tiene más revenue
+        # si hay duplicado, quedarse con el que tiene mÃ¡s revenue
         if key not in dedup or row['revenue'] > dedup[key]['revenue']:
             dedup[key] = row
     result = list(dedup.values())
@@ -357,7 +361,7 @@ def t_sticky(rows):
     return result
 
 def t_envios(rows):
-    day_names = {1: 'Lun', 2: 'Mar', 3: 'Mié', 4: 'Jue', 5: 'Vie', 6: 'Sáb', 7: 'Dom'}
+    day_names = {1: 'Lun', 2: 'Mar', 3: 'MiÃ©', 4: 'Jue', 5: 'Vie', 6: 'SÃ¡b', 7: 'Dom'}
     result = []
     for r in rows:
         day = r.get('dayOfWeek')
@@ -406,6 +410,95 @@ def t_rendimiento_push(rows):
         })
     return result
 
+
+def t_daily_revenue(rows):
+    result = []
+    for r in rows:
+        if not r.get('year') or not r.get('month') or not r.get('day'):
+            continue
+        result.append({
+            "day":          int(r['day']),
+            "month":        int(r['month']),
+            "year":         int(r['year']),
+            "purchases":    safe_float(r, 'numberOfPurchases'),
+            "revenue":      safe_float(r, 'totalPurchaseAmount'),
+            "avg_purchase": safe_float(r, 'avgPurchaseAmount'),
+            "email_attr":   safe_float(r, 'numberOfPurchasesAttributedToEmail'),
+            "push_attr":    safe_float(r, 'numberOfPurchasesAttributedToPushNotification'),
+            "web_attr":     safe_float(r, 'numberOfPurchasesAttributedToWebContent'),
+            "sms_attr":     safe_float(r, 'numberOfPurchasesAttributedToSms'),
+            "updated_at":   NOW.isoformat(),
+        })
+    return result
+
+def t_daily_email(rows):
+    dedup = {}
+    for r in rows:
+        if not r.get('year') or not r.get('month') or not r.get('day'):
+            continue
+        name = r.get('emailName') or r.get('emailWorkflow') or ''
+        if not name:
+            continue
+        key = (int(r['year']), int(r['month']), int(r['day']), str(name)[:255])
+        row = {
+            "year": key[0], "month": key[1], "day": key[2],
+            "email_name": key[3],
+            "sent":      safe_float(r, 'numberOfEmailsSent'),
+            "opens":     safe_float(r, 'numberOfUniqueEmailOpens'),
+            "clicks":    safe_float(r, 'numberOfUniqueEmailClicks'),
+            "unsubs":    safe_float(r, 'numberOfEmailUnsubscribes'),
+            "purchases": safe_float(r, 'numberOfPurchases'),
+            "revenue":   safe_float(r, 'totalPurchaseAmount'),
+            "updated_at": NOW.isoformat(),
+        }
+        if key not in dedup or row['revenue'] > dedup[key]['revenue']:
+            dedup[key] = row
+    return list(dedup.values())
+
+def t_daily_push(rows):
+    dedup = {}
+    for r in rows:
+        if not r.get('year') or not r.get('month') or not r.get('day'):
+            continue
+        wf = (r.get('webPushNotificationWorkflow') or
+              r.get('pushNotificationWorkflow') or
+              r.get('pushNotificationName') or 'Push')
+        key = (int(r['year']), int(r['month']), int(r['day']), str(wf)[:255])
+        row = {
+            "year": key[0], "month": key[1], "day": key[2],
+            "workflow": key[3],
+            "sent":      safe_float(r, 'numberOfWebPushNotificationsSent', 'numberOfPushNotificationsSent'),
+            "opens":     safe_float(r, 'numberOfUniqueWebPushNotificationOpens', 'numberOfUniquePushNotificationOpens'),
+            "clicks":    safe_float(r, 'numberOfUniqueWebPushNotificationClicks', 'numberOfUniquePushNotificationClicks'),
+            "open_rate": safe_float(r, 'webPushNotificationOpenRate'),
+            "ctr":       safe_float(r, 'webPushNotificationClickThroughRate'),
+            "updated_at": NOW.isoformat(),
+        }
+        dedup[key] = row
+    return list(dedup.values())
+
+def t_daily_sticky(rows):
+    dedup = {}
+    for r in rows:
+        if not r.get('year') or not r.get('month') or not r.get('day'):
+            continue
+        name = r.get('webContentName') or r.get('webContentWorkflow') or ''
+        if not name:
+            continue
+        key = (int(r['year']), int(r['month']), int(r['day']), str(name)[:255])
+        row = {
+            "year": key[0], "month": key[1], "day": key[2],
+            "content_name": key[3],
+            "opens":   safe_float(r, 'numberOfTotalWebContentOpens'),
+            "clicks":  safe_float(r, 'numberOfTotalWebContentClicks'),
+            "ctr":     safe_float(r, 'webContentClickConversionRate'),
+            "buyers":  safe_float(r, 'numberOfBuyers'),
+            "revenue": safe_float(r, 'totalPurchasesAmount', 'totalPurchaseAmount'),
+            "updated_at": NOW.isoformat(),
+        }
+        dedup[key] = row
+    return list(dedup.values())
+
 def t_carrito(rows):
     result = []
     for r in rows:
@@ -424,9 +517,9 @@ def t_carrito(rows):
         })
     return result
 
-# ══════════════════════════════════════════════
-# Supabase — upsert acumulable con on_conflict real
-# ══════════════════════════════════════════════
+# ââââââââââââââââââââââââââââââââââââââââââââââ
+# Supabase â upsert acumulable con on_conflict real
+# ââââââââââââââââââââââââââââââââââââââââââââââ
 
 def upsert_supabase(table, records, batch_size=100):
     if not records:
@@ -445,41 +538,45 @@ def upsert_supabase(table, records, batch_size=100):
             total += len(batch)
         else:
             errors += len(batch)
-            log.error(f"  Error en {table}: {resp.status_code} — {resp.text[:300]}")
+            log.error(f"  Error en {table}: {resp.status_code} â {resp.text[:300]}")
         time.sleep(0.05)
     if errors:
-        log.warning(f"  ⚠️  {table}: {total} OK, {errors} errores")
+        log.warning(f"  â ï¸  {table}: {total} OK, {errors} errores")
     else:
-        log.info(f"  ✅ {table}: {total} registros sincronizados")
+        log.info(f"  â {table}: {total} registros sincronizados")
 
-# ══════════════════════════════════════════════
-# REPORT MAP — 14 reportes (Audit Newsletters eliminado)
-# ══════════════════════════════════════════════
+# ââââââââââââââââââââââââââââââââââââââââââââââ
+# REPORT MAP â 14 reportes (Audit Newsletters eliminado)
+# ââââââââââââââââââââââââââââââââââââââââââââââ
 
 REPORT_MAP = [
     ("monthly_metrics",  ["nutrace", "compras mensual"],                    t_monthly_metrics),
     ("email_campaigns",  ["tricas looker", "audit newsletters"],                      t_email_campaigns),
     ("cart_abandonment", ["carritos abandonados", "carrito abandon"],       t_cart_abandonment),
     ("buyer_cohorts",    ["primerizos"],                                    t_buyer_cohorts),
-    ("push_campaigns",   ["push ds", "métricas push"],                     t_push_campaigns),
+    ("push_campaigns",   ["push ds", "mÃ©tricas push"],                     t_push_campaigns),
     ("subscribers",      ["evolutivo suscritos"],                           t_subscribers),
-    ("push_subscribers", ["evolución suscriptores push", "evoluci n de suscriptores push"], t_push_subscribers),
+    ("push_subscribers", ["evoluciÃ³n suscriptores push", "evoluci n de suscriptores push"], t_push_subscribers),
     ("segments",         ["segmento"],                                      t_segments),
     ("compradores",      ["compradores mensual", "compradores de la marca"], t_compradores),
     ("sticky",           ["sticky"],                                        t_sticky),
-    ("envios",           ["envíos", "envios", "env os"],                    t_envios),
+    ("envios",           ["envÃ­os", "envios", "env os"],                    t_envios),
     ("ventas_push",      ["ventas push"],                                   t_ventas_push),
     ("rendimiento_push", ["rendimiento push"],                              t_rendimiento_push),
     ("carrito",          ["=carrito"],                                       t_carrito),
+    ("daily_revenue",    ["ventas diarias"],                                 t_daily_revenue),
+    ("daily_email",      ["email diario"],                                   t_daily_email),
+    ("daily_push",       ["push diario"],                                    t_daily_push),
+    ("daily_sticky",     ["contenido web diario"],                           t_daily_sticky),
 ]
 
-# ══════════════════════════════════════════════
+# ââââââââââââââââââââââââââââââââââââââââââââââ
 # MAIN
-# ══════════════════════════════════════════════
+# ââââââââââââââââââââââââââââââââââââââââââââââ
 
 def main():
     log.info("=" * 60)
-    log.info("  BVS Analytics — Sync Connectif → Supabase v3")
+    log.info("  BVS Analytics â Sync Connectif â Supabase v3")
     log.info(f"  {NOW.strftime('%Y-%m-%d %H:%M:%S')}")
     log.info(f"  Snapshot year/month: {CURRENT_YEAR}/{CURRENT_MONTH:02d}")
     log.info("=" * 60)
@@ -497,20 +594,20 @@ def main():
             continue
         exp = find_report(latest_map, *keywords)
         if not exp:
-            log.warning(f"  ⚠️  No encontrado: {keywords[0]}")
+            log.warning(f"  â ï¸  No encontrado: {keywords[0]}")
             continue
         try:
-            log.info(f"\n  → {exp['fileName']}")
+            log.info(f"\n  â {exp['fileName']}")
             rows    = download_csv(exp['fileUrl'])
             records = transform_fn(rows)
-            log.info(f"     {len(rows)} filas CSV → {len(records)} registros Supabase")
+            log.info(f"     {len(rows)} filas CSV â {len(records)} registros Supabase")
             upsert_supabase(table, records)
             synced.add(key)
         except Exception as e:
-            log.error(f"  ❌ Error en {table} ({keywords[0]}): {e}")
+            log.error(f"  â Error en {table} ({keywords[0]}): {e}")
 
     log.info("\n" + "=" * 60)
-    log.info("  ✅ Sincronización completada — historial acumulado intacto")
+    log.info("  â SincronizaciÃ³n completada â historial acumulado intacto")
     log.info("=" * 60)
 
 if __name__ == "__main__":
