@@ -18,7 +18,6 @@ import StickyWebContent from "@/components/dashboard/StickyWebContent";
 import AuditComparison from "@/components/dashboard/AuditComparison";
 import QuickComparison from "@/components/dashboard/QuickComparison";
 
-// Phase 1 — comparador global de periodos activo
 export default function Dashboard() {
   const [activeSection, setActiveSection] = useState("overview");
   const sectionRefs = useRef({});
@@ -102,10 +101,11 @@ export default function Dashboard() {
             </section>
 
             <section ref={setRef("segments")} data-section="segments">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <SegmentExplorer />
-                <StickyWebContent />
-              </div>
+              <SegmentExplorer />
+            </section>
+
+            <section ref={setRef("sticky")} data-section="sticky">
+              <StickyWebContent />
             </section>
 
             <section ref={setRef("audit")} data-section="audit">
