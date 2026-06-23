@@ -1,10 +1,12 @@
 ﻿import KPICard from "./KPICard";
 import { fmtCurrency, fmtNumber, monthLabel } from "@/lib/dashboardData";
 import { useEmailCampaigns, useCartAbandonment, useBuyerCohorts, useMonthlyMetrics } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
 import { Mail, ShoppingCart, Users, DollarSign, Target, Repeat } from "lucide-react";
 
 
 export default function OverviewKPIs() {
+ const { periodB } = useComparison();
  const { data: emailCampaigns = [] } = useEmailCampaigns();
  const { data: cartData = [] } = useCartAbandonment();
  const { data: cohorts = [] } = useBuyerCohorts();
@@ -33,8 +35,12 @@ export default function OverviewKPIs() {
 
  const sorted = [...metrics].sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month);
  const latest = sorted[sorted.length - 1];
- const prev = sorted[sorted.length - 2];
- const revTrend = prev && latest ? ((latest.revenue - prev.revenue) / prev.revenue) * 100 : 0;
+ // Usar periodB del contexto si hay datos para ese mes, si no caer al último mes disponible
+ const current = sorted.find(m => m.year === periodB.year && m.month === periodB.month) || latest;
+ const currentIdx = sorted.indexOf(current);
+ const prev = currentIdx > 0 ? sorted[currentIdx - 1] : null;
+ const revTrend = prev && current ? ((current.revenue - prev.revenue) / prev.revenue) * 100 : 0;
+ const periodLabel = current ? `${monthLabel(current.month)} ${current.year}` : 'Último mes';
 
 
  const cohortsSorted = [...cohorts].sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month);
@@ -69,9 +75,9 @@ export default function OverviewKPIs() {
        accentClass="text-amber-500"
      />
      <KPICard
-       title="Revenue Último Mes"
-       value={fmtCurrency(latest?.revenue || 0)}
-       subtitle={`${fmtNumber(latest?.purchases || 0)} compras`}
+       title={`Revenue ${periodLabel}`}
+       value={fmtCurrency(current?.revenue || 0)}
+       subtitle={`${fmtNumber(current?.purchases || 0)} compras`}
        trend={revTrend}
        trendLabel="vs mes anterior"
        icon={DollarSign}
