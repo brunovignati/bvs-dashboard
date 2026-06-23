@@ -16,6 +16,7 @@ import SubscriberHealth from "@/components/dashboard/SubscriberHealth";
 import SegmentExplorer from "@/components/dashboard/SegmentExplorer";
 import StickyWebContent from "@/components/dashboard/StickyWebContent";
 import AuditComparison from "@/components/dashboard/AuditComparison";
+import QuickComparison from "@/components/dashboard/QuickComparison";
 
 export default function Dashboard() {
   const [activeSection, setActiveSection] = useState("overview");
@@ -62,6 +63,7 @@ export default function Dashboard() {
 
             <section ref={setRef("overview")} data-section="overview">
               <StorytellingHero />
+              <div className="mt-6"><QuickComparison /></div>
               <div className="mt-6"><OverviewKPIs /></div>
               <div className="mt-6"><RevenueChart /></div>
             </section>
