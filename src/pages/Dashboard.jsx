@@ -18,6 +18,7 @@ import StickyWebContent from "@/components/dashboard/StickyWebContent";
 import AuditComparison from "@/components/dashboard/AuditComparison";
 import QuickComparison from "@/components/dashboard/QuickComparison";
 
+// Phase 1 — comparador global de periodos activo
 export default function Dashboard() {
   const [activeSection, setActiveSection] = useState("overview");
   const sectionRefs = useRef({});
