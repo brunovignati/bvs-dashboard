@@ -1,5 +1,5 @@
 ﻿import { motion } from "framer-motion";
-import { BarChart3, Mail, ShoppingCart, Bell, Users, Layers, FileSearch, GitMerge, Calendar, UserCheck, ChevronLeft, ChevronRight, Sparkles, Database } from "lucide-react";
+import { BarChart3, Mail, ShoppingCart, Bell, Users, Layers, FileSearch, GitMerge, Calendar, UserCheck, ChevronLeft, ChevronRight, Sparkles, Database, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useState } from "react";
@@ -16,6 +16,7 @@ const sections = [
  { id: "dayweek", label: "Día/Semana", icon: Calendar },
  { id: "subscribers", label: "Suscriptores", icon: UserCheck },
  { id: "segments", label: "Segmentos", icon: Layers },
+ { id: "sticky", label: "Web/Sticky", icon: Globe },
  { id: "audit", label: "Auditoría", icon: FileSearch },
 ];
 
