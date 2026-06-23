@@ -1,24 +1,47 @@
 import { useState } from "react";
 import { useMonthlyMetrics } from "@/lib/useEntities";
-import { pearsonCorrelation } from "@/lib/dashboardData";
+import { useComparison } from "@/lib/ComparisonContext";
+import { pearsonCorrelation, monthLabel } from "@/lib/dashboardData";
 import SectionHeader from "./SectionHeader";
 import InsightCard from "./InsightCard";
 import { GitMerge } from "lucide-react";
 import { motion } from "framer-motion";
 
 function naturalLang(k1, k2, r) {
-  const dir   = r > 0 ? 'suben juntos' : 'se mueven en sentido opuesto';
-  const str   = Math.abs(r) > 0.8 ? 'muy fuerte' : Math.abs(r) > 0.6 ? 'fuerte' : Math.abs(r) > 0.4 ? 'moderada' : 'débil';
-  return `Cuando ${k1} sube, ${k2} tiende a ${r > 0 ? 'subir' : 'bajar'} también. Correlación ${str} (${r > 0 ? 'positiva' : 'negativa'}): ${dir}.`;
+  const str = Math.abs(r) > 0.8 ? 'muy fuerte' : Math.abs(r) > 0.6 ? 'fuerte' : Math.abs(r) > 0.4 ? 'moderada' : 'débil';
+  return `Cuando ${k1} sube, ${k2} tiende a ${r > 0 ? 'subir' : 'bajar'} también. Correlación ${str} (${r > 0 ? 'positiva' : 'negativa'}).`;
 }
 
 export default function CorrelationMatrix() {
   const [tooltip, setTooltip] = useState(null);
-  // ✅ MIGRADO: datos reales de Supabase
+  const { periodA, periodB } = useComparison();
   const { data: rawMetrics = [] } = useMonthlyMetrics();
-  const data = [...rawMetrics].sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month);
 
-  if (data.length < 3) return null; // necesitamos al menos 3 puntos para correlación
+  // Filtrar por rango entre periodA y periodB (incluyendo ambos extremos)
+  const startYM = Math.min(periodA.year * 12 + periodA.month, periodB.year * 12 + periodB.month);
+  const endYM   = Math.max(periodA.year * 12 + periodA.month, periodB.year * 12 + periodB.month);
+
+  const data = [...rawMetrics]
+    .filter(d => { const ym = d.year * 12 + d.month; return ym >= startYM && ym <= endYM; })
+    .sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month);
+
+  // Etiqueta de rango legible
+  const pA = periodA.year * 12 + periodA.month <= periodB.year * 12 + periodB.month ? periodA : periodB;
+  const pB = periodA.year * 12 + periodA.month <= periodB.year * 12 + periodB.month ? periodB : periodA;
+  const rangeLabel = `${monthLabel(pA.month)} ${pA.year} → ${monthLabel(pB.month)} ${pB.year} · ${data.length} meses`;
+
+  if (data.length < 3) {
+    return (
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.6 }} className="bg-card border border-border rounded-2xl p-5">
+        <SectionHeader title="Matriz de Correlación" subtitle={`Pearson r · ${rangeLabel}`} icon={GitMerge} badge="Estadística" />
+        <div className="text-center py-10">
+          <p className="text-sm text-muted-foreground">Rango insuficiente — solo {data.length} mes{data.length !== 1 ? 'es' : ''} seleccionado{data.length !== 1 ? 's' : ''}.</p>
+          <p className="text-xs text-muted-foreground mt-1">Amplía el rango en el Comparador de Periodos (mínimo 3 meses).</p>
+        </div>
+      </motion.div>
+    );
+  }
 
   const vars = {
     "Compras":    data.map(d => d.purchases  || 0),
@@ -58,7 +81,7 @@ export default function CorrelationMatrix() {
     >
       <SectionHeader
         title="Matriz de Correlación"
-        subtitle={`Pearson r · ${data.length} meses de datos · Relaciones estadísticas entre variables`}
+        subtitle={`Pearson r · ${rangeLabel} · Ajusta el rango desde el Comparador de Periodos`}
         icon={GitMerge}
         badge="Estadística"
       />
@@ -81,7 +104,7 @@ export default function CorrelationMatrix() {
                   <td key={k2} className="p-1 relative group">
                     <div
                       className={`text-center text-xs font-mono font-medium rounded-lg py-2 px-1 cursor-default ${getColor(matrix[i][j])}`}
-                      onMouseEnter={() => i !== j && setTooltip({ k1: k1, k2: k2, r: matrix[i][j] })}
+                      onMouseEnter={() => i !== j && setTooltip({ k1, k2, r: matrix[i][j] })}
                       onMouseLeave={() => setTooltip(null)}
                     >
                       {matrix[i][j].toFixed(2)}
@@ -120,7 +143,7 @@ export default function CorrelationMatrix() {
       <InsightCard
         type="info"
         title="Interpretación Estadística"
-        description={`La correlación más fuerte es ${sorted[0]?.var1} × ${sorted[0]?.var2} (r=${sorted[0]?.corr.toFixed(2)}). La atribución web muestra la mayor correlación con compras totales, mientras que push muestra una correlación ${pushCorr?.corr < 0 ? 'negativa' : 'débil'} indicando un canal en declive. El ticket medio crece independientemente del volumen (baja correlación con compras).`}
+        description={`La correlación más fuerte en este rango es ${sorted[0]?.var1} × ${sorted[0]?.var2} (r=${sorted[0]?.corr.toFixed(2)}). Modifica el Comparador de Periodos para analizar distintas épocas del año y detectar cambios en las relaciones entre variables.`}
       />
     </motion.div>
   );
