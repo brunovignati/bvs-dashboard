@@ -76,7 +76,7 @@ function linearReg(values) {
   const sse       = values.reduce((s, v, i) => s + (v - (intercept + slope * i)) ** 2, 0);
   const se        = Math.sqrt(sse / (n - 2));
   const yMeanAll  = yMean;
-  const ssTot  = values.reduce((s, v) => s + (v - yMeanAll) ** 2, 0);
+  const ssTot     = values.reduce((s, v) => s + (v - yMeanAll) ** 2, 0);
   const r2        = ssTot > 0 ? 1 - sse / ssTot : 0;
   return { slope, intercept, se, sxx, xMean, n, r2 };
 }
@@ -297,7 +297,7 @@ export default function RevenueChart() {
         </div>
       )}
 
-      {/* Gráfico principal: Revenue por marca + Ticket Medio */}
+      {/* Gráfico principal: Revenue por marca */}
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={chartData} margin={{ top: 5, right: 40, left: 10, bottom: 0 }}>
@@ -310,21 +310,16 @@ export default function RevenueChart() {
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
             <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
               interval={Math.max(1, Math.floor(chartData.length / 8))} />
-            <YAxis yAxisId="left" tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
+            <YAxis domain={[0, 'auto']} tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
               tickFormatter={(v) => `€${(v/1000).toFixed(0)}K`} />
-            <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
-              tickFormatter={(v) => `€${v}`} />
             <Tooltip content={<CustomTooltip />} />
             <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
-            <Area yAxisId="left" type="monotone" dataKey="Nutracéuticos"
+            <Area type="monotone" dataKey="Nutracéuticos"
               stroke={NUTRA_COLOR} fill="url(#nutraGrad)" strokeWidth={2.5}
               dot={{ r: 2, fill: NUTRA_COLOR }} connectNulls={false} />
-            <Line yAxisId="left" type="monotone" dataKey="Vet Shop"
+            <Line type="monotone" dataKey="Vet Shop"
               stroke={VET_COLOR} strokeWidth={2} dot={{ r: 2.5, fill: VET_COLOR }}
               strokeDasharray="6 3" connectNulls={false} />
-            <Line yAxisId="right" type="monotone" dataKey="TicketMedio" name="Ticket Medio"
-              stroke={TICKET_COLOR} strokeWidth={1.5} dot={{ r: 2, fill: TICKET_COLOR }}
-              strokeDasharray="3 3" connectNulls={false} />
           </ComposedChart>
         </ResponsiveContainer>
       </div>
