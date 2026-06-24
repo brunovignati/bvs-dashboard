@@ -130,7 +130,7 @@ export default function AttributionAnalysis() {
                 <div className="flex-1 bg-muted/40 rounded-full h-7 relative overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
-                    animate={{ width: `${Math.max(item.pct, 2)}%` }}
+                    animate={{ width: Math.max(item.pct, 2) + '%' }}
                     transition={{ duration: 0.7, delay: i * 0.1 }}
                     className="h-full rounded-full flex items-center pl-3"
                     style={{ backgroundColor: item.color + (i === 0 ? '99' : 'cc') }}
