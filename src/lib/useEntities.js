@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from './supabase'
 
-// Mapeo snake_case (Supabase) â camelCase (componentes originales de Base44)
+// Mapeo snake_case (Supabase) → camelCase (componentes originales de Base44)
 function mapRow(row) {
   if (!row) return row
   return {
@@ -157,6 +157,24 @@ export function useDailySticky() {
   return useQuery({
     queryKey: ['daily_sticky'],
     queryFn: () => fetchTable('daily_sticky', 'year', true, 10000),
+    initialData: [],
+  })
+}
+
+// ─── Instagram / Metricool ──────────────────────────────────────────────────
+
+export function useIgDaily() {
+  return useQuery({
+    queryKey: ['ig_daily'],
+    queryFn: () => fetchTable('ig_daily', 'date_str', true, 5000),
+    initialData: [],
+  })
+}
+
+export function useIgReels() {
+  return useQuery({
+    queryKey: ['ig_reels'],
+    queryFn: () => fetchTable('ig_reels', 'date_str', false, 500),
     initialData: [],
   })
 }
