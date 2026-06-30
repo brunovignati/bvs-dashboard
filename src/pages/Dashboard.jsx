@@ -52,8 +52,8 @@ export default function Dashboard() {
         <DashboardNav active={activeSection} onNavigate={scrollToSection} />
         <main className="flex-1 min-w-0 flex flex-col">
 
-          {/* ── Header sticky: Comparador de Periodos ── */}
-          <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-border">
+          {/* ── Comparador de Periodos ── */}
+          <div className="bg-background border-b border-border">
             <div className="max-w-6xl mx-auto px-4 md:px-6 py-2">
               <ComparisonPanel />
             </div>
