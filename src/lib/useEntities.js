@@ -161,7 +161,23 @@ export function useDailySticky() {
   })
 }
 
-// ─── Instagram / Metricool ──────────────────────────────────────────────────
+// ─── Instagram / Metricool ────────────────────────────────────
+
+export function useFbDaily() {
+  return useQuery({
+    queryKey: ['fb_daily'],
+    queryFn: () => fetchTable('fb_daily', 'date_str', true, 5000),
+    initialData: [],
+  })
+}
+
+export function useTkDaily() {
+  return useQuery({
+    queryKey: ['tk_daily'],
+    queryFn: () => fetchTable('tk_daily', 'date_str', true, 5000),
+    initialData: [],
+  })
+}
 
 export function useIgDaily() {
   return useQuery({
