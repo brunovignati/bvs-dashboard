@@ -17,6 +17,8 @@ import SegmentExplorer from "@/components/dashboard/SegmentExplorer";
 import StickyWebContent from "@/components/dashboard/StickyWebContent";
 import AuditComparison from "@/components/dashboard/AuditComparison";
 import InstagramAnalysis from "@/components/dashboard/InstagramAnalysis";
+import FacebookAnalysis from "@/components/dashboard/FacebookAnalysis";
+import TiktokAnalysis from "@/components/dashboard/TiktokAnalysis";
 import QuickComparison from "@/components/dashboard/QuickComparison";
 
 export default function Dashboard() {
@@ -111,6 +113,14 @@ export default function Dashboard() {
 
             <section ref={setRef("instagram")} data-section="instagram">
               <InstagramAnalysis />
+            </section>
+
+            <section ref={setRef("facebook")} data-section="facebook">
+              <FacebookAnalysis />
+            </section>
+
+            <section ref={setRef("tiktok")} data-section="tiktok">
+              <TiktokAnalysis />
             </section>
 
             <section ref={setRef("audit")} data-section="audit">
