@@ -1,0 +1,30 @@
+name: BVS GA4 Sync
+
+on:
+  schedule:
+    - cron: "0 1 * * 1" # Lunes 1am UTC - mismo horario que sync_social.yml
+  workflow_dispatch: # Tambien ejecutable a mano desde GitHub
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests google-analytics-data
+
+      - name: Sincronizar GA4 - Supabase
+        env:
+          GA4_PROPERTY_ID: ${{ secrets.GA4_PROPERTY_ID }}
+          GA4_CREDENTIALS_JSON: ${{ secrets.GA4_CREDENTIALS_JSON }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.SUPABASE_KEY }}
+        run: python scripts/sync_ga4_to_supabase.py
