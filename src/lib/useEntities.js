@@ -194,3 +194,14 @@ export function useIgReels() {
     initialData: [],
   })
 }
+
+
+// ─── GA4 (trafico web) ─────────────────────────────────────
+
+export function useGa4Daily() {
+  return useQuery({
+    queryKey: ['ga4_daily'],
+    queryFn: () => fetchTable('ga4_daily', 'date_str', true, 5000),
+    initialData: [],
+  })
+}
