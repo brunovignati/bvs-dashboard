@@ -1,0 +1,33 @@
+name: BVS Social Media Sync
+
+on:
+  schedule:
+    - cron: "0 1 * * 1"
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install requests playwright
+          playwright install chromium --with-deps
+
+      - name: Run sync
+        env:
+          METRICOOL_EMAIL:    ${{ secrets.METRICOOL_EMAIL }}
+          METRICOOL_PASSWORD: ${{ secrets.METRICOOL_PASSWORD }}
+          SUPABASE_URL:       ${{ secrets.SUPABASE_URL }}
+          SUPABASE_KEY:       ${{ secrets.SUPABASE_KEY }}
+        run: python scripts/sync_social_playwright.py
