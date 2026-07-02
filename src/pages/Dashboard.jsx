@@ -112,6 +112,10 @@ export default function Dashboard() {
               <StickyWebContent />
             </section>
 
+            <section ref={setRef("audit")} data-section="audit">
+              <AuditComparison />
+            </section>
+            
             <section ref={setRef("instagram")} data-section="instagram">
               <InstagramAnalysis />
             </section>
@@ -126,10 +130,6 @@ export default function Dashboard() {
 
             <section ref={setRef("ga4")} data-section="ga4">
               <GA4Analysis />
-            </section>
-
-            <section ref={setRef("audit")} data-section="audit">
-              <AuditComparison />
             </section>
 
             <div className="text-center py-8 border-t border-border">
