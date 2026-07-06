@@ -53,6 +53,7 @@ ON_CONFLICT = {
     "email_campaigns":  "year,month,email_name",
     "cart_abandonment": "year,month,email_name",
     "buyer_cohorts":    "year,month",
+    "channel_segmentation": "year,month",
     "push_campaigns":   "year,month,workflow",
     "subscribers":      "year,month,status",
     "push_subscribers": "year,month",
@@ -240,6 +241,75 @@ def t_buyer_cohorts(rows):
             "first_time": safe_float(r, 'numberOfFirstTimeBuyers'),
             "recurring":  safe_float(r, 'numberOfRecurringBuyers'),
             "updated_at": NOW.isoformat(),
+        })
+    return result
+
+def t_channel_segmentation(rows):
+    by_month = {}
+    unknown_origins = set()
+    for r in rows:
+        if not r.get('year') or not r.get('month'):
+            continue
+        year  = int(r['year'])
+        month = int(r['month'])
+        origin = str(
+            r.get('purchaseOrigin') or r.get('purchase_origin') or
+            r.get('Purchase origin') or r.get('Purchase Origin') or ''
+        ).strip()
+        buyers = int(safe_float(r, 'numberOfBuyers', 'number_of_buyers', 'Number of buyers'))
+        key = (year, month)
+        if key not in by_month:
+            by_month[key] = {'api': 0, 'web': 0}
+        if origin.upper() == 'API':
+            by_month[key]['api'] = buyers
+        elif origin.lower() == 'web':
+            by_month[key]['web'] = buyers
+        else:
+            unknown_origins.add(origin)
+    if unknown_origins:
+        log.warning(f"  ⚠️  purchaseOrigin desconocido ignorado: {unknown_origins}")
+    if not by_month:
+        log.warning("  ⚠️  channel_segmentation: sin filas válidas en el CSV")
+        return []
+    # Fetch total_buyers from buyer_cohorts in Supabase
+    try:
+        url = f"{SUPABASE_URL}/rest/v1/buyer_cohorts?select=year,month,first_time,recurring"
+        resp = requests.get(url, headers=SUPABASE_HEADERS, timeout=30)
+        cohorts_raw = resp.json() if resp.status_code == 200 else []
+        cohorts = {}
+        for c in cohorts_raw:
+            y = int(c.get('year', 0)); m = int(c.get('month', 0))
+            if y and m:
+                cohorts[(y, m)] = int(safe_float(c, 'first_time')) + int(safe_float(c, 'recurring'))
+        log.info(f"     buyer_cohorts disponibles: {len(cohorts)} meses")
+    except Exception as e:
+        log.error(f"  ❌ Error obteniendo buyer_cohorts: {e}")
+        return []
+    result = []
+    for (year, month), origins in sorted(by_month.items()):
+        api = origins['api']; web = origins['web']
+        total = cohorts.get((year, month))
+        if total is None:
+            log.warning(f"  ⚠️  Sin buyer_cohorts para {year}/{month:02d} — omitido")
+            continue
+        if api == 0 and web == 0:
+            continue
+        omnichannel = api + web - total
+        retail = api - omnichannel
+        digital = web - omnichannel
+        check = retail + digital + omnichannel
+        if check != total:
+            log.error(f"  ❌ Validación fallida {year}/{month:02d}: {retail}+{digital}+{omnichannel}={check} ≠ {total}. NO se escribirá.")
+            continue
+        if retail < 0 or digital < 0 or omnichannel < 0:
+            log.error(f"  ❌ Valor negativo {year}/{month:02d}: retail={retail}, digital={digital}, omnichannel={omnichannel}. NO se escribirá.")
+            continue
+        result.append({
+            'year': year, 'month': month,
+            'api_buyers': api, 'web_buyers': web,
+            'retail': retail, 'digital': digital,
+            'omnichannel': omnichannel, 'total_buyers': total,
+            'updated_at': NOW.isoformat(),
         })
     return result
 
@@ -554,6 +624,7 @@ REPORT_MAP = [
     ("email_campaigns",  ["tricas looker", "audit newsletters"],                      t_email_campaigns),
     ("cart_abandonment", ["carritos abandonados", "carrito abandon"],       t_cart_abandonment),
     ("buyer_cohorts",    ["primerizos"],                                    t_buyer_cohorts),
+    ("channel_segmentation", ["compradores por origen", "channel buyers"],    t_channel_segmentation),
     ("push_campaigns",   ["push ds", "mÃ©tricas push"],                     t_push_campaigns),
     ("subscribers",      ["evolutivo suscritos"],                           t_subscribers),
     ("push_subscribers", ["evoluciÃ³n suscriptores push", "evoluci n de suscriptores push"], t_push_subscribers),
