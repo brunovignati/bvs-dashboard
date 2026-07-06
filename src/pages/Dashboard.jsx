@@ -16,11 +16,8 @@ import SubscriberHealth from "@/components/dashboard/SubscriberHealth";
 import SegmentExplorer from "@/components/dashboard/SegmentExplorer";
 import StickyWebContent from "@/components/dashboard/StickyWebContent";
 import AuditComparison from "@/components/dashboard/AuditComparison";
-import InstagramAnalysis from "@/components/dashboard/InstagramAnalysis";
-import FacebookAnalysis from "@/components/dashboard/FacebookAnalysis";
-import TiktokAnalysis from "@/components/dashboard/TiktokAnalysis";
-import GA4Analysis from "@/components/dashboard/GA4Analysis";
 import QuickComparison from "@/components/dashboard/QuickComparison";
+import ChannelSegmentation from "@/components/dashboard/ChannelSegmentation";
 
 export default function Dashboard() {
   const [activeSection, setActiveSection] = useState("overview");
@@ -55,8 +52,8 @@ export default function Dashboard() {
         <DashboardNav active={activeSection} onNavigate={scrollToSection} />
         <main className="flex-1 min-w-0 flex flex-col">
 
-          {/* ── Comparador de Periodos ── */}
-          <div className="bg-background border-b border-border">
+          {/* ── Header sticky: Comparador de Periodos ── */}
+          <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-border">
             <div className="max-w-6xl mx-auto px-4 md:px-6 py-2">
               <ComparisonPanel />
             </div>
@@ -108,28 +105,16 @@ export default function Dashboard() {
               <SegmentExplorer />
             </section>
 
+            <section ref={setRef("channels")} data-section="channels">
+              <ChannelSegmentation />
+            </section>
+
             <section ref={setRef("sticky")} data-section="sticky">
               <StickyWebContent />
             </section>
 
             <section ref={setRef("audit")} data-section="audit">
               <AuditComparison />
-            </section>
-            
-            <section ref={setRef("instagram")} data-section="instagram">
-              <InstagramAnalysis />
-            </section>
-
-            <section ref={setRef("facebook")} data-section="facebook">
-              <FacebookAnalysis />
-            </section>
-
-            <section ref={setRef("tiktok")} data-section="tiktok">
-              <TiktokAnalysis />
-            </section>
-
-            <section ref={setRef("ga4")} data-section="ga4">
-              <GA4Analysis />
             </section>
 
             <div className="text-center py-8 border-t border-border">
