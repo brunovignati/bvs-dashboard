@@ -105,8 +105,8 @@ export default function SubscriberHealth() {
                   tickFormatter={v => `${(v/1000).toFixed(0)}K`} />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend iconType="circle" iconSize={6} wrapperStyle={{ fontSize: 10 }} />
-                <Area type="monotone" dataKey="Suscritos"   stroke="hsm�<160,84%,39%)" fill="url(#subGrad)"   strokeWidth={2} />
-                <Area type="monotone" dataKey="Desuscritos" stroke="hsm�<0,84%,60%)"   fill="url(#unsubGrad)" strokeWidth={2} />
+                <Area type="monotone" dataKey="Suscritos"   stroke="hsl(160,84%,39%)" fill="url(#subGrad)"   strokeWidth={2} />
+                <Area type="monotone" dataKey="Desuscritos" stroke="hsl(0,84%,60%)"   fill="url(#unsubGrad)" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -115,11 +115,11 @@ export default function SubscriberHealth() {
         )}
       </div>
 
-      {/* Usar los datos filtrados por periodo para suscriptores push */}
+      {/* ── Suscriptores Push como AreaChart ── */}
       <div className="pt-5 border-t border-border">
         <div className="flex items-center justify-between mb-2">
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
-            <Bell className="w4 h-3"> <Bell className="w-3.5 h-3.5" /> Suscriptores Push — evolución mensual
+            <Bell className="w-3.5 h-3.5" /> Suscriptores Push — evolución mensual
           </p>
           {latestPush && (
             <div className="flex gap-4 text-xs text-muted-foreground">
@@ -137,18 +137,18 @@ export default function SubscriberHealth() {
                 <AreaChart data={pushChartData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
                   <defs>
                     <linearGradient id="pushSubGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%"  stopColor="hsm�<280,65%,60%)" stopOpacity={0.35} />
-                      <stop offset="95%" stopColor="hsm�<280,65%,60%)" stopOpacity={0.02} />
+                      <stop offset="5%"  stopColor="hsl(280,65%,60%)" stopOpacity={0.35} />
+                      <stop offset="95%" stopColor="hsl(280,65%,60%)" stopOpacity={0.02} />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsm�<220,13%,91%)" vertical={false} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
                   <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
                     interval={Math.max(0, Math.floor(pushChartData.length / 8))} />
                   <YAxis tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
                     tickFormatter={v => fmtNumber(v)} />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend iconType="circle" iconSize={6} wrapperStyle={{ fontSize: 10 }} />
-                  <Area type="monotone" dataKey="Suscriptores" stroke="hsm�<280,65%,60%)" fill="url(#pushSubGrad)" strokeWidth={2} dot={{ r: 3 }} />
+  3               <Area type="monotone" dataKey="Suscriptores" stroke="hsl(280,65%,60%)" fill="url(#pushSubGrad)" strokeWidth={2} dot={{ r: 3 }} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -189,7 +189,7 @@ export default function SubscriberHealth() {
           type={totalPushLoss < 0 ? "danger" : "info"}
           title="Evolución Suscriptores Push"
           description={totalPushLoss < 0
-            ? `Caída neta de ${fmtNumber(Math.abs(totalPushLoss))} suscriptores push en el período. Implementar estrategias de re-opt-in ny mejorar la propuesta de valor de las notificaciones.`
+            ? `Caída neta de ${fmtNumber(Math.abs(totalPushLoss))} suscriptores push en el período. Implementar estrategias de re-opt-in y mejorar la propuesta de valor de las notificaciones.`
             : `Evolución neta de ${fmtNumber(totalPushLoss)} suscriptores push en el período.`}
         />
       </div>
