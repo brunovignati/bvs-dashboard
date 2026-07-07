@@ -172,7 +172,7 @@ export default function SegmentExplorer() {
                     key={seg}
                     type="monotone"
                     dataKey={seg}
-                    stroke={SEGMENT COLORS[i % SEGMENT_COLORS.length]}
+                    stroke={SEGMENT_COLORS[i % SEGMENT_COLORS.length]}
                     strokeWidth={2}
                     dot={{ r: 2 }}
                     connectNulls={false}
@@ -232,7 +232,7 @@ export default function SegmentExplorer() {
           <InsightCard
             type="info"
             title="Serie temporal en construcción"
-            description="El dashboard acumula un snapshot mensual por cada sync nocturno. En 1-2 meses aparecerán la evolución multi-línea y los deltas MoM para cada segmento."
+            description="El dashboard acumula un snapshot mensual por cada sync nocturno. En 1–2 meses aparecerán la evolución multi-línea y los deltas MoM para cada segmento."
           />
         </div>
       )}
