@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ScatterChart, Scatter, XAxis, YAxis, ZAxis, CartesianGrid, Tooltip, Cell, ResponsiveContainer, ReferenceLine } from "recharts";
 import { fmtCurrency, fmtNumber, monthLabel } from "@/lib/dashboardData";
 import { useEmailCampaigns } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
 import SectionHeader from "./SectionHeader";
 import MiniTable from "./MiniTable";
 import InsightCard from "./InsightCard";
@@ -40,9 +41,10 @@ const ScatterTooltip = ({ active, payload }) => {
 
 export default function EmailPerformance() {
   const { data: emailData = [] } = useEmailCampaigns();
+  const { filterByPeriod } = useComparison();
   const [view, setView] = useState('scatter');
 
-  const allCampaigns = emailData.filter(e => e.emailName && e.sent > 0);
+  const allCampaigns = filterByPeriod(emailData).filter(e => e.emailName && e.sent > 0);
   const campaigns = [...allCampaigns].sort((a, b) => b.revenue - a.revenue).slice(0, 12);
 
   // Datos para scatter: cada campaña es un punto
@@ -72,7 +74,7 @@ export default function EmailPerformance() {
 
   const columns = [
     { key: "emailName", label: "Campaña", bold: true,
-      render: (v) => <div className="max-w[200px] truncate text-xs" title={v}>{o}</div> },
+      render: (v) => <div className="max-w-[200px] truncate text-xs" title={v}>{v}</div> },
     { key: "month", label: "Mes",
       render: (v) => <Badge variant="outline" className="text-[10px] font-mono">{monthLabel(v)}</Badge> },
     { key: "sent",  label: "Enviados",  align: "right", render: (v) => fmtNumber(v) },
@@ -120,12 +122,13 @@ export default function EmailPerformance() {
         ))}
       </div>
 
-      {/* SCATTER */}
+      {/* ── SCATTER: Mapa de rendimiento ── */}
       {view === 'scatter' && (
         <div>
           <p className="text-[11px] text-muted-foreground mb-1">
-            Cada punto = una campaña · Tamaño = volumen · <span style={{ color: 'hsl(35,92%,56%)' }}>■</span> Carrito
-            · <span style={{ color: 'hsl(160,84%,39%)' }}>■</span> Alto revenue · <span style={{ color: 'hsl(217,91%,60%)' }}>□</span> Medio
+            Cada punto = una campaña · Tamaño = volumen enviado · <span style={{ color: 'hsl(35,92%,56%)' }}>■</span> Carrito abandonado
+            · <span style={{ color: 'hsl(160,84%,39%)' }}>■</span> Alto revenue · <span style={{ color: 'hsl(217,91%,60%)' }}>■</span> Medio
+            · <span className="text-muted-foreground">■</span> Bajo
           </p>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
@@ -151,28 +154,34 @@ export default function EmailPerformance() {
           </div>
           <div className="grid grid-cols-2 gap-2 mt-2 text-[9px]">
             <div className="text-center border border-border/40 rounded p-1.5 text-muted-foreground">↖ Alta apertura · Bajo revenue</div>
-            <div className="text-center border border-emerald-500/20 rounded p-1.5 bg-emerald-500/5 text-emerald-600">↗ Alta apertura · Alto revenue</div>
-            <div className="text-center border border-border/40 rounded p-1.5 text-muted-foreground">↹ ҂��apertura · Bajo revenue</div>
+            <div className="text-center border border-emerald-500/20 rounded p-1.5 bg-emerald-500/5 text-emerald-600">↗ Alta apertura · Alto revenue ★</div>
+            <div className="text-center border border-border/40 rounded p-1.5 text-muted-foreground">↙ Baja apertura · Bajo revenue</div>
             <div className="text-center border border-amber-500/20 rounded p-1.5 bg-amber-500/5 text-amber-600">↘ Baja apertura · Alto revenue</div>
           </div>
           {topCampaign && (
             <p className="text-[10px] text-muted-foreground mt-2">
-              Campaña top: <span className="font-semibold text-foreground">{topCampaign.name}</span> · {fmtCurrency(topCampaign.revenue)} · {topCampaign.openRate.toFixed(1)}% apertura
+              Campaña top: <span className="font-semibold text-foreground">{topCampaign.name}</span> — {fmtCurrency(topCampaign.revenue)} · {topCampaign.openRate.toFixed(1)}% apertura
             </p>
           )}
         </div>
       )}
 
-      {/* TABLA */}
+      {/* ── TABLA ── */}
       {view === 'table' && (
         <MiniTable columns={columns} data={campaigns} maxRows={12} />
       )}
 
       <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
-        <InsightCard type="success" title="Carritos Abandonados: Motor de Revenue"
-          description={`Los emails de carrito abandonado generan ${fmtCurrency(cartRevenue)} con tasas superiores al 50%. La secuencia CA1→CA2→CA3 muestra decaynatural.`} />
-        <InsightCard type="info" title="Newsletters vs Automation"
-          description={`Las newsletters generan ${fmtCurrency(nlRevenue)} pero con CTR más bajo. Optimizar CTA y personalización mejoraríwa la conversión.`} />
+        <InsightCard
+          type="success"
+          title="Carritos Abandonados: Motor de Revenue"
+          description={`Los emails de carrito abandonado generan ${fmtCurrency(cartRevenue)} con tasas de apertura superiores al 50%. La secuencia CA1→CA2→CA3 muestra un funnel efectivo con decay natural.`}
+        />
+        <InsightCard
+          type="info"
+          title="Newsletters vs Automation"
+          description={`Las newsletters masivas generan ${fmtCurrency(nlRevenue)} pero con CTR más bajo (~1.1%). Optimizar CTA y personalización podría mejorar la conversión significativamente.`}
+        />
       </div>
     </motion.div>
   );
