@@ -24,20 +24,14 @@ const SEGMENT_COLORS = [
 
 export default function SegmentExplorer() {
   const { data: segments = [] } = useSegments();
-  const { periodA, periodB } = useComparison();
+  const { filterByPeriod } = useComparison();
 
-  // Rango de periodos
-  const startYM = Math.min(periodA.year * 12 + periodA.month, periodB.year * 12 + periodB.month);
-  const endYM   = Math.max(periodA.year * 12 + periodA.month, periodB.year * 12 + periodB.month);
+  const periodSegments = filterByPeriod(segments);
 
   // Todos los meses disponibles en el rango
   const allMonthKeys = [...new Set(
-    segments.map(s => `${s.year}-${String(s.month).padStart(2,'0')}`)
-  )].sort().filter(ym => {
-    const [y, m] = ym.split('-').map(Number);
-    const code = y * 12 + m;
-    return code >= startYM && code <= endYM;
-  });
+    periodSegments.map(s => `${s.year}-${String(s.month).padStart(2,'0')}`)
+  )].sort();
 
   // Si el rango no tiene datos, mostrar todos los meses disponibles
   const allKeys = [...new Set(
@@ -48,9 +42,9 @@ export default function SegmentExplorer() {
   const latestKey = monthKeys[monthKeys.length - 1];
   const prevKey   = monthKeys[monthKeys.length - 2];
 
-  // Agrupar por segmento
+  // Agrupar por segmento (solo datos del rango seleccionado)
   const bySegment = {};
-  for (const s of segments) {
+  for (const s of periodSegments.length > 0 ? periodSegments : segments) {
     const key = `${s.year}-${String(s.month).padStart(2,'0')}`;
     if (!bySegment[s.segment]) bySegment[s.segment] = {};
     bySegment[s.segment][key] = s.contacts || 0;
@@ -97,11 +91,10 @@ export default function SegmentExplorer() {
   const growing   = enriched.filter(e => e.delta !== null && e.delta > 0).length;
   const shrinking = enriched.filter(e => e.delta !== null && e.delta < 0).length;
 
-  const pA = periodA.year * 12 + periodA.month <= periodB.year * 12 + periodB.month ? periodA : periodB;
-  const pB = periodA.year * 12 + periodA.month <= periodB.year * 12 + periodB.month ? periodB : periodA;
-  const rangeLabel = pA.year === pB.year && pA.month === pB.month
-    ? `${monthLabel(pA.month)} ${pA.year}`
-    : `${monthLabel(pA.month)} ${pA.year} – ${monthLabel(pB.month)} ${pB.year}`;
+  const { periodStart, periodEnd } = useComparison();
+  const rangeLabel = periodStart.year === periodEnd.year && periodStart.month === periodEnd.month
+    ? `${monthLabel(periodStart.month)} ${periodStart.year}`
+    : `${monthLabel(periodStart.month)} ${periodStart.year} – ${monthLabel(periodEnd.month)} ${periodEnd.year}`;
 
   const latestMonth = latestKey
     ? (() => { const [y, m] = latestKey.split('-').map(Number); return `${monthLabel(m)} ${y}`; })()
@@ -179,7 +172,7 @@ export default function SegmentExplorer() {
                     key={seg}
                     type="monotone"
                     dataKey={seg}
-                    stroke={SEGMENT_COLORS[i % SEGMENT_COLORS.length]}
+                    stroke={SEGMENT COLORS[i % SEGMENT_COLORS.length]}
                     strokeWidth={2}
                     dot={{ r: 2 }}
                     connectNulls={false}
