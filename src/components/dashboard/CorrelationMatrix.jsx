@@ -14,21 +14,13 @@ function naturalLang(k1, k2, r) {
 
 export default function CorrelationMatrix() {
   const [tooltip, setTooltip] = useState(null);
-  const { periodA, periodB } = useComparison();
+  const { filterByPeriod, periodStart, periodEnd } = useComparison();
   const { data: rawMetrics = [] } = useMonthlyMetrics();
 
-  // Filtrar por rango entre periodA y periodB (incluyendo ambos extremos)
-  const startYM = Math.min(periodA.year * 12 + periodA.month, periodB.year * 12 + periodB.month);
-  const endYM   = Math.max(periodA.year * 12 + periodA.month, periodB.year * 12 + periodB.month);
-
-  const data = [...rawMetrics]
-    .filter(d => { const ym = d.year * 12 + d.month; return ym >= startYM && ym <= endYM; })
+  const data = filterByPeriod(rawMetrics)
     .sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month);
 
-  // Etiqueta de rango legible
-  const pA = periodA.year * 12 + periodA.month <= periodB.year * 12 + periodB.month ? periodA : periodB;
-  const pB = periodA.year * 12 + periodA.month <= periodB.year * 12 + periodB.month ? periodB : periodA;
-  const rangeLabel = `${monthLabel(pA.month)} ${pA.year} → ${monthLabel(pB.month)} ${pB.year} · ${data.length} meses`;
+  const rangeLabel = `${monthLabel(periodStart.month)} ${periodStart.year} → ${monthLabel(periodEnd.month)} ${periodEnd.year} · ${data.length} meses`;
 
   if (data.length < 3) {
     return (
