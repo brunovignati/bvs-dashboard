@@ -1,5 +1,6 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { useCartAbandonment } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
 import { fmtCurrency, fmtNumber, monthLabel } from "@/lib/dashboardData";
 import SectionHeader from "./SectionHeader";
 import InsightCard from "./InsightCard";
@@ -39,16 +40,18 @@ function cleanName(name = '') {
 
 export default function CartRecoveryFunnel() {
   const { data: cartAbandonment = [] } = useCartAbandonment();
+  const { filterByPeriod } = useComparison();
 
-  if (cartAbandonment.length === 0) return null;
+  const cartData = filterByPeriod(cartAbandonment);
+  if (cartData.length === 0) return null;
 
-  const totalRevenue   = cartAbandonment.reduce((s, d) => s + (d.revenue   || 0), 0);
-  const totalPurchases = cartAbandonment.reduce((s, d) => s + (d.purchases || 0), 0);
+  const totalRevenue    = cartData.reduce((s, d) => s + (d.revenue   || 0), 0);
+  const totalPurchases = cartData.reduce((s, d) => s + (d.purchases || 0), 0);
   const avgTicket      = totalPurchases > 0 ? totalRevenue / totalPurchases : 0;
 
   // ── Top workflows agregados ──────────────────────────────
   const byWorkflow = {};
-  for (const d of cartAbandonment) {
+  for (const d of cartData) {
     const key = d.emailName || 'Sin nombre';
     if (!byWorkflow[key]) byWorkflow[key] = { name: cleanName(key), revenue: 0, purchases: 0, sent: 0, opens: 0 };
     byWorkflow[key].revenue   += d.revenue   || 0;
@@ -62,7 +65,7 @@ export default function CartRecoveryFunnel() {
 
   // ── Evolución mensual ────────────────────────────────────
   const byMonth = {};
-  for (const d of cartAbandonment) {
+  for (const d of cartData) {
     const key = `${d.year}-${String(d.month).padStart(2, '0')}`;
     if (!byMonth[key]) byMonth[key] = { name: `${monthLabel(d.month)} ${String(d.year).slice(2)}`, revenue: 0, purchases: 0 };
     byMonth[key].revenue   += d.revenue   || 0;
@@ -107,13 +110,13 @@ export default function CartRecoveryFunnel() {
       <div className="h-48 mb-5">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={monthlyData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsm�<220,13%,91%)" vertical={false} />
             <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
               interval={Math.max(0, Math.floor(monthlyData.length / 8))} />
             <YAxis tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
               tickFormatter={(v) => `€${(v / 1000).toFixed(0)}K`} />
             <Tooltip content={<CustomTooltip />} />
-            <Bar dataKey="revenue" name="Revenue" fill="hsl(160,84%,39%)" radius={[3, 3, 0, 0]} />
+            <Bar dataKey="revenue" name="Revenue" fill="hsm�<160,84%,39%)" radius={[3, 3, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -123,7 +126,7 @@ export default function CartRecoveryFunnel() {
       <div className="space-y-2">
         {topWorkflows.map((wf, i) => (
           <div key={i} className="flex items-center gap-3">
-            <div className="w-4 text-[10px] text-muted-foreground text-right shrink-0">{i + 1}</div>
+            <div className="w4 text-[10px] text-muted-foreground text-right shrink-0">{i + 1}</div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs truncate">{wf.name}</span>
@@ -137,7 +140,7 @@ export default function CartRecoveryFunnel() {
               </div>
               <div className="flex gap-3 mt-0.5">
                 <span className="text-[9px] text-muted-foreground">{fmtNumber(wf.purchases)} compras</span>
-                {wf.sent > 0 && <span className="text-[9px] text-muted-foreground">{((wf.opens / wf.sent) * 100).toFixed(0)}% apertura</span>}
+                {wf.sent > 0 && <span className="text-[9px] text-muted-foreground">{(wf.opens / wf.sent) * 100}.toFixed(0)}% apertura</span>}
               </div>
             </div>
           </div>
