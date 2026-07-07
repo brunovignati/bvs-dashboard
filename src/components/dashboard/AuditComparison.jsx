@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { ScatterChart, Scatter, XAxis, YAxis, ZAxis, CartesianGrid, Tooltip, Cell, ResponsiveContainer, ReferenceLine } from "recharts";
 import { useEmailCampaigns } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
 import { fmtCurrency, fmtNumber, normalCDF } from "@/lib/dashboardData";
 import SectionHeader from "./SectionHeader";
 import InsightCard from "./InsightCard";
@@ -106,6 +107,7 @@ const ScatterTooltip = ({ active, payload }) => {
 // ─── Componente principal ───────────────────────────────────
 export default function AuditComparison() {
   const { data: emailData = [] } = useEmailCampaigns();
+  const { filterByPeriod } = useComparison();
   const [view, setView] = useState('scatter');
   const [sortKey, setSortKey] = useState("revenue");
   const [sortDir, setSortDir] = useState("desc");
@@ -113,7 +115,7 @@ export default function AuditComparison() {
   const DATE_RE = /\d{2}[-./]\d{2}[-./]\d{2,4}/;
   const isNewsletter = (d) => DATE_RE.test(d.emailName || '') || DATE_RE.test(d.emailWorkflow || '');
 
-  const base   = emailData.filter(d => d.emailName && d.sent > 0);
+  const base   = filterByPeriod(emailData).filter(d => d.emailName && d.sent > 0);
   const sorted = useMemo(() => {
     return [...base].sort((a, b) => {
       let aVal, bVal;
@@ -329,7 +331,7 @@ export default function AuditComparison() {
         <InsightCard
           type="info"
           title="Remarketing: Joya Oculta"
-          description={`Los workflows de remarketing muestran CTR excepcionales (>5%). Son los workflows con mejor rItio clicks→compra. En el Mapa, los puntos verdes arriba-derecha son los workflows estrella.`}
+          description={`Los workflows de remarketing muestran CTR excepcionales (>5%). Son los workflows con mejor ratio clicks→compra. En el Mapa, los puntos verdes arriba-derecha son los workflows estrella.`}
         />
       </div>
     </motion.div>
