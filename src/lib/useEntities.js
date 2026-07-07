@@ -168,3 +168,48 @@ export function useChannelSegmentation() {
     initialData: [],
   })
 }
+
+
+// ─── Social Media (Metricool) ──────────────────────────────
+
+export function useIgDaily() {
+  return useQuery({
+    queryKey: ['ig_daily'],
+    queryFn: () => fetchTable('ig_daily', 'date_str', true, 5000),
+    initialData: [],
+  })
+}
+
+export function useIgReels() {
+  return useQuery({
+    queryKey: ['ig_reels'],
+    queryFn: () => fetchTable('ig_reels', 'date_str', false, 500),
+    initialData: [],
+  })
+}
+
+export function useFbDaily() {
+  return useQuery({
+    queryKey: ['fb_daily'],
+    queryFn: () => fetchTable('fb_daily', 'date_str', true, 5000),
+    initialData: [],
+  })
+}
+
+export function useTkDaily() {
+  return useQuery({
+    queryKey: ['tk_daily'],
+    queryFn: () => fetchTable('tk_daily', 'date_str', true, 5000),
+    initialData: [],
+  })
+}
+
+// ─── GA4 (tráfico web) ────────────────────────────────────
+
+export function useGa4Daily() {
+  return useQuery({
+    queryKey: ['ga4_daily'],
+    queryFn: () => fetchTable('ga4_daily', 'date_str', true, 5000),
+    initialData: [],
+  })
+}
