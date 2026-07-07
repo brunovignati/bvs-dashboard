@@ -2,7 +2,7 @@ name: BVS Analytics — Sync Connectif to Supabase
 
 on:
   schedule:
-    - cron: '0 2 * * *'   # Cada noche 3am España (2am UTC verano)
+    - cron: '0 1 * * 1'   # Cada lunes 3:00 Europe/Madrid (1am UTC CEST)
   workflow_dispatch:        # También ejecutable a mano desde GitHub
 
 jobs:
