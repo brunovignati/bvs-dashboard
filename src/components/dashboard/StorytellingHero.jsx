@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 import { useMonthlyMetrics, useBuyerCohorts, useCompradores } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
 import { fmtCurrency, fmtNumber, monthLabel } from "@/lib/dashboardData";
 import { BarChart3, Sparkles, TrendingUp, TrendingDown, Minus } from "lucide-react";
 
@@ -42,10 +43,14 @@ export default function StorytellingHero() {
   const { data: metrics     = [] } = useMonthlyMetrics();   // Nutracéuticos BVS
   const { data: compradores = [] } = useCompradores();       // BVS Vet Shop
   const { data: cohorts     = [] } = useBuyerCohorts();      // AMBAS marcas
+  const { periodEnd } = useComparison();
 
-  // Nutracéuticos — mes más reciente y YoY
+  // Nutracéuticos — mes del extremo activo (periodEnd) con fallback al último disponible
   const sortedMetrics = sortByYearMonth(metrics);
-  const { latest: mLatest, yoy: mYoY } = getLatestAndYoY(sortedMetrics);
+  const mLatestFallback = sortedMetrics[sortedMetrics.length - 1] ?? null;
+  const mLatest = sortedMetrics.find(r => r.year === periodEnd.year && r.month === periodEnd.month)
+    ?? mLatestFallback;
+  const mYoY = sortedMetrics.find(r => r.year === (mLatest?.year ?? 0) - 1 && r.month === (mLatest?.month ?? 0)) ?? null;
 
   const nutraRevenue    = mLatest?.revenue ?? 0;
   const nutraRevenuePct = yoyDelta(nutraRevenue, mYoY?.revenue);
@@ -55,16 +60,19 @@ export default function StorytellingHero() {
     ? `${monthLabel(mLatest.month)} ${mLatest.year}`
     : "Cargando…";
 
-  // BVS Vet Shop — mes más reciente y YoY
+  // BVS Vet Shop — mes del extremo activo con fallback al último disponible
   const sortedComp = sortByYearMonth(compradores);
-  const { latest: cLatest, yoy: cYoY } = getLatestAndYoY(sortedComp);
+  const cLatestFallback = sortedComp[sortedComp.length - 1] ?? null;
+  const cLatest = sortedComp.find(r => r.year === periodEnd.year && r.month === periodEnd.month)
+    ?? cLatestFallback;
+  const cYoY = sortedComp.find(r => r.year === (cLatest?.year ?? 0) - 1 && r.month === (cLatest?.month ?? 0)) ?? null;
 
   const vetBuyers    = cLatest?.buyers ?? 0;
   const vetBuyersPct = yoyDelta(vetBuyers, cYoY?.buyers);
   const vetRevenue   = cLatest?.revenue ?? 0;
   const vetAvgTicket = vetBuyers > 0 ? vetRevenue / vetBuyers : 0;
 
-  // Cohortes — mes más reciente (AMBAS marcas)
+  // Cohortes — mes del extremo activo (AMBAS marcas)
   const sortedCohorts = sortByYearMonth(cohorts);
   const { latest: coLatest } = getLatestAndYoY(sortedCohorts);
   const coTotal  = (coLatest?.firstTime ?? 0) + (coLatest?.recurring ?? 0);
