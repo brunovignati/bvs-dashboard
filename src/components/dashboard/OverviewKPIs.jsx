@@ -6,14 +6,14 @@ import { Mail, ShoppingCart, Users, DollarSign, Target, Repeat } from "lucide-re
 
 
 export default function OverviewKPIs() {
- const { periodB } = useComparison();
+ const { periodB, filterByPeriod } = useComparison();
  const { data: emailCampaigns = [] } = useEmailCampaigns();
  const { data: cartData = [] } = useCartAbandonment();
  const { data: cohorts = [] } = useBuyerCohorts();
  const { data: metrics = [] } = useMonthlyMetrics();
 
 
- const emailsWithData = emailCampaigns.filter(e => e.emailName && e.sent > 0);
+ const emailsWithData = filterByPeriod(emailCampaigns).filter(e => e.emailName && e.sent > 0);
  const totalSent = emailsWithData.reduce((s, e) => s + e.sent, 0);
  const totalOpens = emailsWithData.reduce((s, e) => s + e.opens, 0);
  const totalClicks = emailsWithData.reduce((s, e) => s + e.clicks, 0);
@@ -48,8 +48,9 @@ export default function OverviewKPIs() {
  const recurringPct = latestCohort ? (latestCohort.recurring / (latestCohort.firstTime + latestCohort.recurring)) * 100 : 0;
 
 
- const cartTotal = cartData.reduce((s, c) => s + c.revenue, 0);
- const cartPurchases = cartData.reduce((s, c) => s + c.purchases, 0);
+ const periodCart = filterByPeriod(cartData);
+ const cartTotal = periodCart.reduce((s, c) => s + c.revenue, 0);
+ const cartPurchases = periodCart.reduce((s, c) => s + c.purchases, 0);
 
 
  return (
