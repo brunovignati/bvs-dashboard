@@ -2,6 +2,7 @@ import { useState } from "react";
 import { AreaChart, Area, ScatterChart, Scatter, XAxis, YAxis, ZAxis, CartesianGrid, Tooltip, Cell, ResponsiveContainer, ReferenceLine } from "recharts";
 import { fmtCurrency, fmtNumber } from "@/lib/dashboardData";
 import { usePushCampaigns, useDailyPush } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
 import SectionHeader from "./SectionHeader";
 import InsightCard from "./InsightCard";
 import KPICard from "./KPICard";
@@ -46,14 +47,18 @@ export default function PushAnalysis() {
   const [dailyRange, setDailyRange] = useState(90);
   const { data: pushCampaigns = [] } = usePushCampaigns();
   const { data: dailyPush = [] }     = useDailyPush();
+  const { filterByPeriod } = useComparison();
 
-  const totalPushRevenue   = pushCampaigns.reduce((s, d) => s + d.revenue, 0);
-  const totalPushPurchases = pushCampaigns.reduce((s, d) => s + d.purchases, 0);
-  const totalPushSent      = pushCampaigns.reduce((s, d) => s + d.sent, 0);
+  const periodPush      = filterByPeriod(pushCampaigns);
+  const periodDailyPush = filterByPeriod(dailyPush);
+
+  const totalPushRevenue   = periodPush.reduce((s, d) => s + d.revenue, 0);
+  const totalPushPurchases = periodPush.reduce((s, d) => s + d.purchases, 0);
+  const totalPushSent      = periodPush.reduce((s, d) => s + d.sent, 0);
   const convRate = totalPushSent > 0 ? (totalPushPurchases / totalPushSent * 100) : 0;
 
   // Scatter data
-  const scatterData = pushCampaigns.filter(c => c.sent > 0).map(c => ({
+  const scatterData = periodPush.filter(c => c.sent > 0).map(c => ({
     name: c.workflow || c.emailName || 'Push',
     openRate: c.sent > 0 ? (c.opens / c.sent) * 100 : 0,
     x: c.sent > 0 ? (c.opens / c.sent) * 100 : 0,
@@ -86,7 +91,7 @@ export default function PushAnalysis() {
   ];
 
   // Daily view data
-  const sortedDaily = [...dailyPush].sort((a,b) =>
+  const sortedDaily = [...periodDailyPush].sort((a,b) =>
     a.year!==b.year ? a.year-b.year : a.month!==b.month ? a.month-b.month : a.day-b.day
   );
   const dayMap = {};
