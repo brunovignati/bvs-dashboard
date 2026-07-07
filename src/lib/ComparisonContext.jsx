@@ -47,20 +47,44 @@ export function ComparisonProvider({ children }) {
     }
   }
 
-  // ¿Están comparando o viendo un solo mes?
+  // ·Están comparando o viendo un solo mes?
   const isComparing = periodA.year !== periodB.year || periodA.month !== periodB.month
 
-  const value = useMemo(() => ({
-    periodA, setPeriodA,
-    periodB, setPeriodB,
-    activeMonth: periodB,       // alias semántico: el mes "en foco"
-    selectedVars, toggleVar,
-    VARIABLES,
-    isInPeriodA, isInPeriodB, isInEitherPeriod,
-    isComparing,
-    applyPreset,
+  const value = useMemo(() => {
+    const ymA = periodA.year * 12 + periodA.month
+    const ymB = periodB.year * 12 + periodB.month
+    // ── Rango global (Single Source of Truth) ──────────────────
+    const startYM     = Math.min(ymA, ymB)
+    const endYM       = Math.max(ymA, ymB)
+    const periodStart = ymA <= ymB ? periodA : periodB   // extremo cronológicamente anterior
+    const periodEnd   = ymA <= ymB ? periodB : periodA   // extremo cronológicamente posterior
+
+    // Filtra cualquier array con {year, month, …} al rango global.
+    // Todos los componentes usan esta función — nunca calculan su propio rango.
+    const filterByPeriod = (arr) =>
+      (arr || []).filter(r => {
+        const ym = (r.year || 0) * 12 + (r.month || 0)
+        return ym >= startYM && ym <= endYM
+      })
+
+    return {
+      periodA, setPeriodA,
+      periodB, setPeriodB,
+      activeMonth: periodB,       // alias semántico: el mes "en foco"
+      selectedVars, toggleVar,
+      VARIABLES,
+      isInPeriodA, isInPeriodB, isInEitherPeriod,
+      isComparing,
+      applyPreset,
+      // ── Período global ──────────────────────────────────────
+      startYM,
+      endYM,
+      periodStart,
+      periodEnd,
+      filterByPeriod,
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [periodA, periodB, selectedVars])
+  }, [periodA, periodB, selectedVars])
 
   return (
     <ComparisonContext.Provider value={value}>
