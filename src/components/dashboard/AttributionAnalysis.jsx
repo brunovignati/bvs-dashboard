@@ -26,23 +26,17 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export default function AttributionAnalysis() {
-  const { periodA, periodB } = useComparison();
+  const { filterByPeriod, periodStart, periodEnd } = useComparison();
   const { data: rawMetrics = [] } = useMonthlyMetrics();
 
-  // Filtrar por rango de periodos
-  const startYM = Math.min(periodA.year * 12 + periodA.month, periodB.year * 12 + periodB.month);
-  const endYM   = Math.max(periodA.year * 12 + periodA.month, periodB.year * 12 + periodB.month);
-  const data = [...rawMetrics]
-    .filter(d => { const ym = d.year * 12 + d.month; return ym >= startYM && ym <= endYM; })
+  const data = filterByPeriod(rawMetrics)
     .sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month);
 
   if (data.length === 0) return null;
 
-  const pA = periodA.year * 12 + periodA.month <= periodB.year * 12 + periodB.month ? periodA : periodB;
-  const pB = periodA.year * 12 + periodA.month <= periodB.year * 12 + periodB.month ? periodB : periodA;
-  const rangeLabel = pA.year === pB.year && pA.month === pB.month
-    ? `${monthLabel(pA.month)} ${pA.year}`
-    : `${monthLabel(pA.month)} ${pA.year} → ${monthLabel(pB.month)} ${pB.year} · ${data.length} meses`;
+  const rangeLabel = periodStart.year === periodEnd.year && periodStart.month === periodEnd.month
+    ? `${monthLabel(periodStart.month)} ${periodStart.year}`
+    : `${monthLabel(periodStart.month)} ${periodStart.year} → ${monthLabel(periodEnd.month)} ${periodEnd.year} · ${data.length} meses`;
 
   const chartData = data.map(d => ({
     name: `${monthLabel(d.month)} ${String(d.year).slice(2)}`,
@@ -130,7 +124,7 @@ export default function AttributionAnalysis() {
                 <div className="flex-1 bg-muted/40 rounded-full h-7 relative overflow-hidden">
                   <motion.div
                     initial={{ width: 0 }}
-                    animate={{ width: Math.max(item.pct, 2) + '%' }}
+                    animate={{ width: `${Math.max(item.pct, 2)}%` }}
                     transition={{ duration: 0.7, delay: i * 0.1 }}
                     className="h-full rounded-full flex items-center pl-3"
                     style={{ backgroundColor: item.color + (i === 0 ? '99' : 'cc') }}
