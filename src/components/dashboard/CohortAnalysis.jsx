@@ -42,29 +42,22 @@ function retentionColor(rate) {
 }
 
 export default function CohortAnalysis() {
-  const { periodA, periodB } = useComparison();
+  const { filterByPeriod, periodStart, periodEnd } = useComparison();
   const { data: buyerCohorts = [] } = useBuyerCohorts();
   const { data: compradores  = [] } = useCompradores();
 
-  // Filtrar por rango de periodos
-  const startYM = Math.min(periodA.year * 12 + periodA.month, periodB.year * 12 + periodB.month);
-  const endYM   = Math.max(periodA.year * 12 + periodA.month, periodB.year * 12 + periodB.month);
-  const inRange = d => { const ym = d.year * 12 + d.month; return ym >= startYM && ym <= endYM; };
-
-  const sortedCohorts = [...buyerCohorts].filter(inRange)
+  const sortedCohorts = filterByPeriod(buyerCohorts)
     .sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month);
-  const sortedComp = [...compradores].filter(inRange)
+  const sortedComp = filterByPeriod(compradores)
     .sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month);
 
   // Fallback a todos los datos si no hay en rango
   const cohortsData  = sortedCohorts.length > 0 ? sortedCohorts  : [...buyerCohorts].sort((a,b) => a.year!==b.year?a.year-b.year:a.month-b.month);
   const compData_raw = sortedComp.length > 0    ? sortedComp     : [...compradores].sort((a,b) => a.year!==b.year?a.year-b.year:a.month-b.month);
 
-  const pA = periodA.year * 12 + periodA.month <= periodB.year * 12 + periodB.month ? periodA : periodB;
-  const pB = periodA.year * 12 + periodA.month <= periodB.year * 12 + periodB.month ? periodB : periodA;
-  const rangeLabel = pA.year === pB.year && pA.month === pB.month
-    ? `${monthLabel(pA.month)} ${pA.year}`
-    : `${monthLabel(pA.month)} ${pA.year} – ${monthLabel(pB.month)} ${pB.year}`;
+  const rangeLabel = periodStart.year === periodEnd.year && periodStart.month === periodEnd.month
+    ? `${monthLabel(periodStart.month)} ${periodStart.year}`
+    : `${monthLabel(periodStart.month)} ${periodStart.year} – ${monthLabel(periodEnd.month)} ${periodEnd.year}`;
 
   // ── Cohortes primerizos vs recurrentes ──────────────────────
   const cohortData = cohortsData.map(d => ({
