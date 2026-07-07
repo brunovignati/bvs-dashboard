@@ -3,6 +3,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid,
 } from "recharts";
 import { useChannelSegmentation } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
 import { fmtNumber } from "@/lib/dashboardData";
 import SectionHeader from "./SectionHeader";
 import InsightCard from "./InsightCard";
@@ -19,12 +20,17 @@ const MONTH_LABELS = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct
 
 export default function ChannelSegmentation() {
   const { data: rows = [] } = useChannelSegmentation();
+  const { filterByPeriod, periodEnd } = useComparison();
 
-  // ── Snapshot más reciente ────────────────────────────────────────────────
-  const latest = rows.length
-    ? rows.reduce((best, r) =>
-        r.year * 12 + r.month > best.year * 12 + best.month ? r : best
-      , rows[0])
+  const periodRows = filterByPeriod(rows).sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month);
+  const activeRows = periodRows.length > 0 ? periodRows : rows;
+
+  // ── Snapshot del extremo final del período (periodEnd) ───────────────────
+  const latest = activeRows.length
+    ? activeRows.find(r => r.year === periodEnd.year && r.month === periodEnd.month)
+      ?? activeRows.reduce((best, r) =>
+          r.year * 12 + r.month > best.year * 12 + best.month ? r : best
+        , activeRows[0])
     : null;
 
   const retail      = latest?.retail      ?? 0;
@@ -43,8 +49,8 @@ export default function ChannelSegmentation() {
       : "0.0",
   }));
 
-  // ── Datos para sparkline mensual (últimos 18 meses) ─────────────────────
-  const trend = rows
+  // ── Datos para sparkline mensual (rango seleccionado, máx 18 meses) ─────
+  const trend = activeRows
     .slice(-18)
     .map(r => ({
       label:      `${MONTH_LABELS[r.month - 1]} ${String(r.year).slice(2)}`,
