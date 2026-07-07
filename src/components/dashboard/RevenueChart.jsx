@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ComposedChart, Area, Line, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { useMonthlyMetrics, useCompradores, useDailyRevenue } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
 import { monthLabel, fmtCurrency } from "@/lib/dashboardData";
 import SectionHeader from "./SectionHeader";
 import { TrendingUp, Sparkles, CalendarDays } from "lucide-react";
@@ -165,9 +166,10 @@ export default function RevenueChart() {
   const { data: metrics     = [] } = useMonthlyMetrics(); // Nutracéuticos
   const { data: compradores = [] } = useCompradores();    // BVS Vet Shop
   const { data: dailyRev    = [] } = useDailyRevenue();
+  const { filterByPeriod } = useComparison();
 
-  const sortedNutra = sortByYearMonth(metrics);
-  const sortedVet   = sortByYearMonth(compradores);
+  const sortedNutra = sortByYearMonth(filterByPeriod(metrics));
+  const sortedVet   = sortByYearMonth(filterByPeriod(compradores));
 
   // Mapa unificado por año-mes
   const allKeys  = new Set([
@@ -297,7 +299,7 @@ export default function RevenueChart() {
         </div>
       )}
 
-      {/* Gráfico principal: Revenue por marca */}
+      {/* Gráfico principal: Revenue por marca + Ticket Medio */}
       <div className="h-64">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={chartData} margin={{ top: 5, right: 40, left: 10, bottom: 0 }}>
@@ -337,7 +339,7 @@ export default function RevenueChart() {
                 interval={Math.max(2, Math.floor(chartData.length / 6))} />
               <YAxis tick={{ fontSize: 8, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
                 tickFormatter={(v) => `€${(v/1000).toFixed(0)}K`} />
-              <Tooltip formatter={(v, name) => [`€${Number(v).toLocaleString('es-ES')}`, name]} />
+              <Tooltip formatter={(v, name) => [`b��${Number(v).toLocaleString('es-ES')}`, name]} />
               <Legend iconType="circle" iconSize={6} wrapperStyle={{ fontSize: 10 }} />
               <Bar dataKey="EmailAttr" name="Email"       stackId="a" fill={NUTRA_COLOR} radius={[0,0,0,0]} />
               <Bar dataKey="PushAttr"  name="Push"        stackId="a" fill="hsl(280,65%,60%)" radius={[0,0,0,0]} />
