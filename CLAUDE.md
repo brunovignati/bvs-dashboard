@@ -42,13 +42,9 @@ Vercel
 
 ─────────────────────────────────────
 
-Metricool API
+Metricool (web scraping vía Cowork)
      │
-     │  (analytics v2 endpoint)
-     ▼
-sync_social_to_supabase.py
-     │
-     │  (GitHub Actions — lunes 3:02am Madrid)
+     │  (Claude Cowork scheduled task — semanal)
      ▼
 Supabase (tablas ig_daily, ig_reels, fb_daily, tk_daily)
      │
@@ -109,12 +105,14 @@ El cliente usa `service_role` key (bypasa RLS intencionadamente — dashboard in
 |---|---|---|---|
 | `daily_revenue` | `year, month, day` | Revenue diario (nutraceúticos) | RevenueChart |
 | `daily_email` | `year, month, day, email_name` | Envíos diarios por campaña | *(hook definido, sin uso activo en componentes)* |
-| `daily_push` | `year, month, day, workflow` | Push diario por Workflow | PushAnalysis |
+| `daily_push` | `year, month, day, workflow` | Push diario por workflow | PushAnalysis |
 | `daily_sticky` | `year, month, day, content_name` | Sticky diario por contenido | *(hook definido, sin uso activo en componentes)* |
 
-### 4.3 Tablas sociales — origen: Metricool
+### 4.3 Tablas sociales — origen: Metricool (vía Cowork)
 
-⚠️ Estas tablas son mantenidas por el sync semanal pero **ningún componente del dashboard las consume todavía**.
+⚠️ Estas tablas son mantenidas por el Cowork scheduled task `bvs-instagram-sync` (semanal) pero **ningún componente del dashboard las consume todavía**.
+
+**Importante:** La API de Metricool requiere un token que solo está disponible en planes Enterprise. El plan de BVS no lo incluye. El sync social se hace mediante el scheduled task de Claude Cowork, NO mediante GitHub Actions.
 
 | Tabla | Conflict key | Datos |
 |---|---|---|
@@ -143,19 +141,14 @@ Secrets:     Credenciales hardcodeadas como fallback en el script
              CONNECTIF_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
 ```
 
-### 5.2 `sync-social.yml` — Metricool → Supabase
+### 5.2 `sync-social.yml` — ⚠️ NO ACTIVO
 
 ```
-Frecuencia:  Semanal — cron '2 1 * * 1' (lunes 3:02am Madrid, verano UTC+2)
-Script:      sync_social_to_supabase.py
-Origen:      Metricool API v2 (/api/v2/analytics)
-Destino:     Supabase — ig_daily, ig_reels, fb_daily, tk_daily
-Claude:      NO — cero créditos de IA
-Secrets:     METRICOOL_TOKEN (⚠️ debe estar en GitHub Secrets — sin fallback hardcodeado)
-             SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY (fallback hardcodeado en script)
+Estado:      INACTIVO — la API de Metricool requiere plan Enterprise (token no disponible)
+Script:      sync_social_to_supabase.py (en repo, pero no se ejecuta)
 ```
 
-**Estado a julio 2026:** `sync-social.yml` falla porque `METRICOOL_TOKEN` no está configurado en GitHub Secrets. Añadirlo en GitHub → Settings → Secrets → Actions.
+El sync de datos sociales (ig_daily, ig_reels, fb_daily, tk_daily) se realiza mediante el **Cowork scheduled task `bvs-instagram-sync`** — un proceso semanal de Claude Cowork que lee Metricool vía interfaz web y escribe directamente en Supabase. No eliminar ni modificar ese scheduled task.
 
 ---
 
@@ -172,13 +165,7 @@ Parámetros de configuración (con fallback hardcodeado):
 
 ### `sync_social_to_supabase.py`
 
-Llama a `GET /api/v2/analytics` de Metricool con `x-app-token`. Cuatro llamadas: IG evolution, IG reels, FB evolution, TK evolution. Período: 60 días para evolución, 180 días para reels. `METRICOOL_TOKEN` **no tiene fallback** — el script aborta con `SystemExit(1)` si no está definido.
-
-Parámetros:
-- `METRICOOL_TOKEN` — sin fallback, requerido
-- `METRICOOL_BRAND_ID` — default `"4404955"`
-- `SUPABASE_URL` — fallback hardcodeado
-- `SUPABASE_SERVICE_ROLE_KEY` — fallback hardcodeado
+⚠️ **Script no operativo** — la API de Metricool requiere token de plan Enterprise no disponible en la cuenta BVS. El archivo existe en el repo pero `sync-social.yml` no está activo. El sync social lo realiza el Cowork scheduled task `bvs-instagram-sync`.
 
 ### `fix_rls.py`
 
@@ -212,9 +199,9 @@ bvs-analytics/
 │   └── create_channel_segmentation.sql
 ├── .github/workflows/
 │   ├── sync.yml                      # Connectif → Supabase (diario)
-│   └── sync-social.yml               # Metricool → Supabase (semanal)
+│   └── sync-social.yml               # INACTIVO -- ver §5.2
 ├── sync_connectif_to_supabase.py
-├── sync_social_to_supabase.py
+├── sync_social_to_supabase.py         # INACTIVO -- ver §5.2
 ├── fix_rls.py
 ├── vite.config.js                    # alias @ → src/
 ├── tailwind.config.js
@@ -428,13 +415,12 @@ Estas decisiones son estables y no deben revertirse:
 
 ### Operativo
 - Dashboard en producción: `https://bvs-dashboard.vercel.app`
-- Sync Connectif → Supabase: funcionando (diario, lunes el último run exitoso)
-- Sync Metricool → Supabase: script pusheado, **pendiente de añadir `METRICOOL_TOKEN` a GitHub Secrets**
-- Tablas sociales (ig_daily, ig_reels, fb_daily, tk_daily): pobladas con datos históricos del Cowork anterior, sin conexión al dashboard
+- Sync Connectif → Supabase: funcionando (diario, 3am Madrid via GitHub Actions)
+- Sync Metricool → Supabase: vía **Cowork scheduled task `bvs-instagram-sync`** (semanal) — la API de Metricool requiere plan Enterprise no disponible en la cuenta BVS
+- Tablas sociales (ig_daily, ig_reels, fb_daily, tk_daily): pobladas semanalmente por `bvs-instagram-sync`, sin conexión al dashboard todavía
 
-### Pendiente de acción externa
-- Añadir `METRICOOL_TOKEN` en GitHub → Settings → Secrets and variables → Actions (valor: Metricool → Configuración → Integraciones → API Token)
-- Tras validar el workflow social, eliminar el Cowork scheduled task `bvs-instagram-sync`
+### No hay pendientes de acción externa
+- El sync social funciona correctamente vía Cowork. No hay token de Metricool que añadir.
 
 ### Integraciones presentes en el repo pero no activas en el dashboard
 - `useDailyEmail`, `useDailySticky`, `useVentasPush` — hooks definidos sin componente consumidor
@@ -442,4 +428,4 @@ Estas decisiones son estables y no deben revertirse:
 
 ---
 
-*Actualiza este archivo cuando cambie la arquitectura, las tablas, los workflows o las convenciones del proyecto.*
+*Actualiza este archivo cuando cambie la arquitectura, las tablas, los workflows o las convenciones del proyecto.
