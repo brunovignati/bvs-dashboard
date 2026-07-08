@@ -1,0 +1,33 @@
+name: BVS Analytics — Sync Social Media to Supabase
+
+on:
+  schedule:
+    # Lunes 03:02 Europe/Madrid (01:02 UTC en horario de verano UTC+2)
+    # En invierno (UTC+1) serían las 02:02, ajustar a '2 2 * * 1' si se prefiere
+    - cron: '2 1 * * 1'
+  workflow_dispatch:   # Ejecución manual desde GitHub
+
+jobs:
+  sync-social:
+    name: Metricool → Supabase (IG + FB + TikTok)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Instalar dependencias
+        run: pip install requests
+
+      - name: Sincronizar redes sociales → Supabase
+        run: python sync_social_to_supabase.py
+        env:
+          METRICOOL_TOKEN:           ${{ secrets.METRICOOL_TOKEN }}
+          METRICOOL_BRAND_ID:        "4404955"
+          SUPABASE_URL:              ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
