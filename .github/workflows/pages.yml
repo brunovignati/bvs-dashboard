@@ -25,12 +25,13 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-      - name: Install deps
-        run: npm install
+          node-version: 22
+      - name: Install deps (reproducible)
+        run: npm ci
       - name: Build (base = /bvs-dashboard/)
         env:
           GH_PAGES: "true"
+          NODE_OPTIONS: "--max-old-space-size=4096"
         run: npx vite build
       - name: SPA fallback (404 = index)
         run: cp dist/index.html dist/404.html
