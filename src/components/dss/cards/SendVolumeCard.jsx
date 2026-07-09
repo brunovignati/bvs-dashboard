@@ -40,8 +40,8 @@ export default function SendVolumeCard({ delay }) {
               <YAxis tick={{ fontSize:8, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} tickFormatter={v=>`${(v/1000).toFixed(0)}K`} />
               <Tooltip formatter={(v,n)=>[fmtNumber(v),n]} labelStyle={{ fontSize:11 }} />
               <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize:10 }} />
-              <Area type="monotone" dataKey="Email" stackId="1" stroke="hsl(217,91%,60%)" fill="hsl(217,91%,60%)" fillOpacity={0.5} />
-              <Area type="monotone" dataKey="Push" stackId="1" stroke="hsl(262,83%,60%)" fill="hsl(262,83%,60%)" fillOpacity={0.5} />
+              <Area type="monotone" dataKey="Email" stackId="1" stroke="hsl(221,83%,53%)" fill="hsl(221,83%,53%)" fillOpacity={0.5} />
+              <Area type="monotone" dataKey="Push" stackId="1" stroke="hsl(214,95%,68%)" fill="hsl(214,95%,68%)" fillOpacity={0.5} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>

@@ -7,7 +7,7 @@ import InsightCard from "./InsightCard";
 import { GitBranch, Info } from "lucide-react";
 import { motion } from "framer-motion";
 
-const COLORS = ["hsl(217,91%,60%)", "hsl(280,65%,60%)", "hsl(160,84%,39%)"];
+const COLORS = ["hsl(221,83%,53%)", "hsl(214,95%,68%)", "hsl(214,95%,68%)"];
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;

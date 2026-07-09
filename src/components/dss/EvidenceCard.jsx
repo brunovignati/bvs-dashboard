@@ -20,9 +20,9 @@ function MaturityChip({ state = "green" }) {
 }
 
 const TONE = {
-  good:    "text-emerald-600",
-  bad:     "text-red-600",
-  warn:    "text-amber-600",
+  good:    "text-emerald-600",  // ↑ variación positiva
+  bad:     "text-red-600",      // ↓ variación negativa
+  warn:    "text-foreground",   // sin color extra (estilo Meta)
   neutral: "text-foreground",
 };
 

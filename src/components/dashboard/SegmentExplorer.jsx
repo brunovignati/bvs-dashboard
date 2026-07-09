@@ -15,11 +15,11 @@ function TrendIcon({ delta }) {
 }
 
 const SEGMENT_COLORS = [
-  'hsl(217,91%,60%)',
-  'hsl(160,84%,39%)',
-  'hsl(280,65%,60%)',
-  'hsl(35,92%,56%)',
-  'hsl(0,72%,55%)',
+  'hsl(221,83%,53%)',
+  'hsl(214,95%,68%)',
+  'hsl(214,95%,68%)',
+  'hsl(213,96%,80%)',
+  'hsl(0,72%,51%)',
 ];
 
 export default function SegmentExplorer() {

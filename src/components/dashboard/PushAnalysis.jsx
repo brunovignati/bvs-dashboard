@@ -11,7 +11,7 @@ import { motion } from "framer-motion";
 import MiniTable from "./MiniTable";
 
 const MONTHS_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-const PUSH_COLOR = "hsl(280,65%,60%)";
+const PUSH_COLOR = "hsl(214,95%,68%)";
 
 const ScatterTooltip = ({ active, payload }) => {
   if (!active || !payload?.length) return null;
@@ -74,8 +74,8 @@ export default function PushAnalysis() {
   const avgX = scatterData.length > 0 ? scatterData.reduce((s, d) => s + d.x, 0) / scatterData.length : 0;
   const avgY = scatterData.length > 0 ? scatterData.reduce((s, d) => s + d.y, 0) / scatterData.length : 0;
   const getColor = (d) =>
-    d.revenue >= q75 ? 'hsl(280,65%,55%)' :
-    d.revenue >= q50 ? 'hsl(280,65%,70%)' :
+    d.revenue >= q75 ? 'hsl(226,71%,40%)' :
+    d.revenue >= q50 ? 'hsl(213,96%,80%)' :
     'hsl(220,13%,65%)';
 
   // Table columns
@@ -156,8 +156,8 @@ export default function PushAnalysis() {
         <div>
           <p className="text-[11px] text-muted-foreground mb-1">
             Cada punto = una campaña push · Tamaño = volumen enviado ·
-            <span style={{ color: 'hsl(280,65%,55%)' }}> ■</span> Alto revenue ·
-            <span style={{ color: 'hsl(280,65%,70%)' }}> ■</span> Medio ·
+            <span style={{ color: 'hsl(226,71%,40%)' }}> ■</span> Alto revenue ·
+            <span style={{ color: 'hsl(213,96%,80%)' }}> ■</span> Medio ·
             <span className="text-muted-foreground"> ■</span> Bajo
           </p>
           <div className="h-72">
@@ -232,7 +232,7 @@ export default function PushAnalysis() {
                     tickFormatter={v => fmtNumber(v)}/>
                   <Tooltip formatter={(v,n) => [fmtNumber(v), n]} labelStyle={{ fontSize: 11 }}/>
                   <Area type="monotone" dataKey="Enviados"  stroke={PUSH_COLOR} fill="url(#pushSentGrad)" strokeWidth={1.5} dot={false}/>
-                  <Area type="monotone" dataKey="Aperturas" stroke="hsl(160,84%,39%)" fill="none" strokeWidth={1.5} dot={false} strokeDasharray="4 2"/>
+                  <Area type="monotone" dataKey="Aperturas" stroke="hsl(214,95%,68%)" fill="none" strokeWidth={1.5} dot={false} strokeDasharray="4 2"/>
                 </AreaChart>
               </ResponsiveContainer>
             </div>

@@ -10,7 +10,7 @@ const KEYS = [
   { k: "digital", label: "Digital" },
   { k: "omnichannel", label: "Omnicanal" },
 ];
-const COLORS = ["hsl(217,91%,60%)", "hsl(160,84%,39%)", "hsl(35,92%,56%)", "hsl(280,65%,60%)", "hsl(200,80%,45%)"];
+const COLORS = ["hsl(221,83%,53%)", "hsl(214,95%,68%)", "hsl(213,96%,80%)", "hsl(214,95%,68%)", "hsl(214,95%,68%)"];
 
 export default function OmnichannelCard({ delay }) {
   const { data = [] } = useChannelSegmentation();

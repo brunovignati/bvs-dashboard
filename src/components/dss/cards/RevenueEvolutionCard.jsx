@@ -48,8 +48,8 @@ export default function RevenueEvolutionCard({ delay }) {
             <ComposedChart data={chart} margin={{ top: 5, right: 40, left: 4, bottom: 0 }}>
               <defs>
                 <linearGradient id="revEvoGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(217,91%,60%)" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="hsl(217,91%,60%)" stopOpacity={0} />
+                  <stop offset="5%" stopColor="hsl(221,83%,53%)" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="hsl(221,83%,53%)" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
@@ -57,12 +57,12 @@ export default function RevenueEvolutionCard({ delay }) {
                 interval={Math.max(1, Math.floor(chart.length / 9))} />
               <YAxis yAxisId="l" tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false}
                 tickFormatter={v => `€${(v/1000).toFixed(0)}K`} />
-              <YAxis yAxisId="r" orientation="right" tick={{ fontSize: 8, fill: "hsl(35,92%,45%)" }} axisLine={false} tickLine={false}
+              <YAxis yAxisId="r" orientation="right" tick={{ fontSize: 8, fill: "hsl(213,96%,80%)" }} axisLine={false} tickLine={false}
                 tickFormatter={v => `€${v.toFixed(0)}`} />
               <Tooltip formatter={(v, n) => [n === "Ticket medio" ? `€${Number(v).toFixed(0)}` : fmtCurrency(v), n]} labelStyle={{ fontSize: 11 }} />
               <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
-              <Area yAxisId="l" type="monotone" dataKey="revenue" name="Revenue" stroke="hsl(217,91%,60%)" fill="url(#revEvoGrad)" strokeWidth={2.2} dot={false} />
-              <Line yAxisId="r" type="monotone" dataKey="ticket" name="Ticket medio" stroke="hsl(35,92%,56%)" strokeWidth={1.8} dot={false} strokeDasharray="5 3" />
+              <Area yAxisId="l" type="monotone" dataKey="revenue" name="Revenue" stroke="hsl(221,83%,53%)" fill="url(#revEvoGrad)" strokeWidth={2.2} dot={false} />
+              <Line yAxisId="r" type="monotone" dataKey="ticket" name="Ticket medio" stroke="hsl(213,96%,80%)" strokeWidth={1.8} dot={false} strokeDasharray="5 3" />
             </ComposedChart>
           </ResponsiveContainer>
         </div>

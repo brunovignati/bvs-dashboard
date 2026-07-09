@@ -45,7 +45,7 @@ export default function CartRecoveryFunnel() {
   const cartData = filterByPeriod(cartAbandonment);
   if (cartData.length === 0) return null;
 
-  const totalRevenue    = cartData.reduce((s, d) => s + (d.revenue   || 0), 0);
+  const totalRevenue   = cartData.reduce((s, d) => s + (d.revenue   || 0), 0);
   const totalPurchases = cartData.reduce((s, d) => s + (d.purchases || 0), 0);
   const avgTicket      = totalPurchases > 0 ? totalRevenue / totalPurchases : 0;
 
@@ -110,13 +110,13 @@ export default function CartRecoveryFunnel() {
       <div className="h-48 mb-5">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={monthlyData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsm¨<220,13%,91%)" vertical={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
             <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
               interval={Math.max(0, Math.floor(monthlyData.length / 8))} />
             <YAxis tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
               tickFormatter={(v) => `â‚¬${(v / 1000).toFixed(0)}K`} />
             <Tooltip content={<CustomTooltip />} />
-            <Bar dataKey="revenue" name="Revenue" fill="hsm¨<160,84%,39%)" radius={[3, 3, 0, 0]} />
+            <Bar dataKey="revenue" name="Revenue" fill="hsl(214,95%,68%)" radius={[3, 3, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -126,7 +126,7 @@ export default function CartRecoveryFunnel() {
       <div className="space-y-2">
         {topWorkflows.map((wf, i) => (
           <div key={i} className="flex items-center gap-3">
-            <div className="w4 text-[10px] text-muted-foreground text-right shrink-0">{i + 1}</div>
+            <div className="w-4 text-[10px] text-muted-foreground text-right shrink-0">{i + 1}</div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs truncate">{wf.name}</span>
@@ -140,7 +140,7 @@ export default function CartRecoveryFunnel() {
               </div>
               <div className="flex gap-3 mt-0.5">
                 <span className="text-[9px] text-muted-foreground">{fmtNumber(wf.purchases)} compras</span>
-                {wf.sent > 0 && <span className="text-[9px] text-muted-foreground">{(wf.opens / wf.sent) * 100}.toFixed(0)}% apertura</span>}
+                {wf.sent > 0 && <span className="text-[9px] text-muted-foreground">{((wf.opens / wf.sent) * 100).toFixed(0)}% apertura</span>}
               </div>
             </div>
           </div>

@@ -47,20 +47,20 @@ export default function OwnBrandCard({ delay }) {
             <ComposedChart data={rows} margin={{ top: 5, right: 40, left: 4, bottom: 0 }}>
               <defs>
                 <linearGradient id="brandGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="hsl(160,84%,39%)" stopOpacity={0.25} />
-                  <stop offset="95%" stopColor="hsl(160,84%,39%)" stopOpacity={0} />
+                  <stop offset="5%" stopColor="hsl(214,95%,68%)" stopOpacity={0.25} />
+                  <stop offset="95%" stopColor="hsl(214,95%,68%)" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
               <XAxis dataKey="name" tick={{ fontSize: 9, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false} />
               <YAxis yAxisId="l" tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false}
                 tickFormatter={v => `€${(v/1000).toFixed(0)}K`} />
-              <YAxis yAxisId="r" orientation="right" tick={{ fontSize: 8, fill: "hsl(160,84%,30%)" }} axisLine={false} tickLine={false}
+              <YAxis yAxisId="r" orientation="right" tick={{ fontSize: 8, fill: "hsl(226,71%,40%)" }} axisLine={false} tickLine={false}
                 tickFormatter={v => `${v.toFixed(0)}%`} />
               <Tooltip formatter={(v, n) => [n === "% sobre total" ? `${Number(v).toFixed(1)}%` : fmtCurrency(v), n]} labelStyle={{ fontSize: 11 }} />
               <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
-              <Area yAxisId="l" type="monotone" dataKey="rev" name="Revenue marca" stroke="hsl(160,84%,39%)" fill="url(#brandGrad)" strokeWidth={2.2} dot={false} />
-              <Line yAxisId="r" type="monotone" dataKey="pct" name="% sobre total" stroke="hsl(262,83%,58%)" strokeWidth={1.8} dot={false} strokeDasharray="5 3" />
+              <Area yAxisId="l" type="monotone" dataKey="rev" name="Revenue marca" stroke="hsl(214,95%,68%)" fill="url(#brandGrad)" strokeWidth={2.2} dot={false} />
+              <Line yAxisId="r" type="monotone" dataKey="pct" name="% sobre total" stroke="hsl(214,95%,68%)" strokeWidth={1.8} dot={false} strokeDasharray="5 3" />
             </ComposedChart>
           </ResponsiveContainer>
         </div>

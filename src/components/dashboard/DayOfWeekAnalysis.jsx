@@ -68,8 +68,8 @@ export default function DayOfWeekAnalysis() {
                 <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false} />
                 <Tooltip content={<CustomTooltip />} />
                 <Bar yAxisId="left"  dataKey="sent"      name="Enviados" fill="hsl(220,14%,85%)" radius={[4,4,0,0]} />
-                <Bar yAxisId="right" dataKey="purchases" name="Compras"  fill="hsl(217,91%,60%)" radius={[4,4,0,0]} />
-                <Line yAxisId="right" type="monotone" dataKey="revenue" name="Revenue" stroke="hsl(160,84%,39%)" strokeWidth={2} dot={{ r: 3 }} />
+                <Bar yAxisId="right" dataKey="purchases" name="Compras"  fill="hsl(221,83%,53%)" radius={[4,4,0,0]} />
+                <Line yAxisId="right" type="monotone" dataKey="revenue" name="Revenue" stroke="hsl(214,95%,68%)" strokeWidth={2} dot={{ r: 3 }} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>

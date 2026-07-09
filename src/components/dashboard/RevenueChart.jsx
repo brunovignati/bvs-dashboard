@@ -7,10 +7,10 @@ import SectionHeader from "./SectionHeader";
 import { TrendingUp, Sparkles, CalendarDays } from "lucide-react";
 import { motion } from "framer-motion";
 
-const NUTRA_COLOR    = "hsl(217,91%,60%)";
-const VET_COLOR      = "hsl(160,84%,39%)";
-const TICKET_COLOR   = "hsl(35,92%,56%)";
-const FORECAST_COLOR = "hsl(262,83%,68%)";
+const NUTRA_COLOR    = "hsl(221,83%,53%)";
+const VET_COLOR      = "hsl(214,95%,68%)";
+const TICKET_COLOR   = "hsl(213,96%,80%)";
+const FORECAST_COLOR = "hsl(213,96%,80%)";
 
 // ─── Tooltips ───────────────────────────────────────────────
 const CustomTooltip = ({ active, payload, label }) => {
@@ -339,10 +339,10 @@ export default function RevenueChart() {
                 interval={Math.max(2, Math.floor(chartData.length / 6))} />
               <YAxis tick={{ fontSize: 8, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
                 tickFormatter={(v) => `€${(v/1000).toFixed(0)}K`} />
-              <Tooltip formatter={(v, name) => [`b��${Number(v).toLocaleString('es-ES')}`, name]} />
+              <Tooltip formatter={(v, name) => [`€${Number(v).toLocaleString('es-ES')}`, name]} />
               <Legend iconType="circle" iconSize={6} wrapperStyle={{ fontSize: 10 }} />
               <Bar dataKey="EmailAttr" name="Email"       stackId="a" fill={NUTRA_COLOR} radius={[0,0,0,0]} />
-              <Bar dataKey="PushAttr"  name="Push"        stackId="a" fill="hsl(280,65%,60%)" radius={[0,0,0,0]} />
+              <Bar dataKey="PushAttr"  name="Push"        stackId="a" fill="hsl(214,95%,68%)" radius={[0,0,0,0]} />
               <Bar dataKey="WebAttr"   name="Web Content" stackId="a" fill={VET_COLOR} radius={[4,4,0,0]} />
             </ComposedChart>
           </ResponsiveContainer>

@@ -47,9 +47,9 @@ export default function BaseHealthCard({ delay }) {
               <Tooltip formatter={(v, n) => [fmtNumber(v), n]} labelStyle={{ fontSize: 11 }} />
               <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
               <ReferenceLine yAxisId="r" y={0} stroke="hsl(220,13%,80%)" />
-              <Bar yAxisId="r" dataKey="neto" name="Neto mensual" radius={[3, 3, 0, 0]} fill="hsl(160,84%,39%)" fillOpacity={0.5} />
-              <Line yAxisId="l" type="monotone" dataKey="base" name="Base email" stroke="hsl(217,91%,60%)" strokeWidth={2.2} dot={false} />
-              <Line yAxisId="l" type="monotone" dataKey="push" name="Base push" stroke="hsl(280,65%,60%)" strokeWidth={1.8} dot={false} strokeDasharray="5 3" />
+              <Bar yAxisId="r" dataKey="neto" name="Neto mensual" radius={[3, 3, 0, 0]} fill="hsl(214,95%,68%)" fillOpacity={0.5} />
+              <Line yAxisId="l" type="monotone" dataKey="base" name="Base email" stroke="hsl(221,83%,53%)" strokeWidth={2.2} dot={false} />
+              <Line yAxisId="l" type="monotone" dataKey="push" name="Base push" stroke="hsl(214,95%,68%)" strokeWidth={1.8} dot={false} strokeDasharray="5 3" />
             </ComposedChart>
           </ResponsiveContainer>
         </div>

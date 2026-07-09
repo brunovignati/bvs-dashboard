@@ -67,9 +67,9 @@ export default function EmailPerformance() {
   const avgY = scatterData.length > 0 ? scatterData.reduce((s, d) => s + d.y, 0) / scatterData.length : 0;
 
   const getColor = (d) =>
-    d.isCart   ? 'hsl(35,92%,56%)' :
-    d.revenue >= q75 ? 'hsl(160,84%,39%)' :
-    d.revenue >= q50 ? 'hsl(217,91%,60%)' :
+    d.isCart   ? 'hsl(213,96%,80%)' :
+    d.revenue >= q75 ? 'hsl(214,95%,68%)' :
+    d.revenue >= q50 ? 'hsl(221,83%,53%)' :
     'hsl(220,13%,65%)';
 
   const columns = [
@@ -126,8 +126,8 @@ export default function EmailPerformance() {
       {view === 'scatter' && (
         <div>
           <p className="text-[11px] text-muted-foreground mb-1">
-            Cada punto = una campaña · Tamaño = volumen enviado · <span style={{ color: 'hsl(35,92%,56%)' }}>■</span> Carrito abandonado
-            · <span style={{ color: 'hsl(160,84%,39%)' }}>■</span> Alto revenue · <span style={{ color: 'hsl(217,91%,60%)' }}>■</span> Medio
+            Cada punto = una campaña · Tamaño = volumen enviado · <span style={{ color: 'hsl(213,96%,80%)' }}>■</span> Carrito abandonado
+            · <span style={{ color: 'hsl(214,95%,68%)' }}>■</span> Alto revenue · <span style={{ color: 'hsl(221,83%,53%)' }}>■</span> Medio
             · <span className="text-muted-foreground">■</span> Bajo
           </p>
           <div className="h-72">

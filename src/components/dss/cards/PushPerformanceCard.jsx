@@ -37,7 +37,7 @@ export default function PushPerformanceCard({ delay }) {
   const hasData = pts.length >= 3;
   const avgConv = pts.length ? pts.reduce((s, p) => s + p.conv, 0) / pts.length : 0;
 
-  const color = (p) => p.conv >= avgConv * 1.5 ? "hsl(160,84%,39%)" : p.conv >= avgConv ? "hsl(280,65%,60%)" : "hsl(220,13%,65%)";
+  const color = (p) => p.conv >= avgConv * 1.5 ? "hsl(214,95%,68%)" : p.conv >= avgConv ? "hsl(214,95%,68%)" : "hsl(220,13%,65%)";
 
   return (
     <EvidenceCard

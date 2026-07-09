@@ -7,11 +7,11 @@ import { motion } from "framer-motion";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, ResponsiveContainer } from "recharts";
 
 const COLORS = [
-  'hsl(217,91%,60%)',
-  'hsl(160,84%,39%)',
-  'hsl(280,65%,60%)',
-  'hsl(35,92%,56%)',
-  'hsl(0,72%,55%)',
+  'hsl(221,83%,53%)',
+  'hsl(214,95%,68%)',
+  'hsl(214,95%,68%)',
+  'hsl(213,96%,80%)',
+  'hsl(0,72%,51%)',
 ];
 
 export default function StickyWebContent() {
@@ -95,7 +95,8 @@ export default function StickyWebContent() {
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={barData} layout="vertical" margin={{ top: 0, right: 60, left: 100, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" horizontal={false} />
-                    <XAxis type="number" tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false} tickFormatter={v => fmtNumber(v)} />
+                    <XAxis type="number" tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
+                      tickFormatter={v => fmtNumber(v)} />
                     <YAxis type="category" dataKey="name" tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false} width={95} />
                     <Tooltip
                       content={({ active, payload }) => {
@@ -123,22 +124,39 @@ export default function StickyWebContent() {
             </div>
           )}
 
-          {/* Cards de métricas */}
+          {/* ── Cards de métricas ── */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
             {topSticky.map((s, i) => (
               <div key={i} className="p-4 bg-muted/50 rounded-xl border border-border/40">
                 <p className="text-xs font-semibold mb-3 truncate" title={s.workflow}>{s.workflow}</p>
                 <div className="grid grid-cols-2 gap-3">
-                  <div><p className="text-[10px] text-muted-foreground uppercase">Vistas</p><p className="text-lg font-bold font-heading">{fmtNumber(s.opens)}</p></div>
-                  <div><p className="text-[10px] text-muted-foreground uppercase">Clics</p><p className="text-lg font-bold font-heading">{fmtNumber(s.clicks)}</p></div>
-                  <div><p className="text-[10px] text-muted-foreground uppercase">Conv. Rate</p><p className="text-lg font-bold font-heading text-primary">{s.convRate !== undefined ? `${Number(s.convRate).toFixed(2)}%` : '—'}</p></div>
-                  <div><p className="text-[10px] text-muted-foreground uppercase">Revenue</p><p className="text-lg font-bold font-heading text-emerald-500">{fmtCurrency(s.revenue)}</p></div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground uppercase">Vistas</p>
+                    <p className="text-lg font-bold font-heading">{fmtNumber(s.opens)}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground uppercase">Clics</p>
+                    <p className="text-lg font-bold font-heading">{fmtNumber(s.clicks)}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground uppercase">Conv. Rate</p>
+                    <p className="text-lg font-bold font-heading text-primary">
+                      {s.convRate !== undefined ? `${Number(s.convRate).toFixed(2)}%` : '—'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-muted-foreground uppercase">Revenue</p>
+                    <p className="text-lg font-bold font-heading text-emerald-500">{fmtCurrency(s.revenue)}</p>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
+
           {best && (
-            <InsightCard type="success" title="Canal Web: Máquina de Conversión"
+            <InsightCard
+              type="success"
+              title="Canal Web: Máquina de Conversión"
               description={`El canal principal "${best.workflow}" genera ${fmtNumber(best.clicks)} clics con un ${Number(best.convRate || 0).toFixed(2)}% de conversión. Con ${fmtCurrency(best.revenue)} en revenue, es un canal de adquisición altamente rentable con cero coste de envío.`}
             />
           )}

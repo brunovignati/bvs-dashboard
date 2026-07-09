@@ -54,7 +54,7 @@ export default function UnattributedRevenueCard({ delay }) {
               <YAxis tick={{ fontSize:8, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} />
               <Tooltip formatter={(v,n)=>[Math.round(v),n]} labelStyle={{ fontSize:11 }} />
               <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize:10 }} />
-              <Area type="monotone" dataKey="Atribuido" stackId="1" stroke="hsl(217,91%,60%)" fill="hsl(217,91%,60%)" fillOpacity={0.55} />
+              <Area type="monotone" dataKey="Atribuido" stackId="1" stroke="hsl(221,83%,53%)" fill="hsl(221,83%,53%)" fillOpacity={0.55} />
               <Area type="monotone" dataKey="No atribuido" stackId="1" stroke="hsl(220,13%,60%)" fill="hsl(220,13%,60%)" fillOpacity={0.5} />
             </AreaChart>
           </ResponsiveContainer>

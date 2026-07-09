@@ -52,7 +52,7 @@ export default function CartWinnerCard({ delay }) {
               <YAxis type="category" dataKey="short" width={130} tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false} />
               <Tooltip formatter={(v, n, o) => [fmtCurrency(v), "Revenue"]} labelFormatter={(l, p) => p?.[0]?.payload?.name || l} labelStyle={{ fontSize: 10, maxWidth: 220 }} />
               <Bar dataKey="revenue" radius={[0, 4, 4, 0]}>
-                {top.map((w, i) => <Cell key={i} fill={w.isAB ? "hsl(35,92%,56%)" : i === 0 ? "hsl(160,84%,39%)" : "hsl(217,91%,60%)"} />)}
+                {top.map((w, i) => <Cell key={i} fill={w.isAB ? "hsl(213,96%,80%)" : i === 0 ? "hsl(214,95%,68%)" : "hsl(221,83%,53%)"} />)}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
