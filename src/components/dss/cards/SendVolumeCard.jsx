@@ -41,7 +41,7 @@ export default function SendVolumeCard({ delay }) {
               <Tooltip formatter={(v,n)=>[fmtNumber(v),n]} labelStyle={{ fontSize:11 }} />
               <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize:10 }} />
               <Area type="monotone" dataKey="Email" stackId="1" stroke="hsl(217,91%,60%)" fill="hsl(217,91%,60%)" fillOpacity={0.5} />
-              <Area type="monotone" dataKey="Push" stackId="1" stroke="hsl(280,65%,60%)" fill="hsl(280,65%,60%)" fillOpacity={0.5} />
+              <Area type="monotone" dataKey="Push" stackId="1" stroke="hsl(262,83%,60%)" fill="hsl(262,83%,60%)" fillOpacity={0.5} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
