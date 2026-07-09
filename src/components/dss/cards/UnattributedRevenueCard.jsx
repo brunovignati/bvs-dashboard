@@ -1,0 +1,71 @@
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import EvidenceCard from "../EvidenceCard";
+import { MATURITY } from "@/lib/dss/dssUtils";
+import { useDailyRevenue, useGa4Daily } from "@/lib/useEntities";
+import { fmtCurrency } from "@/lib/dashboardData";
+
+const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+const SRC = /source|medium|channel|organic|direct|paid|referral|social/i;
+const EXCLUDE = new Set(["date_str","year","month","day","updated_at","created_at","id"]);
+
+export default function UnattributedRevenueCard({ delay }) {
+  const { data = [] } = useDailyRevenue();
+  const { data: ga4 = [] } = useGa4Daily();
+
+  // Connectif: no atribuido = total compras − Σ atribuidas, por mes
+  const byM = {};
+  for (const r of data) { const k=r.year*12+r.month; if(!byM[k]) byM[k]={k,year:r.year,month:r.month,tot:0,attr:0};
+    byM[k].tot += r.purchases||0;
+    byM[k].attr += (r.emailAttr||0)+(r.pushAttr||0)+(r.webAttr||0)+(r.smsAttr||0); }
+  const rows = Object.values(byM).sort((a,b)=>a.k-b.k).map(m=>{
+    const noattr = Math.max(0, m.tot - m.attr);
+    return { name:`${M[m.month]} ${String(m.year).slice(2)}`, Atribuido:m.attr, "No atribuido":noattr,
+      pct: m.tot? (noattr/m.tot)*100 : 0 };
+  }).slice(-18);
+  const hasData = rows.length >= 2;
+  const last = rows[rows.length-1];
+
+  // GA4: ¿hay columnas de fuente/canal para explicar el no atribuido?
+  const ga4Sample = ga4[ga4.length-1] || {};
+  const ga4SourceKeys = Object.keys(ga4Sample).filter(k => !EXCLUDE.has(k) && SRC.test(k));
+  const ga4State = ga4.length > 0 && ga4SourceKeys.length > 0 ? "green" : "amber";
+  const mGa4 = MATURITY[ga4State];
+
+  return (
+    <EvidenceCard
+      question="RV-2b · ¿Cuánto revenue es no atribuido y de dónde viene?"
+      answer={hasData ? `${last.pct.toFixed(0)}% sin atribuir` : "Sin datos"}
+      answerTone={hasData ? (last.pct > 50 ? "warn" : "neutral") : "neutral"}
+      context="Connectif mide el hueco (total − Σ atribuido); GA4 aporta la explicación (orgánico / directo / paid / referral)."
+      maturity="green"
+      actions={[
+        { verb: "investigar", rationale: "Un no atribuido alto sugiere instrumentar mejor el tracking o que el peso orgánico/directo es grande (bueno si es marca fuerte)." },
+        { verb: "crear", rationale: "Si GA4 revela mucho orgánico, invierte en SEO/contenido; si es directo, en marca." },
+      ]}
+      delay={delay}
+      note="Principal: Connectif · daily_revenue. Explicativa: GA4 · ga4_daily (desglose de fuentes)."
+    >
+      {hasData && (
+        <div className="h-44">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={rows} margin={{ top:5, right:8, left:4, bottom:0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
+              <XAxis dataKey="name" tick={{ fontSize:8, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} interval={Math.max(1,Math.floor(rows.length/8))} />
+              <YAxis tick={{ fontSize:8, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} />
+              <Tooltip formatter={(v,n)=>[Math.round(v),n]} labelStyle={{ fontSize:11 }} />
+              <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize:10 }} />
+              <Area type="monotone" dataKey="Atribuido" stackId="1" stroke="hsl(217,91%,60%)" fill="hsl(217,91%,60%)" fillOpacity={0.55} />
+              <Area type="monotone" dataKey="No atribuido" stackId="1" stroke="hsl(220,13%,60%)" fill="hsl(220,13%,60%)" fillOpacity={0.5} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      )}
+      <div className="mt-2 flex items-center gap-2">
+        <span className={`inline-flex items-center gap-1 text-[9px] font-semibold px-2 py-0.5 rounded-full border ${mGa4.cls}`}>{mGa4.symbol} GA4</span>
+        <span className="text-[10px] text-muted-foreground">
+          {ga4State === "green" ? "Desglose de fuentes GA4 disponible." : "Desglose por fuente (orgánico/directo/paid) se activa cuando GA4 lo incluya."}
+        </span>
+      </div>
+    </EvidenceCard>
+  );
+}
