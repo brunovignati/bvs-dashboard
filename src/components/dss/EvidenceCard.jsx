@@ -8,22 +8,13 @@
  * El componente no dicta la acción; ofrece verbos con su racional heurístico.
  */
 import { motion } from "framer-motion";
-import { MATURITY, VERBS } from "@/lib/dss/dssUtils";
+import { MATURITY } from "@/lib/dss/dssUtils";
 
 function MaturityChip({ state = "green" }) {
   const m = MATURITY[state] || MATURITY.green;
   return (
     <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${m.cls} whitespace-nowrap`}>
       <span>{m.symbol}</span> {m.label}
-    </span>
-  );
-}
-
-function ActionChip({ verb }) {
-  const v = VERBS[verb] || VERBS.investigar;
-  return (
-    <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-md border ${v.cls}`}>
-      {v.label}
     </span>
   );
 }
@@ -77,23 +68,8 @@ export default function EvidenceCard({
       {/* Evidencia */}
       {children && <div className="mt-3">{children}</div>}
 
-      {/* Nota (p.ej. madurez / limitación de dato) */}
+      {/* Nota descriptiva (fuente del dato / madurez) */}
       {note && <p className="text-[10px] text-muted-foreground mt-2 italic">{note}</p>}
-
-      {/* Posibles acciones (obligatorio) */}
-      {actions.length > 0 && (
-        <div className="mt-4 pt-3 border-t border-border/60">
-          <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-2">Decisiones que apoya esta evidencia</p>
-          <div className="space-y-1.5">
-            {actions.map((a, i) => (
-              <div key={i} className="flex items-start gap-2">
-                <ActionChip verb={a.verb} />
-                {a.rationale && <span className="text-xs text-muted-foreground leading-snug pt-0.5">{a.rationale}</span>}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </motion.div>
   );
 }

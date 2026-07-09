@@ -19,7 +19,7 @@ export default function SendVolumeCard({ delay }) {
 
   return (
     <EvidenceCard
-      question="OP-2 · ¿Hay picos operativos de envío?"
+      question="¿Hay picos operativos de envío?"
       answer={hasData ? `Pico ${fmtNumber(peak)} env./día` : "Sin datos diarios"}
       answerTone="neutral"
       context={hasData ? "Volumen diario de envío (email + push). Los picos altos concentran riesgo de entregabilidad." : undefined}

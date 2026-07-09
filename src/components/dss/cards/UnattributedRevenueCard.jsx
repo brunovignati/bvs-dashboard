@@ -33,7 +33,7 @@ export default function UnattributedRevenueCard({ delay }) {
 
   return (
     <EvidenceCard
-      question="RV-2b · ¿Cuánto revenue es no atribuido y de dónde viene?"
+      question="¿Cuánto revenue es no atribuido y de dónde viene?"
       answer={hasData ? `${last.pct.toFixed(0)}% sin atribuir` : "Sin datos"}
       answerTone={hasData ? (last.pct > 50 ? "warn" : "neutral") : "neutral"}
       context="Connectif mide el hueco (total − Σ atribuido); GA4 aporta la explicación (orgánico / directo / paid / referral)."

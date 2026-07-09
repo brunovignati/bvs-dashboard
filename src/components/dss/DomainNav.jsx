@@ -29,7 +29,7 @@ export default function DomainNav({ active, onSelect }) {
       </nav>
       <div className="p-3 border-t border-border">
         <p className="text-[9px] text-muted-foreground leading-relaxed">
-          La información se organiza por preguntas de negocio. La evidencia la ves tú; la decisión es tuya.
+          Dashboard analítico por dominios de negocio · datos vía Connectif, GA4, Metricool y Supabase.
         </p>
       </div>
     </aside>

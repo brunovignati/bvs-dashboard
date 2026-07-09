@@ -41,7 +41,7 @@ export default function CustomerValueCard({ delay }) {
 
   if (!hasData) {
     return (
-      <EvidenceCard question="CL-2 · ¿Cuánto vale un cliente? (estimación agregada)" answer="Datos insuficientes" answerTone="neutral"
+      <EvidenceCard question="¿Cuánto vale un cliente? (estimación agregada)" answer="Datos insuficientes" answerTone="neutral"
         maturity="amber" delay={delay}
         actions={[{verb:"investigar", rationale:"Se necesita histórico de compradores y revenue para estimar."}]} />
     );
@@ -49,7 +49,7 @@ export default function CustomerValueCard({ delay }) {
 
   return (
     <EvidenceCard
-      question="CL-2 · ¿Cuánto vale un cliente? (estimación agregada)"
+      question="¿Cuánto vale un cliente? (estimación agregada)"
       answer={`≈ ${fmtCurrency(clvEst)} CLV estimado`}
       answerTone="neutral"
       context={`Estimación a nivel negocio (no individual): valor/mes por comprador × vida útil estimada (${lifespan.toFixed(1)} meses).`}

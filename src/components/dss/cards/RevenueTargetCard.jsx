@@ -50,7 +50,7 @@ export default function RevenueTargetCard({ delay }) {
     <motion.div initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay}}
       className="bg-card border border-border rounded-2xl p-5">
       <div className="flex items-start justify-between gap-3 mb-2">
-        <h3 className="text-sm font-semibold text-foreground">RV-3 · ¿Voy camino de cumplir el objetivo?</h3>
+        <h3 className="text-sm font-semibold text-foreground">¿Voy camino de cumplir el objetivo?</h3>
         <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-emerald-500/10 text-emerald-600 border-emerald-500/20">● Responde hoy</span>
       </div>
 
@@ -93,13 +93,7 @@ export default function RevenueTargetCard({ delay }) {
         </div>
       )}
 
-      <div className="mt-4 pt-3 border-t border-border/60">
-        <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Decisiones que apoya esta evidencia</p>
-        <p className="text-xs text-muted-foreground">
-          {target>0 ? (onTrack ? "Vas camino de cumplir: mantén el ritmo o reinvierte el excedente." : "Proyección por debajo de la meta: acelera captación o campañas para cerrar la brecha.") : "Define la meta para activar el seguimiento."}
-        </p>
-      </div>
-      <p className="text-[10px] text-muted-foreground mt-2 italic">Objetivo editable, guardado en tu navegador. Fuente: Connectif · daily_revenue. Proyección lineal por ritmo diario.</p>
+      <p className="text-[10px] text-muted-foreground mt-3 italic">Objetivo editable, guardado en tu navegador. Fuente: Connectif · daily_revenue. Proyección lineal por ritmo diario.</p>
     </motion.div>
   );
 }
