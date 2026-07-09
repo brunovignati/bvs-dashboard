@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { ComparisonProvider } from "@/lib/ComparisonContext";
+import ComparisonPanel from "@/components/dashboard/ComparisonPanel";
 import DomainNav from "@/components/dss/DomainNav";
 import { DOMAINS } from "@/lib/dss/domains";
 import SaludDelNegocio from "@/components/dss/domains/SaludDelNegocio";
@@ -26,28 +28,37 @@ export default function DecisionSupport() {
   const View = VIEWS[domain] || SaludDelNegocio;
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <DomainNav active={domain} onSelect={setDomain} />
-      <main className="flex-1 min-w-0">
-        {/* Selector móvil */}
-        <div className="md:hidden border-b border-border p-2 flex gap-1 overflow-x-auto">
-          {DOMAINS.map((d) => (
-            <button key={d.id} onClick={() => setDomain(d.id)}
-              className={`text-xs px-3 py-1.5 rounded-lg whitespace-nowrap ${domain === d.id ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground"}`}>
-              {d.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 w-full">
-          <View />
-          <div className="text-center py-8 mt-4 border-t border-border">
-            <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
-              BVS Analytics · Dashboard de marketing · organizado por preguntas de negocio
-            </p>
+    <ComparisonProvider>
+      <div className="flex min-h-screen bg-background">
+        <DomainNav active={domain} onSelect={setDomain} />
+        <main className="flex-1 min-w-0">
+          {/* Selector móvil de dominio */}
+          <div className="md:hidden border-b border-border p-2 flex gap-1 overflow-x-auto">
+            {DOMAINS.map((d) => (
+              <button key={d.id} onClick={() => setDomain(d.id)}
+                className={`text-xs px-3 py-1.5 rounded-lg whitespace-nowrap ${domain === d.id ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground"}`}>
+                {d.label}
+              </button>
+            ))}
           </div>
-        </div>
-      </main>
-    </div>
+
+          {/* Comparador global de periodos (lo usan los componentes trasladados) */}
+          <div className="bg-background/95 border-b border-border">
+            <div className="max-w-6xl mx-auto px-4 md:px-6 py-2">
+              <ComparisonPanel />
+            </div>
+          </div>
+
+          <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 w-full space-y-6">
+            <View />
+            <div className="text-center py-8 mt-2 border-t border-border">
+              <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                BVS Analytics · Dashboard de marketing por dominios · datos vía Connectif → Supabase
+              </p>
+            </div>
+          </div>
+        </main>
+      </div>
+    </ComparisonProvider>
   );
 }

@@ -1,20 +1,18 @@
 import DomainHeader from "../DomainHeader";
-import AcquisitionRetentionCard from "../cards/AcquisitionRetentionCard";
+import CohortAnalysis from "@/components/dashboard/CohortAnalysis";
 import BlockPlaceholder from "../BlockPlaceholder";
 
 export default function Clientes() {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <DomainHeader title="Clientes" objetivo="La economía del comprador: si el negocio crece captando o fidelizando." />
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <AcquisitionRetentionCard delay={0.05} />
-        <BlockPlaceholder
-          question="CL-2 · ¿Cuánto valor aporta un cliente?"
-          viz="KPI + barras comparativas (revenue por comprador)."
-          maturity="amber"
-          note="Proxy con datos agregados. El CLV individual exige Contact ID (no disponible)."
-        />
-      </div>
+      <CohortAnalysis />
+      <BlockPlaceholder
+        question="CL-2 · ¿Cuánto valor aporta un cliente? (CLV)"
+        viz="KPI + barras comparativas de revenue por comprador."
+        maturity="red"
+        note="El CLV y la retención real por cohorte exigen dato a nivel contacto (Contact ID), no disponible hoy."
+      />
     </div>
   );
 }
