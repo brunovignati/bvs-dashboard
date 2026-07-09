@@ -9,7 +9,7 @@ import '@/index.css'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <QueryClientProvider client={queryClientInstance}>
-    <Router>
+    <Router basename={import.meta.env.BASE_URL}>
       <Routes>
         {/* Nuevo Decision Support System (vista principal) */}
         <Route path="/" element={<DecisionSupport />} />
