@@ -4,7 +4,8 @@ import PushAnalysis from "@/components/dashboard/PushAnalysis";
 import StickyWebContent from "@/components/dashboard/StickyWebContent";
 import DayOfWeekAnalysis from "@/components/dashboard/DayOfWeekAnalysis";
 import ListFatigueCard from "../cards/ListFatigueCard";
-import BlockPlaceholder from "../BlockPlaceholder";
+import Ga4TrafficCard from "../cards/Ga4TrafficCard";
+import SocialReachCard from "../cards/SocialReachCard";
 
 export default function Marketing() {
   return (
@@ -16,18 +17,8 @@ export default function Marketing() {
       <DayOfWeekAnalysis />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <ListFatigueCard delay={0.05} />
-        <BlockPlaceholder
-          question="MK-6 · ¿De dónde llega el tráfico y cómo se comporta?"
-          viz="Barras por fuente + embudo (GA4)."
-          maturity="amber"
-          note="Fuente: GA4 · ga4_daily. Se activa cuando la tabla acumule histórico."
-        />
-        <BlockPlaceholder
-          question="MK-7 · ¿Generan notoriedad y alcance las redes?"
-          viz="Líneas de evolución por red (Metricool)."
-          maturity="amber"
-          note="Fuente: Metricool · ig_daily / fb_daily / tk_daily."
-        />
+        <Ga4TrafficCard delay={0.1} />
+        <SocialReachCard delay={0.15} />
       </div>
     </div>
   );
