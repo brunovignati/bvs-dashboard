@@ -4,6 +4,7 @@ import EmailScaleCard from "../cards/EmailScaleCard";
 import PushPerformanceCard from "../cards/PushPerformanceCard";
 import PushChannelTrendCard from "../cards/PushChannelTrendCard";
 import WebStickyCard from "../cards/WebStickyCard";
+import WebContentTrendCard from "../cards/WebContentTrendCard";
 import BestDayCard from "../cards/BestDayCard";
 import ListFatigueCard from "../cards/ListFatigueCard";
 import Ga4TrafficCard from "../cards/Ga4TrafficCard";
@@ -20,6 +21,7 @@ export default function Marketing() {
       <PushPerformanceCard delay={0.07} />
       <PushChannelTrendCard delay={0.08} />
       <WebStickyCard delay={0.09} />
+      <WebContentTrendCard delay={0.10} />
       <BestDayCard delay={0.11} />
       <ListFatigueCard delay={0.13} />
       <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground pt-2">Tráfico web y redes</p>

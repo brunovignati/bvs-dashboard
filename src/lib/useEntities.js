@@ -206,7 +206,8 @@ export function useDailyPush() {
 export function useDailySticky() {
   return useQuery({
     queryKey: ['daily_sticky'],
-    queryFn: () => fetchTable('daily_sticky', 'year', true, 10000),
+    // 20k+ filas: paginar por fecha DESC para incluir los días recientes en las tendencias.
+    queryFn: () => fetchPaged('daily_sticky', [['year', false], ['month', false], ['day', false], ['content_name', true]], 24000),
     initialData: [],
   })
 }
