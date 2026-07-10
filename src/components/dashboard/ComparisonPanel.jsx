@@ -1,69 +1,92 @@
 import { useComparison } from "@/lib/ComparisonContext";
 import { monthLabel } from "@/lib/dashboardData";
-import { ArrowLeftRight } from "lucide-react";
 
-const MONTHS = [1,2,3,4,5,6,7,8,9,10,11,12];
-const YEARS  = [2024, 2025, 2026];
+const MONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+const YEARS = [2024, 2025, 2026];
 
-function PeriodSelector({ label, value, onChange, accent }) {
+const RANGE_PRESETS = [
+  { id: "last_month", label: "Mes anterior" },
+  { id: "this_month", label: "Mes en curso" },
+  { id: "last_3", label: "Últimos 3 meses" },
+  { id: "last_6", label: "Últimos 6 meses" },
+  { id: "last_12", label: "Últimos 12 meses" },
+  { id: "ytd", label: "Año en curso" },
+];
+
+const COMP_MODES = [
+  { id: "yoy", label: "Mismo periodo año anterior" },
+  { id: "prev", label: "Periodo anterior" },
+  { id: "custom", label: "Personalizado" },
+];
+
+function MonthYear({ value, onChange }) {
   return (
-    <div className={`flex flex-col gap-1.5 p-3 rounded-xl border-2 ${accent}`}>
-      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{label}</p>
-      <div className="flex gap-2">
-        <select
-          value={value.month}
-          onChange={(e) => onChange({ ...value, month: +e.target.value })}
-          className="flex-1 bg-background text-foreground text-sm rounded-lg border border-border px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
-        >
-          {MONTHS.map((m) => (
-            <option key={m} value={m}>{monthLabel(m)}</option>
-          ))}
-        </select>
-        <select
-          value={value.year}
-          onChange={(e) => onChange({ ...value, year: +e.target.value })}
-          className="flex-1 bg-background text-foreground text-sm rounded-lg border border-border px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
-        >
-          {YEARS.map((y) => (
-            <option key={y} value={y}>{y}</option>
-          ))}
-        </select>
-      </div>
+    <div className="flex gap-1.5">
+      <select
+        value={value.month}
+        onChange={(e) => onChange({ ...value, month: +e.target.value })}
+        className="flex-1 bg-background text-foreground text-xs rounded-lg border border-border px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
+      >
+        {MONTHS.map((m) => <option key={m} value={m}>{monthLabel(m)}</option>)}
+      </select>
+      <select
+        value={value.year}
+        onChange={(e) => onChange({ ...value, year: +e.target.value })}
+        className="w-[4.2rem] bg-background text-foreground text-xs rounded-lg border border-border px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
+      >
+        {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
+      </select>
     </div>
   );
 }
 
-const PRESETS = [
-  { id: 'prev_month', label: 'vs mes anterior' },
-  { id: 'yoy',        label: 'vs mismo mes año pasado' },
-];
-
 export default function ComparisonPanel() {
-  const { periodA, setPeriodA, periodB, setPeriodB, applyPreset } = useComparison();
+  const { rangeB, rangeA, compMode, setPrimary, setComparison, setMode, applyRangePreset, labelRange } = useComparison();
 
   return (
     <div className="bg-card border border-border rounded-2xl p-3 space-y-3">
-      {/* Presets rápidos */}
-      <div className="flex flex-wrap gap-2">
-        {PRESETS.map((p) => (
-          <button
-            key={p.id}
-            onClick={() => applyPreset(p.id)}
-            className="text-[10px] font-semibold px-3 py-1 rounded-full border border-border text-muted-foreground hover:border-primary/50 hover:text-primary transition-colors"
-          >
-            {p.label}
-          </button>
-        ))}
+      {/* ── Período principal ── */}
+      <div className="space-y-1.5">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Período</p>
+        <select
+          value=""
+          onChange={(e) => e.target.value && applyRangePreset(e.target.value)}
+          className="w-full bg-background text-foreground text-xs rounded-lg border border-border px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
+        >
+          <option value="">Atajos…</option>
+          {RANGE_PRESETS.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
+        </select>
+        <MonthYear value={rangeB.start} onChange={(s) => setPrimary({ start: s, end: rangeB.end })} />
+        <p className="text-center text-[10px] text-muted-foreground">hasta</p>
+        <MonthYear value={rangeB.end} onChange={(e) => setPrimary({ start: rangeB.start, end: e })} />
       </div>
 
-      {/* Selectores de periodo (apilados) */}
-      <div className="grid grid-cols-1 gap-2">
-        <PeriodSelector label="desde" value={periodB} onChange={setPeriodB} accent="border-primary/40" />
-        <div className="flex justify-center">
-          <ArrowLeftRight className="w-4 h-4 text-muted-foreground rotate-90" />
-        </div>
-        <PeriodSelector label="hasta" value={periodA} onChange={setPeriodA} accent="border-slate-500/40" />
+      {/* ── Comparación ── */}
+      <div className="space-y-1.5 border-t border-border pt-3">
+        <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Comparar con</p>
+        <select
+          value={compMode}
+          onChange={(e) => setMode(e.target.value)}
+          className="w-full bg-background text-foreground text-xs rounded-lg border border-border px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary"
+        >
+          {COMP_MODES.map((m) => <option key={m.id} value={m.id}>{m.label}</option>)}
+        </select>
+        {compMode === "custom" && (
+          <>
+            <MonthYear value={rangeA.start} onChange={(s) => setComparison({ start: s, end: rangeA.end })} />
+            <p className="text-center text-[10px] text-muted-foreground">hasta</p>
+            <MonthYear value={rangeA.end} onChange={(e) => setComparison({ start: rangeA.start, end: e })} />
+          </>
+        )}
       </div>
+
+      {/* ── Resumen de la selección ── */}
+      <p className="text-[10px] text-muted-foreground border-t border-border pt-2 leading-snug">
+        <span className="font-semibold text-foreground">{labelRange(rangeB)}</span>
+        {" vs "}
+        <span className="font-semibold text-foreground">{labelRange(rangeA)}</span>
+        <br />afecta a todo el panel
+      </p>
     </div>
   );
 }
