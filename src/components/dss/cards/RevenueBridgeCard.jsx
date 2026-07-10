@@ -1,78 +1,55 @@
 /**
- * RevenueBridgeCard — ¿qué palanca movió el revenue? (variance bridge / waterfall)
- * Descompone el cambio de revenue (mes activo vs anterior, meses completos) en:
- *   ΔRev = (Q_t − Q_{t-1})·P_{t-1}   [volumen: nº de pedidos]
- *        + (P_t − P_{t-1})·Q_t       [precio: ticket medio]
- *
- * Visualización: waterfall que "camina" desde 0 sumando Volumen y Ticket hasta el
- * Δ neto — el estándar de FP&A para leer una variación de un vistazo. Conectores +
- * etiquetas de valor. Fuente: daily_revenue (negocio total), coherente con evolución.
+ * RevenueBridgeCard — ¿qué mueve el revenue: más pedidos o mayor ticket?
+ * Revenue = nº de pedidos × ticket medio. En vez de una descomposición en euros
+ * (concepto de analista), mostramos cómo se movió cada MOTOR en % — intuitivo:
+ * "+7% de pedidos pero −4% de ticket → revenue +2.5%". Compara meses completos.
  */
 import EvidenceCard from "../EvidenceCard";
 import { useDailyRevenue } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
-import { fmtCurrency } from "@/lib/dashboardData";
+import { fmtCurrency, fmtNumber } from "@/lib/dashboardData";
 import { CHART_H, PRIMARY, NEUTRAL } from "@/lib/dss/chartTheme";
 
 const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-const TOTAL_COLOR = "hsl(221,45%,30%)";        // total (neto) — azul oscuro de la escala
 const AXIS_TXT = "hsl(220,10%,50%)";
-const signed = (v) => `${v >= 0 ? "+" : ""}${fmtCurrency(v)}`;
+const pct = (v) => `${v >= 0 ? "+" : ""}${v.toFixed(1)}%`;
 
-// ── Waterfall en SVG (control total de barras, conectores y etiquetas) ──
-function Waterfall({ volEffect, priceEffect, deltaRev }) {
-  const steps = [
-    { label: "Volumen", kind: "delta", val: volEffect },
-    { label: "Ticket", kind: "delta", val: priceEffect },
-    { label: "Δ neto", kind: "total", val: deltaRev },
+// Dos barras divergentes: % de cambio de cada motor (pedidos y ticket).
+function DriverBars({ ordersPct, ticketPct, revPct }) {
+  const rows = [
+    { name: "Nº de pedidos", v: ordersPct },
+    { name: "Ticket medio", v: ticketPct },
   ];
-  let run = 0;
-  const geom = steps.map(s => {
-    if (s.kind === "delta") { const start = run; const end = run + s.val; run = end; return { ...s, start, end }; }
-    return { ...s, start: 0, end: s.val };
-  });
-  const vals = [0, ...geom.flatMap(g => [g.start, g.end])];
-  let minV = Math.min(...vals), maxV = Math.max(...vals);
-  if (minV > 0) minV = 0; if (maxV < 0) maxV = 0;
-  const span = (maxV - minV) || 1;
-  const domMin = minV - span * 0.14, domMax = maxV + span * 0.16;
-
-  const W = 720, H = 250, top = 20, bottom = 210, padX = 16;
-  const colW = (W - padX * 2) / geom.length;
-  const barW = Math.min(130, colW * 0.56);
-  const cx = (i) => padX + colW * i + colW / 2;
-  const y = (v) => bottom - ((v - domMin) / (domMax - domMin)) * (bottom - top);
-
-  const zeroY = y(0);
+  const maxAbs = Math.max(Math.abs(ordersPct), Math.abs(ticketPct), Math.abs(revPct), 1);
+  const W = 720, H = 220;
+  const plotL = 150, plotR = 620, center = (plotL + plotR) / 2, half = (plotR - plotL) / 2;
+  const x = (v) => center + (v / (maxAbs * 1.2)) * half;
+  const rowY = [40, 108], barH = 40;
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
-      {/* línea base en cero */}
-      <line x1={padX} y1={zeroY} x2={W - padX} y2={zeroY} stroke="hsl(220,13%,86%)" strokeWidth="1" />
-      {/* conectores entre pasos (enlazan niveles acumulados) */}
-      {geom.slice(0, -1).map((g, i) => {
-        const yc = y(i === 0 ? g.end : g.end);        // nivel al final del paso
-        return <line key={`c${i}`} x1={cx(i) + barW / 2} y1={yc} x2={cx(i + 1) - barW / 2} y2={yc}
-          stroke="hsl(220,13%,72%)" strokeWidth="1.5" strokeDasharray="4 3" />;
-      })}
-      {/* barras */}
-      {geom.map((g, i) => {
-        const yA = y(g.start), yB = y(g.end);
-        const ry = Math.min(yA, yB), rh = Math.max(2, Math.abs(yA - yB));
-        const color = g.kind === "total" ? TOTAL_COLOR : (g.val >= 0 ? PRIMARY : NEUTRAL);
-        const labelY = ry - 8;
+      {/* línea cero */}
+      <line x1={center} y1={26} x2={center} y2={168} stroke="hsl(220,13%,80%)" strokeWidth="1.5" />
+      {rows.map((r, i) => {
+        const y = rowY[i];
+        const up = r.v >= 0;
+        const bx = up ? center : x(r.v);
+        const bw = Math.max(2, Math.abs(x(r.v) - center));
         return (
           <g key={i}>
-            <rect x={cx(i) - barW / 2} y={ry} width={barW} height={rh} rx="4" fill={color} />
-            <text x={cx(i)} y={labelY} textAnchor="middle" fontSize="14" fontWeight="700" fill="hsl(220,15%,25%)">
-              {g.kind === "total" ? fmtCurrency(g.val) : signed(g.val)}
-            </text>
-            <text x={cx(i)} y={bottom + 22} textAnchor="middle" fontSize="12" fill={AXIS_TXT}>
-              {g.label}
-            </text>
+            <text x={16} y={y + barH / 2 + 5} fontSize="15" fontWeight="600" fill="hsl(220,15%,25%)">{r.name}</text>
+            <rect x={bx} y={y} width={bw} height={barH} rx="4" fill={up ? PRIMARY : NEUTRAL} />
+            <text x={up ? x(r.v) + 10 : x(r.v) - 10} y={y + barH / 2 + 5} textAnchor={up ? "start" : "end"}
+              fontSize="15" fontWeight="700" fill="hsl(220,15%,25%)">{pct(r.v)}</text>
           </g>
         );
       })}
+      {/* resultado */}
+      <line x1={16} y1={182} x2={W - 16} y2={182} stroke="hsl(220,13%,90%)" strokeWidth="1" />
+      <text x={16} y={205} fontSize="15" fill={AXIS_TXT}>
+        <tspan fontWeight="600" fill="hsl(220,15%,25%)">= Revenue </tspan>
+        <tspan fontWeight="700" fill={revPct >= 0 ? PRIMARY : NEUTRAL}>{pct(revPct)}</tspan>
+      </text>
     </svg>
   );
 }
@@ -95,46 +72,43 @@ export default function RevenueBridgeCard({ delay }) {
   const prev = idx > 0 ? months[idx - 1] : null;
   const hasData = !!(cur && prev);
 
-  let deltaRev = 0, volEffect = 0, priceEffect = 0, momPct, driver = "volumen";
+  let deltaRev = 0, revPct = 0, ordersPct = 0, ticketPct = 0, Qc = 0, Pc = 0, driver = "pedidos";
   if (hasData) {
-    const Qp = prev.purchases || 0, Qc = cur.purchases || 0;
-    const Pp = Qp ? prev.revenue / Qp : 0, Pc = Qc ? cur.revenue / Qc : 0;
-    volEffect = (Qc - Qp) * Pp;
-    priceEffect = (Pc - Pp) * Qc;
+    const Qp = prev.purchases || 0; Qc = cur.purchases || 0;
+    const Pp = Qp ? prev.revenue / Qp : 0; Pc = Qc ? cur.revenue / Qc : 0;
     deltaRev = cur.revenue - prev.revenue;
-    momPct = prev.revenue ? (deltaRev / prev.revenue) * 100 : undefined;
-    driver = Math.abs(volEffect) >= Math.abs(priceEffect) ? "volumen" : "ticket";
+    revPct = prev.revenue ? (deltaRev / prev.revenue) * 100 : 0;
+    ordersPct = Qp ? ((Qc - Qp) / Qp) * 100 : 0;
+    ticketPct = Pp ? ((Pc - Pp) / Pp) * 100 : 0;
+    driver = Math.abs(ordersPct) >= Math.abs(ticketPct) ? "pedidos" : "ticket";
   }
   const periodLbl = hasData ? `${M[cur.month]} ${cur.year} vs ${M[prev.month]} ${prev.year}` : "";
-  const dirWord = deltaRev >= 0 ? "subió" : "bajó";
-  const leverWord = driver === "volumen"
-    ? (volEffect >= 0 ? "más pedidos (volumen)" : "menos pedidos (volumen)")
-    : (priceEffect >= 0 ? "un ticket medio más alto" : "un ticket medio más bajo");
+  const insight = hasData
+    ? `${ordersPct >= 0 ? "Más" : "Menos"} pedidos (${pct(ordersPct)}) ${((ordersPct >= 0) !== (ticketPct >= 0)) ? "junto a" : "y"} un ticket medio ${ticketPct >= 0 ? "más alto" : "más bajo"} (${pct(ticketPct)}) dejan el revenue en ${pct(revPct)} frente al mes anterior.`
+    : undefined;
 
   return (
     <EvidenceCard
-      question="¿Qué palanca movió el revenue: volumen o ticket?"
+      question="¿Qué mueve el revenue: más pedidos o mayor ticket?"
       kpis={hasData ? [
-        { value: signed(deltaRev), label: `Δ revenue · ${periodLbl}`, delta: momPct },
-        { value: signed(volEffect), label: "Efecto volumen (pedidos)" },
-        { value: signed(priceEffect), label: "Efecto ticket (precio)" },
+        { value: `${deltaRev >= 0 ? "+" : ""}${fmtCurrency(deltaRev)}`, label: `Δ revenue · ${periodLbl}`, delta: revPct },
+        { value: fmtNumber(Qc), label: "Nº de pedidos", delta: ordersPct },
+        { value: `€${Pc.toFixed(0)}`, label: "Ticket medio", delta: ticketPct },
       ] : undefined}
       answer={!hasData ? "Sin datos suficientes" : undefined}
       maturity="green"
-      insight={hasData
-        ? `El revenue ${dirWord} ${fmtCurrency(Math.abs(deltaRev))} frente al mes anterior, explicado sobre todo por ${leverWord}.`
-        : undefined}
+      insight={insight}
       actions={[
-        { verb: "reasignar", rationale: driver === "volumen"
-          ? "El cambio viene del nº de pedidos: actúa sobre captación y frecuencia de compra."
-          : "El cambio viene del ticket medio: actúa sobre cross-sell, bundles y precio." },
+        { verb: "reasignar", rationale: driver === "pedidos"
+          ? "El revenue lo mueve el nº de pedidos: actúa sobre captación y frecuencia de compra."
+          : "El revenue lo mueve el ticket medio: actúa sobre cross-sell, bundles y precio." },
       ]}
       delay={delay}
-      note="Waterfall de contribución sobre negocio total (Connectif · daily_revenue). ΔRev = Δpedidos·ticket_ant + Δticket·pedidos_actual. Meses completos."
+      note="Revenue = nº de pedidos × ticket medio (negocio total · Connectif · daily_revenue). % de cambio de cada motor entre meses completos."
     >
       {hasData && (
         <div className={CHART_H}>
-          <Waterfall volEffect={volEffect} priceEffect={priceEffect} deltaRev={deltaRev} />
+          <DriverBars ordersPct={ordersPct} ticketPct={ticketPct} revPct={revPct} />
         </div>
       )}
     </EvidenceCard>
