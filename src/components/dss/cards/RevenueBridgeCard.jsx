@@ -1,28 +1,86 @@
 /**
- * RevenueBridgeCard — ¿qué palanca movió el revenue este mes?
- * Descompone el cambio de revenue (mes activo vs mes anterior) en dos efectos:
+ * RevenueBridgeCard — ¿qué palanca movió el revenue? (variance bridge / waterfall)
+ * Descompone el cambio de revenue (mes activo vs anterior, meses completos) en:
  *   ΔRev = (Q_t − Q_{t-1})·P_{t-1}   [volumen: nº de pedidos]
  *        + (P_t − P_{t-1})·Q_t       [precio: ticket medio]
  *
- * Visualización: gráfico de CONTRIBUCIÓN (barras divergentes desde cero) — se lee de
- * un vistazo qué palanca empuja arriba (azul) o abajo (neutro) y cuánto.
- * Fuente: daily_revenue (negocio total), coherente con el bloque de evolución.
+ * Visualización: waterfall que "camina" desde 0 sumando Volumen y Ticket hasta el
+ * Δ neto — el estándar de FP&A para leer una variación de un vistazo. Conectores +
+ * etiquetas de valor. Fuente: daily_revenue (negocio total), coherente con evolución.
  */
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, ReferenceLine, LabelList } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useDailyRevenue } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
 import { fmtCurrency } from "@/lib/dashboardData";
-import { CHART_H, AXIS, TIP, PRIMARY, NEUTRAL } from "@/lib/dss/chartTheme";
+import { CHART_H, PRIMARY, NEUTRAL } from "@/lib/dss/chartTheme";
 
 const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+const TOTAL_COLOR = "hsl(221,45%,30%)";        // total (neto) — azul oscuro de la escala
+const AXIS_TXT = "hsl(220,10%,50%)";
 const signed = (v) => `${v >= 0 ? "+" : ""}${fmtCurrency(v)}`;
+
+// ── Waterfall en SVG (control total de barras, conectores y etiquetas) ──
+function Waterfall({ volEffect, priceEffect, deltaRev }) {
+  const steps = [
+    { label: "Volumen", kind: "delta", val: volEffect },
+    { label: "Ticket", kind: "delta", val: priceEffect },
+    { label: "Δ neto", kind: "total", val: deltaRev },
+  ];
+  let run = 0;
+  const geom = steps.map(s => {
+    if (s.kind === "delta") { const start = run; const end = run + s.val; run = end; return { ...s, start, end }; }
+    return { ...s, start: 0, end: s.val };
+  });
+  const vals = [0, ...geom.flatMap(g => [g.start, g.end])];
+  let minV = Math.min(...vals), maxV = Math.max(...vals);
+  if (minV > 0) minV = 0; if (maxV < 0) maxV = 0;
+  const span = (maxV - minV) || 1;
+  const domMin = minV - span * 0.14, domMax = maxV + span * 0.16;
+
+  const W = 720, H = 250, top = 20, bottom = 210, padX = 16;
+  const colW = (W - padX * 2) / geom.length;
+  const barW = Math.min(130, colW * 0.56);
+  const cx = (i) => padX + colW * i + colW / 2;
+  const y = (v) => bottom - ((v - domMin) / (domMax - domMin)) * (bottom - top);
+
+  const zeroY = y(0);
+
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+      {/* línea base en cero */}
+      <line x1={padX} y1={zeroY} x2={W - padX} y2={zeroY} stroke="hsl(220,13%,86%)" strokeWidth="1" />
+      {/* conectores entre pasos (enlazan niveles acumulados) */}
+      {geom.slice(0, -1).map((g, i) => {
+        const yc = y(i === 0 ? g.end : g.end);        // nivel al final del paso
+        return <line key={`c${i}`} x1={cx(i) + barW / 2} y1={yc} x2={cx(i + 1) - barW / 2} y2={yc}
+          stroke="hsl(220,13%,72%)" strokeWidth="1.5" strokeDasharray="4 3" />;
+      })}
+      {/* barras */}
+      {geom.map((g, i) => {
+        const yA = y(g.start), yB = y(g.end);
+        const ry = Math.min(yA, yB), rh = Math.max(2, Math.abs(yA - yB));
+        const color = g.kind === "total" ? TOTAL_COLOR : (g.val >= 0 ? PRIMARY : NEUTRAL);
+        const labelY = ry - 8;
+        return (
+          <g key={i}>
+            <rect x={cx(i) - barW / 2} y={ry} width={barW} height={rh} rx="4" fill={color} />
+            <text x={cx(i)} y={labelY} textAnchor="middle" fontSize="14" fontWeight="700" fill="hsl(220,15%,25%)">
+              {g.kind === "total" ? fmtCurrency(g.val) : signed(g.val)}
+            </text>
+            <text x={cx(i)} y={bottom + 22} textAnchor="middle" fontSize="12" fill={AXIS_TXT}>
+              {g.label}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
 
 export default function RevenueBridgeCard({ delay }) {
   const { data = [] } = useDailyRevenue();
   const { periodEnd } = useComparison();
 
-  // Agregar por mes (negocio total)
   const byM = {};
   for (const r of data) {
     const k = r.year * 12 + r.month;
@@ -32,12 +90,12 @@ export default function RevenueBridgeCard({ delay }) {
   }
   const months = Object.values(byM).sort((a, b) => a.k - b.k);
   let idx = months.findIndex(m => m.year === periodEnd.year && m.month === periodEnd.month);
-  if (idx < 1) idx = months.length - 1;           // fallback al último con anterior disponible
+  if (idx < 1) idx = months.length - 1;
   const cur = months[idx];
   const prev = idx > 0 ? months[idx - 1] : null;
   const hasData = !!(cur && prev);
 
-  let deltaRev = 0, volEffect = 0, priceEffect = 0, momPct, driver = "volumen", bars = [];
+  let deltaRev = 0, volEffect = 0, priceEffect = 0, momPct, driver = "volumen";
   if (hasData) {
     const Qp = prev.purchases || 0, Qc = cur.purchases || 0;
     const Pp = Qp ? prev.revenue / Qp : 0, Pc = Qc ? cur.revenue / Qc : 0;
@@ -46,16 +104,11 @@ export default function RevenueBridgeCard({ delay }) {
     deltaRev = cur.revenue - prev.revenue;
     momPct = prev.revenue ? (deltaRev / prev.revenue) * 100 : undefined;
     driver = Math.abs(volEffect) >= Math.abs(priceEffect) ? "volumen" : "ticket";
-    bars = [
-      { name: "Volumen (pedidos)", value: Math.round(volEffect) },
-      { name: "Ticket (precio)", value: Math.round(priceEffect) },
-    ].sort((a, b) => Math.abs(b.value) - Math.abs(a.value));
   }
-  const axisMax = hasData ? Math.max(Math.abs(volEffect), Math.abs(priceEffect)) * 1.3 || 1 : 1;
   const periodLbl = hasData ? `${M[cur.month]} ${cur.year} vs ${M[prev.month]} ${prev.year}` : "";
   const dirWord = deltaRev >= 0 ? "subió" : "bajó";
   const leverWord = driver === "volumen"
-    ? (volEffect >= 0 ? "más pedidos" : "menos pedidos")
+    ? (volEffect >= 0 ? "más pedidos (volumen)" : "menos pedidos (volumen)")
     : (priceEffect >= 0 ? "un ticket medio más alto" : "un ticket medio más bajo");
 
   return (
@@ -77,22 +130,11 @@ export default function RevenueBridgeCard({ delay }) {
           : "El cambio viene del ticket medio: actúa sobre cross-sell, bundles y precio." },
       ]}
       delay={delay}
-      note="Descomposición volumen/precio sobre negocio total (Connectif · daily_revenue). ΔRev = Δpedidos·ticket_ant + Δticket·pedidos_actual. Compara meses completos."
+      note="Waterfall de contribución sobre negocio total (Connectif · daily_revenue). ΔRev = Δpedidos·ticket_ant + Δticket·pedidos_actual. Meses completos."
     >
       {hasData && (
         <div className={CHART_H}>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={bars} layout="vertical" margin={{ top: 8, right: 56, left: 8, bottom: 0 }} barCategoryGap="35%">
-              <XAxis type="number" domain={[-axisMax, axisMax]} {...AXIS} tickFormatter={v => `${v < 0 ? "-" : ""}€${Math.abs(v / 1000).toFixed(0)}K`} />
-              <YAxis type="category" dataKey="name" width={130} {...AXIS} />
-              <ReferenceLine x={0} stroke="hsl(220,10%,50%)" />
-              <Tooltip cursor={{ fill: "hsl(220,13%,91%)", fillOpacity: 0.3 }} formatter={(v) => [signed(v), "Efecto"]} {...TIP} />
-              <Bar dataKey="value" radius={[3, 3, 3, 3]} barSize={34}>
-                {bars.map((b, i) => <Cell key={i} fill={b.value >= 0 ? PRIMARY : NEUTRAL} />)}
-                <LabelList dataKey="value" position="right" formatter={(v) => signed(v)} style={{ fontSize: 11, fontWeight: 600, fill: "hsl(220,10%,35%)" }} />
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          <Waterfall volEffect={volEffect} priceEffect={priceEffect} deltaRev={deltaRev} />
         </div>
       )}
     </EvidenceCard>
