@@ -428,4 +428,23 @@ Estas decisiones son estables y no deben revertirse:
 
 ---
 
+## 16. Deuda de datos — Sprint 3 (pendiente de pipeline, NO resoluble desde el frontend)
+
+Tras la auditoría de visualización (julio 2026) quedaron mejoras que exigen datos que Supabase
+**no** contiene hoy. El frontend no puede resolverlas: requieren nuevos exports/informes de
+Connectif procesados por `sync_connectif_to_supabase.py` (GitHub Actions). Los blobs de export de
+Connectif (Azure) no se pueden descargar desde el entorno Cowork; el procesamiento vive en el sync.
+
+| Item | Qué falta | Dato/export requerido | Destino |
+|---|---|---|---|
+| **Heatmap de cohortes (LTV real)** | Matriz mes-de-adquisición × mes-de-vida con revenue acumulado/retención. Hoy `buyer_cohorts` solo tiene conteos mensuales primerizos/recurrentes, no el seguimiento por cohorte. | Export `purchases` (nivel pedido: contactId + fecha + importe) **o** un informe Data Explorer de cohortes configurado en Connectif. | Nueva tabla `cohort_retention` + card heatmap que reemplaza la línea de `CustomerValueCard`. |
+| **Fatiga por suscriptor** | Presión de envío por contacto (nº campañas/30d vs engagement). Hoy solo hay agregados. | Export a nivel contacto/evento de envíos. | Nueva tabla + card. *(Parcial ya cubierto: `ListPressureCard` en CRM cruza presión↔bajas a nivel de LISTA con `email_campaigns` + `subscribers.unsubs`.)* |
+| **Mix de categorías / margen (Producto)** | Ventas por categoría y margen. Hoy `ProductThemeCard` infiere "temáticas" de nombres de campaña; no hay datos de catálogo por venta. | Export `products` (catálogo, ya existe: ~7.853 SKU) **cruzado** con order-lines (producto vendido por pedido). | Nueva tabla `category_sales` + card de mix. Si no se prioriza, fusionar "marca propia" en Revenue y dejar Producto mínimo. |
+| **Sticky por impresión** | Eficiencia = revenue/impresión. Hoy `sticky` no tiene impresiones. | Columna de impresiones en el informe de contenido web. | Recalcular `WebStickyCard`. *(Interino ya aplicado: ordena por `convRate`.)* |
+
+**Regla:** estos items se abordan modificando el sync Python + `sql/schema.sql`, y corren en el
+Action semanal (o ejecución manual). No intentar resolverlos con llamadas desde React.
+
+---
+
 *Actualiza este archivo cuando cambie la arquitectura, las tablas, los workflows o las convenciones del proyecto.
