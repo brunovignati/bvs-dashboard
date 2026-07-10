@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
 import { useDailyRevenue } from "@/lib/useEntities";
 import { fmtCurrency } from "@/lib/dashboardData";
 
@@ -47,8 +46,7 @@ export default function RevenueTargetCard({ delay }) {
   const onTrack = target>0 && projection>=target;
 
   return (
-    <motion.div initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay}}
-      className="bg-card border border-border rounded-2xl p-5">
+    <div className="bg-card border border-border rounded-2xl p-5">
       <div className="flex items-start justify-between gap-3 mb-2">
         <h3 className="text-sm font-semibold text-foreground">¿Voy camino de cumplir el objetivo?</h3>
         <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-blue-500/10 text-blue-600 border-blue-500/20">● Responde hoy</span>
@@ -94,6 +92,6 @@ export default function RevenueTargetCard({ delay }) {
       )}
 
       <p className="text-[10px] text-muted-foreground mt-3 italic">Objetivo editable, guardado en tu navegador. Fuente: Connectif · daily_revenue. Proyección lineal por ritmo diario.</p>
-    </motion.div>
+    </div>
   );
 }

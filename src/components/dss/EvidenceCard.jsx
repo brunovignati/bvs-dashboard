@@ -7,7 +7,6 @@
  * La fila "Posibles acciones" es OBLIGATORIA: una tarjeta sin acciones no debe existir.
  * El componente no dicta la acción; ofrece verbos con su racional heurístico.
  */
-import { motion } from "framer-motion";
 import { MATURITY } from "@/lib/dss/dssUtils";
 
 function MaturityChip({ state = "green" }) {
@@ -43,12 +42,7 @@ export default function EvidenceCard({
     severity === "medium" ? "border-l-4 border-l-slate-500" : "";
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay }}
-      className={`bg-card border border-border rounded-2xl p-5 ${leftBorder}`}
-    >
+    <div className={`bg-card border border-border rounded-2xl p-5 ${leftBorder}`}>
       {/* Cabecera: pregunta + madurez */}
       <div className="flex items-start justify-between gap-3 mb-2">
         <h3 className="text-sm font-semibold leading-snug text-foreground">{question}</h3>
@@ -70,6 +64,6 @@ export default function EvidenceCard({
 
       {/* Nota descriptiva (fuente del dato / madurez) */}
       {note && <p className="text-[10px] text-muted-foreground mt-2 italic">{note}</p>}
-    </motion.div>
+    </div>
   );
 }

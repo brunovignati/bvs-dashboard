@@ -51,11 +51,6 @@ export default function DecisionSupport() {
 
           <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 w-full space-y-6">
             <View />
-            <div className="text-center py-8 mt-2 border-t border-border">
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest">
-                BVS Analytics · Dashboard de marketing por dominios · datos vía Connectif → Supabase
-              </p>
-            </div>
           </div>
         </main>
       </div>

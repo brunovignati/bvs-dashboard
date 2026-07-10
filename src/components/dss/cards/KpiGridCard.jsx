@@ -1,4 +1,3 @@
-import { motion } from "framer-motion";
 import { useDailyRevenue, useBuyerCohorts, useCompradores, useSubscribers } from "@/lib/useEntities";
 import { fmtCurrency, fmtNumber } from "@/lib/dashboardData";
 
@@ -42,10 +41,9 @@ export default function KpiGridCard({ delay }) {
   const es = subs.filter(s=>s.status==="subscribed").sort((a,b)=>a.year!==b.year?a.year-b.year:a.month-b.month).pop();
 
   return (
-    <motion.div initial={{opacity:0,y:16}} animate={{opacity:1,y:0}} transition={{delay}}
-      className="bg-card border border-border rounded-2xl p-5">
+    <div className="bg-card border border-border rounded-2xl p-5">
       <div className="flex items-start justify-between gap-3 mb-3">
-        <h3 className="text-sm font-semibold text-foreground">BN-1 · ¿Cómo va el negocio este periodo?</h3>
+        <h3 className="text-sm font-semibold text-foreground">¿Cómo va el negocio este periodo?</h3>
         <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-blue-500/10 text-blue-600 border-blue-500/20">● Responde hoy</span>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5">
@@ -60,6 +58,6 @@ export default function KpiGridCard({ delay }) {
         <p className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Decisiones que apoya esta evidencia</p>
         <p className="text-xs text-muted-foreground">Triaje: ¿necesito intervenir este periodo? ¿dónde profundizo (Revenue, Clientes, Marketing)?</p>
       </div>
-    </motion.div>
+    </div>
   );
 }
