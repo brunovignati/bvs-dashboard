@@ -12,10 +12,10 @@ export default function PlaceholderMode({ title, cadence, question, blurb, phase
     <div className="space-y-4">
       <ModeHeader title={title} cadence={cadence} question={question} blurb={blurb} />
 
-      <div className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-4 flex items-center gap-3">
-        <Clock className="w-5 h-5 text-amber-600 shrink-0" />
+      <div className="bg-slate-500/5 border border-slate-500/20 rounded-2xl p-4 flex items-center gap-3">
+        <Clock className="w-5 h-5 text-slate-600 shrink-0" />
         <div>
-          <p className="text-sm font-semibold text-amber-700">Previsto en {phase}</p>
+          <p className="text-sm font-semibold text-slate-700">Previsto en {phase}</p>
           <p className="text-xs text-muted-foreground">Tarjetas ya diseñadas (Doc. 1 · Registro de Decisiones). Se activan en su fase del roadmap.</p>
         </div>
       </div>

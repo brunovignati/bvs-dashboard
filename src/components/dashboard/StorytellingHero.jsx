@@ -28,7 +28,7 @@ function yoyDelta(current, previous) {
 function Delta({ pct }) {
   if (pct === null || pct === undefined) return null;
   const positive = pct > 0;
-  const color = positive ? "text-emerald-500" : pct === 0 ? "text-muted-foreground" : "text-rose-500";
+  const color = positive ? "text-blue-500" : pct === 0 ? "text-muted-foreground" : "text-rose-500";
   const Icon = pct > 0 ? TrendingUp : pct < 0 ? TrendingDown : Minus;
   return (
     <span className={`inline-flex items-center gap-0.5 text-xs font-semibold ${color}`}>

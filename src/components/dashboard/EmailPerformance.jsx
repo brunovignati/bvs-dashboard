@@ -24,7 +24,7 @@ const ScatterTooltip = ({ active, payload }) => {
         </div>
         <div className="flex justify-between gap-4 text-xs">
           <span className="text-muted-foreground">Revenue</span>
-          <span className="font-mono font-semibold text-emerald-500">{fmtCurrency(d.revenue)}</span>
+          <span className="font-mono font-semibold text-blue-500">{fmtCurrency(d.revenue)}</span>
         </div>
         <div className="flex justify-between gap-4 text-xs">
           <span className="text-muted-foreground">Enviados</span>
@@ -67,8 +67,8 @@ export default function EmailPerformance() {
   const avgY = scatterData.length > 0 ? scatterData.reduce((s, d) => s + d.y, 0) / scatterData.length : 0;
 
   const getColor = (d) =>
-    d.isCart   ? 'hsl(213,96%,80%)' :
-    d.revenue >= q75 ? 'hsl(214,95%,68%)' :
+    d.isCart   ? 'hsl(218,33%,70%)' :
+    d.revenue >= q75 ? 'hsl(220,55%,62%)' :
     d.revenue >= q50 ? 'hsl(221,83%,53%)' :
     'hsl(220,13%,65%)';
 
@@ -80,7 +80,7 @@ export default function EmailPerformance() {
     { key: "sent",  label: "Enviados",  align: "right", render: (v) => fmtNumber(v) },
     { key: "openRate", label: "Open Rate", align: "right",
       render: (_, row) => { const r = row.sent > 0 ? (row.opens / row.sent) * 100 : 0;
-        return <span className={r > 45 ? "text-emerald-500 font-semibold" : ""}>{r.toFixed(1)}%</span>; } },
+        return <span className={r > 45 ? "text-blue-500 font-semibold" : ""}>{r.toFixed(1)}%</span>; } },
     { key: "ctr", label: "CTR", align: "right",
       render: (_, row) => { const r = row.sent > 0 ? (row.clicks / row.sent) * 100 : 0; return `${r.toFixed(2)}%`; } },
     { key: "purchases", label: "Compras", align: "right", render: (v) => fmtNumber(v) },
@@ -126,8 +126,8 @@ export default function EmailPerformance() {
       {view === 'scatter' && (
         <div>
           <p className="text-[11px] text-muted-foreground mb-1">
-            Cada punto = una campaña · Tamaño = volumen enviado · <span style={{ color: 'hsl(213,96%,80%)' }}>■</span> Carrito abandonado
-            · <span style={{ color: 'hsl(214,95%,68%)' }}>■</span> Alto revenue · <span style={{ color: 'hsl(221,83%,53%)' }}>■</span> Medio
+            Cada punto = una campaña · Tamaño = volumen enviado · <span style={{ color: 'hsl(218,33%,70%)' }}>■</span> Carrito abandonado
+            · <span style={{ color: 'hsl(220,55%,62%)' }}>■</span> Alto revenue · <span style={{ color: 'hsl(221,83%,53%)' }}>■</span> Medio
             · <span className="text-muted-foreground">■</span> Bajo
           </p>
           <div className="h-72">
@@ -154,9 +154,9 @@ export default function EmailPerformance() {
           </div>
           <div className="grid grid-cols-2 gap-2 mt-2 text-[9px]">
             <div className="text-center border border-border/40 rounded p-1.5 text-muted-foreground">↖ Alta apertura · Bajo revenue</div>
-            <div className="text-center border border-emerald-500/20 rounded p-1.5 bg-emerald-500/5 text-emerald-600">↗ Alta apertura · Alto revenue ★</div>
+            <div className="text-center border border-blue-500/20 rounded p-1.5 bg-blue-500/5 text-blue-600">↗ Alta apertura · Alto revenue ★</div>
             <div className="text-center border border-border/40 rounded p-1.5 text-muted-foreground">↙ Baja apertura · Bajo revenue</div>
-            <div className="text-center border border-amber-500/20 rounded p-1.5 bg-amber-500/5 text-amber-600">↘ Baja apertura · Alto revenue</div>
+            <div className="text-center border border-slate-500/20 rounded p-1.5 bg-slate-500/5 text-slate-600">↘ Baja apertura · Alto revenue</div>
           </div>
           {topCampaign && (
             <p className="text-[10px] text-muted-foreground mt-2">

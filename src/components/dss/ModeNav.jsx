@@ -29,7 +29,7 @@ export default function ModeNav({ active, onSelect, signalCount = 0 }) {
                 <span className="text-sm font-semibold flex-1">{m.label}</span>
                 {m.id === "pulso" && signalCount > 0 && (
                   <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                    isActive ? "bg-primary-foreground/20 text-primary-foreground" : "bg-red-500 text-white"
+                    isActive ? "bg-primary-foreground/20 text-primary-foreground" : "bg-slate-500 text-white"
                   }`}>
                     {signalCount}
                   </span>

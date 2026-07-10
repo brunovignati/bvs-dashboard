@@ -70,7 +70,7 @@ export default function ProductThemeCard({ delay }) {
             <YAxis type="category" dataKey="label" width={130} tick={{ fontSize:9, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} />
             <Tooltip formatter={(v)=>[fmtCurrency(v),"Revenue"]} labelStyle={{ fontSize:10 }} />
             <Bar dataKey="revenue" radius={[0,4,4,0]}>
-              {rows.map((_,i)=><Cell key={i} fill={i===0?"hsl(214,95%,68%)":"hsl(221,83%,53%)"} />)}
+              {rows.map((_,i)=><Cell key={i} fill={i===0?"hsl(220,55%,62%)":"hsl(221,83%,53%)"} />)}
             </Bar>
           </BarChart>
         </ResponsiveContainer>

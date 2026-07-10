@@ -46,7 +46,7 @@ export default function EmailDeliverabilityCard({ series, lastRate, mean, drop, 
             <Tooltip formatter={(v) => [`${Number(v).toFixed(1)}%`, "Open rate"]} labelStyle={{ fontSize: 11 }} />
             {mean > 0 && <ReferenceLine y={mean} stroke="hsl(220,13%,70%)" strokeDasharray="4 4"
               label={{ value: `media ${mean.toFixed(0)}%`, position: "right", fontSize: 8, fill: "hsl(220,10%,50%)" }} />}
-            <Line type="monotone" dataKey="value" stroke="hsl(214,95%,68%)" strokeWidth={1.8} dot={false} />
+            <Line type="monotone" dataKey="value" stroke="hsl(220,55%,62%)" strokeWidth={1.8} dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>

@@ -33,12 +33,12 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 function retentionColor(rate) {
   if (rate === null || rate === undefined) return null;
-  if (rate >= 0.78) return 'hsl(226,71%,40%)';
-  if (rate >= 0.65) return 'hsl(214,95%,68%)';
-  if (rate >= 0.52) return 'hsl(214,95%,68%)';
-  if (rate >= 0.40) return 'hsl(213,96%,80%)';
-  if (rate >= 0.25) return 'hsl(213,96%,80%)';
-  return 'hsl(0,72%,51%)';
+  if (rate >= 0.78) return 'hsl(224,76%,42%)';
+  if (rate >= 0.65) return 'hsl(220,55%,62%)';
+  if (rate >= 0.52) return 'hsl(220,55%,62%)';
+  if (rate >= 0.40) return 'hsl(218,33%,70%)';
+  if (rate >= 0.25) return 'hsl(218,33%,70%)';
+  return 'hsl(224,76%,42%)';
 }
 
 export default function CohortAnalysis() {
@@ -122,8 +122,8 @@ export default function CohortAnalysis() {
                     <stop offset="95%" stopColor="hsl(221,83%,53%)" stopOpacity={0.05} />
                   </linearGradient>
                   <linearGradient id="recGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="hsl(214,95%,68%)" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="hsl(214,95%,68%)" stopOpacity={0.05} />
+                    <stop offset="5%"  stopColor="hsl(220,55%,62%)" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="hsl(220,55%,62%)" stopOpacity={0.05} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
@@ -134,7 +134,7 @@ export default function CohortAnalysis() {
                 <Tooltip content={<CustomTooltip />} />
                 <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
                 <Area type="monotone" dataKey="Primerizos"  stackId="a" stroke="hsl(221,83%,53%)" fill="url(#priGrad)" strokeWidth={2} />
-                <Area type="monotone" dataKey="Recurrentes" stackId="a" stroke="hsl(214,95%,68%)" fill="url(#recGrad)" strokeWidth={2} />
+                <Area type="monotone" dataKey="Recurrentes" stackId="a" stroke="hsl(220,55%,62%)" fill="url(#recGrad)" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -189,7 +189,7 @@ export default function CohortAnalysis() {
                 <YAxis tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
                   tickFormatter={v => `${v}%`} domain={[0, 100]} />
                 <Tooltip formatter={(v) => [`${v}%`, 'Recurrencia']} labelStyle={{ fontSize: 11 }} />
-                <Bar dataKey="recurrencia" name="% Recurrentes" fill="hsl(214,95%,68%)"
+                <Bar dataKey="recurrencia" name="% Recurrentes" fill="hsl(220,55%,62%)"
                   radius={[3, 3, 0, 0]} maxBarSize={30} />
               </BarChart>
             </ResponsiveContainer>
@@ -222,7 +222,7 @@ export default function CohortAnalysis() {
                 <YAxis tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false} />
                 <Tooltip formatter={(v, name) => [fmtNumber(v), name]} />
                 <Legend iconType="circle" iconSize={6} wrapperStyle={{ fontSize: 10 }} />
-                <Line type="monotone" dataKey="Compradores" stroke="hsl(214,95%,68%)" strokeWidth={2} dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="Compradores" stroke="hsl(220,55%,62%)" strokeWidth={2} dot={{ r: 3 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>

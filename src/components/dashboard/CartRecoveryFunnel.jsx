@@ -93,7 +93,7 @@ export default function CartRecoveryFunnel() {
       <div className="grid grid-cols-3 gap-3 mb-4">
         <div className="bg-muted/50 rounded-xl p-3 text-center">
           <p className="text-[10px] text-muted-foreground uppercase">Revenue total</p>
-          <p className="text-lg font-bold font-heading text-emerald-500">{fmtCurrency(totalRevenue)}</p>
+          <p className="text-lg font-bold font-heading text-blue-500">{fmtCurrency(totalRevenue)}</p>
         </div>
         <div className="bg-muted/50 rounded-xl p-3 text-center">
           <p className="text-[10px] text-muted-foreground uppercase">Compras recuperadas</p>
@@ -116,7 +116,7 @@ export default function CartRecoveryFunnel() {
             <YAxis tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
               tickFormatter={(v) => `€${(v / 1000).toFixed(0)}K`} />
             <Tooltip content={<CustomTooltip />} />
-            <Bar dataKey="revenue" name="Revenue" fill="hsl(214,95%,68%)" radius={[3, 3, 0, 0]} />
+            <Bar dataKey="revenue" name="Revenue" fill="hsl(220,55%,62%)" radius={[3, 3, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -130,11 +130,11 @@ export default function CartRecoveryFunnel() {
             <div className="flex-1 min-w-0">
               <div className="flex items-center justify-between gap-2">
                 <span className="text-xs truncate">{wf.name}</span>
-                <span className="text-xs font-mono font-semibold shrink-0 text-emerald-500">{fmtCurrency(wf.revenue)}</span>
+                <span className="text-xs font-mono font-semibold shrink-0 text-blue-500">{fmtCurrency(wf.revenue)}</span>
               </div>
               <div className="mt-1 h-1.5 bg-muted/60 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-emerald-500/70 rounded-full"
+                  className="h-full bg-blue-500/70 rounded-full"
                   style={{ width: `${totalRevenue > 0 ? (wf.revenue / topWorkflows[0].revenue) * 100 : 0}%` }}
                 />
               </div>

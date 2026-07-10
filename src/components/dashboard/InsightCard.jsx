@@ -5,17 +5,17 @@ import { Lightbulb } from "lucide-react";
 export default function InsightCard({ title, description, type = "info" }) {
  const colors = {
    info: "border-l-primary bg-primary/5",
-   success: "border-l-emerald-500 bg-emerald-500/5",
-   warning: "border-l-amber-500 bg-amber-500/5",
-   danger: "border-l-red-500 bg-red-500/5",
+   success: "border-l-blue-500 bg-blue-500/5",
+   warning: "border-l-slate-500 bg-slate-500/5",
+   danger: "border-l-slate-500 bg-slate-500/5",
  };
 
 
  const iconColors = {
    info: "text-primary",
-   success: "text-emerald-500",
-   warning: "text-amber-500",
-   danger: "text-red-500",
+   success: "text-blue-500",
+   warning: "text-slate-500",
+   danger: "text-slate-500",
  };
 
 

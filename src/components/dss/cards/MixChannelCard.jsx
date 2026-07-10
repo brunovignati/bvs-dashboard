@@ -48,9 +48,9 @@ export default function MixChannelCard({ delay }) {
               <Tooltip formatter={(v,n)=>[Math.round(v),n]} labelStyle={{ fontSize:11 }} />
               <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize:10 }} />
               <Area type="monotone" dataKey="Email" stackId="1" stroke="hsl(221,83%,53%)" fill="hsl(221,83%,53%)" fillOpacity={0.7} />
-              <Area type="monotone" dataKey="Push" stackId="1" stroke="hsl(214,95%,68%)" fill="hsl(214,95%,68%)" fillOpacity={0.7} />
-              <Area type="monotone" dataKey="Web" stackId="1" stroke="hsl(214,95%,68%)" fill="hsl(214,95%,68%)" fillOpacity={0.7} />
-              <Area type="monotone" dataKey="SMS" stackId="1" stroke="hsl(213,96%,80%)" fill="hsl(213,96%,80%)" fillOpacity={0.7} />
+              <Area type="monotone" dataKey="Push" stackId="1" stroke="hsl(220,55%,62%)" fill="hsl(220,55%,62%)" fillOpacity={0.7} />
+              <Area type="monotone" dataKey="Web" stackId="1" stroke="hsl(220,55%,62%)" fill="hsl(220,55%,62%)" fillOpacity={0.7} />
+              <Area type="monotone" dataKey="SMS" stackId="1" stroke="hsl(218,33%,70%)" fill="hsl(218,33%,70%)" fillOpacity={0.7} />
               <Area type="monotone" dataKey="No atribuido" stackId="1" stroke="hsl(220,13%,65%)" fill="hsl(220,13%,65%)" fillOpacity={0.5} />
             </AreaChart>
           </ResponsiveContainer>

@@ -8,10 +8,10 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, ResponsiveCo
 
 const COLORS = [
   'hsl(221,83%,53%)',
-  'hsl(214,95%,68%)',
-  'hsl(214,95%,68%)',
-  'hsl(213,96%,80%)',
-  'hsl(0,72%,51%)',
+  'hsl(220,55%,62%)',
+  'hsl(220,55%,62%)',
+  'hsl(218,33%,70%)',
+  'hsl(224,76%,42%)',
 ];
 
 export default function StickyWebContent() {
@@ -109,7 +109,7 @@ export default function StickyWebContent() {
                               <div className="flex justify-between gap-3"><span className="text-muted-foreground">Clics</span><span className="font-mono">{fmtNumber(d.clicks)}</span></div>
                               <div className="flex justify-between gap-3"><span className="text-muted-foreground">Vistas</span><span className="font-mono">{fmtNumber(d.opens)}</span></div>
                               <div className="flex justify-between gap-3"><span className="text-muted-foreground">Conv. Rate</span><span className="font-mono">{Number(d.convRate).toFixed(2)}%</span></div>
-                              <div className="flex justify-between gap-3"><span className="text-muted-foreground">Revenue</span><span className="font-mono text-emerald-500 font-semibold">{fmtCurrency(d.revenue)}</span></div>
+                              <div className="flex justify-between gap-3"><span className="text-muted-foreground">Revenue</span><span className="font-mono text-blue-500 font-semibold">{fmtCurrency(d.revenue)}</span></div>
                             </div>
                           </div>
                         );
@@ -146,7 +146,7 @@ export default function StickyWebContent() {
                   </div>
                   <div>
                     <p className="text-[10px] text-muted-foreground uppercase">Revenue</p>
-                    <p className="text-lg font-bold font-heading text-emerald-500">{fmtCurrency(s.revenue)}</p>
+                    <p className="text-lg font-bold font-heading text-blue-500">{fmtCurrency(s.revenue)}</p>
                   </div>
                 </div>
               </div>

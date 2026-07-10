@@ -66,7 +66,7 @@ export default function ComparisonPanel() {
             <p className="text-sm font-bold font-heading">Comparador de Periodos</p>
             <p className="text-[10px] text-muted-foreground">
               {isComparing
-                ? <><span className="text-primary font-semibold">{labelB}</span> vs <span className="text-amber-500 font-semibold">{labelA}</span> · afecta todo el panel</>
+                ? <><span className="text-primary font-semibold">{labelB}</span> vs <span className="text-slate-500 font-semibold">{labelA}</span> · afecta todo el panel</>
                 : <span className="text-primary font-semibold">{labelB}</span>
               }
             </p>
@@ -101,7 +101,7 @@ export default function ComparisonPanel() {
 
               {/* Selectores de periodo */}
               <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-2 items-center">
-                <PeriodSelector label="Periodo A · referencia" value={periodA} onChange={setPeriodA} accent="border-amber-500/40" />
+                <PeriodSelector label="Periodo A · referencia" value={periodA} onChange={setPeriodA} accent="border-slate-500/40" />
                 <div className="flex justify-center">
                   <ArrowLeftRight className="w-4 h-4 text-muted-foreground" />
                 </div>

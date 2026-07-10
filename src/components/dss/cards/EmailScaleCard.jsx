@@ -10,7 +10,7 @@ const Tip = ({ active, payload }) => {
   return (
     <div className="bg-card/95 backdrop-blur border border-border rounded-lg p-2.5 shadow-xl max-w-56">
       <p className="text-xs font-semibold mb-1 line-clamp-2">{d.name}</p>
-      <p className="text-[11px] text-muted-foreground">RPMil: <span className="font-mono text-emerald-600">€{d.rpm.toFixed(1)}</span></p>
+      <p className="text-[11px] text-muted-foreground">RPMil: <span className="font-mono text-blue-600">€{d.rpm.toFixed(1)}</span></p>
       <p className="text-[11px] text-muted-foreground">Enviados: <span className="font-mono">{fmtNumber(d.sent)}</span></p>
       <p className="text-[11px] text-muted-foreground">Revenue: <span className="font-mono">{fmtCurrency(d.revenue)}</span></p>
     </div>
@@ -40,7 +40,7 @@ export default function EmailScaleCard({ delay }) {
   const top = byRpm.slice(0, 3);
   const bottom = byRpm.filter(p => p.sent > 500).slice(-3).reverse();
 
-  const color = (p) => p.rpm >= q75 ? "hsl(214,95%,68%)" : p.rpm >= q50 ? "hsl(221,83%,53%)" : "hsl(220,13%,65%)";
+  const color = (p) => p.rpm >= q75 ? "hsl(220,55%,62%)" : p.rpm >= q50 ? "hsl(221,83%,53%)" : "hsl(220,13%,65%)";
 
   const hasData = pts.length >= 3;
 

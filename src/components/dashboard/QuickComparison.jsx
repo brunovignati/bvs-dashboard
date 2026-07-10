@@ -24,7 +24,7 @@ function DeltaBadge({ pct }) {
   const pos  = pct > 0;
   const zero = pct === 0;
   const Icon  = zero ? Minus : pos ? TrendingUp : TrendingDown;
-  const color = zero ? "text-muted-foreground" : pos ? "text-emerald-500" : "text-rose-500";
+  const color = zero ? "text-muted-foreground" : pos ? "text-blue-500" : "text-rose-500";
   return (
     <span className={`flex items-center gap-1 font-bold text-sm ${color}`}>
       <Icon className="w-3.5 h-3.5" />
@@ -106,7 +106,7 @@ export default function QuickComparison() {
                   {/* Periodo A (referencia) — solo si estamos comparando */}
                   {isComparing && (
                     <div className="flex items-center gap-2">
-                      <span className="inline-block w-2 h-2 rounded-full bg-amber-400 flex-shrink-0" />
+                      <span className="inline-block w-2 h-2 rounded-full bg-slate-400 flex-shrink-0" />
                       <span className="text-[10px] text-muted-foreground">{labelA}</span>
                       <span className="text-sm font-mono text-muted-foreground">{formatValue(key, valA)}</span>
                     </div>
@@ -126,7 +126,7 @@ export default function QuickComparison() {
                   </div>
                   <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                     <div
-                      className="h-full bg-amber-400 rounded-full transition-all duration-500"
+                      className="h-full bg-slate-400 rounded-full transition-all duration-500"
                       style={{ width: `${Math.min(100, (valA / maxVal) * 100)}%` }}
                     />
                   </div>

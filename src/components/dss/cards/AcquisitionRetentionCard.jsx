@@ -42,7 +42,7 @@ export default function AcquisitionRetentionCard({ delay }) {
                 tickFormatter={v => `${(v * 100).toFixed(0)}%`} />
               <Tooltip formatter={(v, n) => [Math.round(v), n]} labelStyle={{ fontSize: 11 }} />
               <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
-              <Area type="monotone" dataKey="rc" name="Recurrentes" stackId="1" stroke="hsl(214,95%,68%)" fill="hsl(214,95%,68%)" fillOpacity={0.7} />
+              <Area type="monotone" dataKey="rc" name="Recurrentes" stackId="1" stroke="hsl(220,55%,62%)" fill="hsl(220,55%,62%)" fillOpacity={0.7} />
               <Area type="monotone" dataKey="ft" name="Primerizos" stackId="1" stroke="hsl(221,83%,53%)" fill="hsl(221,83%,53%)" fillOpacity={0.6} />
             </AreaChart>
           </ResponsiveContainer>

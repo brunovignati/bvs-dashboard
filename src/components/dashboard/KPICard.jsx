@@ -5,7 +5,7 @@ import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 export default function KPICard({ title, value, subtitle, trend, trendLabel, icon: Icon, accentClass = "text-primary" }) {
  const trendIcon = trend > 0 ? TrendingUp : trend < 0 ? TrendingDown : Minus;
  const TrendIcon = trendIcon;
- const trendColor = trend > 0 ? "text-emerald-500" : trend < 0 ? "text-red-400" : "text-muted-foreground";
+ const trendColor = trend > 0 ? "text-blue-500" : trend < 0 ? "text-slate-400" : "text-muted-foreground";
 
 
  return (

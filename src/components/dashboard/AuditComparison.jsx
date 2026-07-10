@@ -31,12 +31,12 @@ function bayesAB(succA, nA, succB, nB) {
 }
 
 function probLabel(p) {
-  if (p >= 0.95) return { text: "Ganador claro ✓",      color: "text-emerald-500" };
-  if (p >= 0.85) return { text: "Probablemente mejor",  color: "text-emerald-400" };
-  if (p >= 0.70) return { text: "Ligeramente mejor",    color: "text-amber-400" };
-  if (p <= 0.05) return { text: "Claramente peor ✗",    color: "text-red-500" };
-  if (p <= 0.15) return { text: "Probablemente peor",   color: "text-red-400" };
-  if (p <= 0.30) return { text: "Ligeramente peor",     color: "text-amber-400" };
+  if (p >= 0.95) return { text: "Ganador claro ✓",      color: "text-blue-500" };
+  if (p >= 0.85) return { text: "Probablemente mejor",  color: "text-blue-400" };
+  if (p >= 0.70) return { text: "Ligeramente mejor",    color: "text-slate-400" };
+  if (p <= 0.05) return { text: "Claramente peor ✗",    color: "text-slate-500" };
+  if (p <= 0.15) return { text: "Probablemente peor",   color: "text-slate-400" };
+  if (p <= 0.30) return { text: "Ligeramente peor",     color: "text-slate-400" };
   return { text: "Sin diferencia clara",                  color: "text-muted-foreground" };
 }
 
@@ -58,7 +58,7 @@ function BayesCard({ title, pWin, pA, pB, labelA, labelB, formatRate }) {
         </div>
         <div className="relative h-3 rounded-full bg-muted overflow-hidden">
           <div className="absolute top-0 left-0 h-full rounded-full transition-all"
-            style={{ width: `${barWidth}%`, background: barWidth >= 70 ? 'hsl(214,95%,68%)' : barWidth <= 30 ? 'hsl(0,72%,51%)' : 'hsl(213,96%,80%)' }} />
+            style={{ width: `${barWidth}%`, background: barWidth >= 70 ? 'hsl(220,55%,62%)' : barWidth <= 30 ? 'hsl(224,76%,42%)' : 'hsl(218,33%,70%)' }} />
           <div className="absolute top-0 left-1/2 h-full w-px bg-border/60" />
         </div>
         <div className="flex justify-between items-center">
@@ -89,7 +89,7 @@ const ScatterTooltip = ({ active, payload }) => {
         </div>
         <div className="flex justify-between gap-4 text-xs">
           <span className="text-muted-foreground">Revenue</span>
-          <span className="font-mono font-semibold text-emerald-500">{fmtCurrency(d.revenue)}</span>
+          <span className="font-mono font-semibold text-blue-500">{fmtCurrency(d.revenue)}</span>
         </div>
         <div className="flex justify-between gap-4 text-xs">
           <span className="text-muted-foreground">Enviados</span>
@@ -167,7 +167,7 @@ export default function AuditComparison() {
   const avgX = scatterData.length > 0 ? scatterData.reduce((s, d) => s + d.x, 0) / scatterData.length : 0;
   const avgY = scatterData.length > 0 ? scatterData.reduce((s, d) => s + d.y, 0) / scatterData.length : 0;
   const getColor = (d) =>
-    d.isAuto ? 'hsl(214,95%,68%)' : 'hsl(221,83%,53%)';
+    d.isAuto ? 'hsl(220,55%,62%)' : 'hsl(221,83%,53%)';
 
   const thClass = "text-[10px] uppercase tracking-widest font-semibold text-muted-foreground py-3 cursor-pointer select-none hover:text-foreground transition-colors";
 
@@ -203,7 +203,7 @@ export default function AuditComparison() {
         <div>
           <p className="text-[11px] text-muted-foreground mb-1">
             Cada punto = un workflow · Tamaño = volumen enviado ·
-            <span style={{ color: 'hsl(214,95%,68%)' }}> ■</span> Automatización ·
+            <span style={{ color: 'hsl(220,55%,62%)' }}> ■</span> Automatización ·
             <span style={{ color: 'hsl(221,83%,53%)' }}> ■</span> Newsletter
           </p>
           <div className="h-72">
@@ -230,9 +230,9 @@ export default function AuditComparison() {
           </div>
           <div className="grid grid-cols-2 gap-2 mt-2 text-[9px]">
             <div className="text-center border border-border/40 rounded p-1.5 text-muted-foreground">↖ Alta apertura · Bajo revenue</div>
-            <div className="text-center border border-emerald-500/20 rounded p-1.5 bg-emerald-500/5 text-emerald-600">↗ Alta apertura · Alto revenue ★</div>
+            <div className="text-center border border-blue-500/20 rounded p-1.5 bg-blue-500/5 text-blue-600">↗ Alta apertura · Alto revenue ★</div>
             <div className="text-center border border-border/40 rounded p-1.5 text-muted-foreground">↙ Baja apertura · Bajo revenue</div>
-            <div className="text-center border border-amber-500/20 rounded p-1.5 bg-amber-500/5 text-amber-600">↘ Baja apertura · Alto revenue</div>
+            <div className="text-center border border-slate-500/20 rounded p-1.5 bg-slate-500/5 text-slate-600">↘ Baja apertura · Alto revenue</div>
           </div>
         </div>
       )}
@@ -280,18 +280,18 @@ export default function AuditComparison() {
                         <div className="flex items-center gap-2">
                           <div className="max-w-[200px] truncate text-xs" title={row.emailName}>{shortName}</div>
                           {isLowCtr && (
-                            <span className="text-[9px] bg-amber-500/15 text-amber-600 font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap">CTR bajo</span>
+                            <span className="text-[9px] bg-slate-500/15 text-slate-600 font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap">CTR bajo</span>
                           )}
                           {!isNewsletter(row) && (
-                            <span className="text-[9px] bg-emerald-500/15 text-emerald-600 font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap">Auto</span>
+                            <span className="text-[9px] bg-blue-500/15 text-blue-600 font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap">Auto</span>
                           )}
                         </div>
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs py-2.5">{fmtNumber(row.sent)}</TableCell>
-                      <TableCell className={`text-right font-mono text-xs py-2.5 ${openRate > 45 ? 'text-emerald-500 font-semibold' : ''}`}>
+                      <TableCell className={`text-right font-mono text-xs py-2.5 ${openRate > 45 ? 'text-blue-500 font-semibold' : ''}`}>
                         {openRate.toFixed(1)}%
                       </TableCell>
-                      <TableCell className={`text-right font-mono text-xs py-2.5 ${isLowCtr ? 'text-amber-500' : ''}`}>
+                      <TableCell className={`text-right font-mono text-xs py-2.5 ${isLowCtr ? 'text-slate-500' : ''}`}>
                         {ctr.toFixed(2)}%
                       </TableCell>
                       <TableCell className="text-right font-mono text-xs py-2.5">{fmtNumber(row.purchases)}</TableCell>

@@ -12,8 +12,8 @@ import { motion } from "framer-motion";
 
 const CHANNELS = [
   { key: "retail",      label: "Retail",    color: "hsl(221,83%,53%)" },
-  { key: "digital",     label: "Digital",   color: "hsl(214,95%,68%)" },
-  { key: "omnichannel", label: "Omnicanal", color: "hsl(214,95%,68%)" },
+  { key: "digital",     label: "Digital",   color: "hsl(220,55%,62%)" },
+  { key: "omnichannel", label: "Omnicanal", color: "hsl(220,55%,62%)" },
 ];
 
 const MONTH_LABELS = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];

@@ -11,7 +11,7 @@ import { motion } from "framer-motion";
 import MiniTable from "./MiniTable";
 
 const MONTHS_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-const PUSH_COLOR = "hsl(214,95%,68%)";
+const PUSH_COLOR = "hsl(220,55%,62%)";
 
 const ScatterTooltip = ({ active, payload }) => {
   if (!active || !payload?.length) return null;
@@ -74,8 +74,8 @@ export default function PushAnalysis() {
   const avgX = scatterData.length > 0 ? scatterData.reduce((s, d) => s + d.x, 0) / scatterData.length : 0;
   const avgY = scatterData.length > 0 ? scatterData.reduce((s, d) => s + d.y, 0) / scatterData.length : 0;
   const getColor = (d) =>
-    d.revenue >= q75 ? 'hsl(226,71%,40%)' :
-    d.revenue >= q50 ? 'hsl(213,96%,80%)' :
+    d.revenue >= q75 ? 'hsl(224,76%,42%)' :
+    d.revenue >= q50 ? 'hsl(218,33%,70%)' :
     'hsl(220,13%,65%)';
 
   // Table columns
@@ -132,8 +132,8 @@ export default function PushAnalysis() {
       {/* KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
         <KPICard title="Push Enviados"      value={fmtNumber(totalPushSent)}      subtitle="Total" icon={Send} />
-        <KPICard title="Compras Atribuidas" value={fmtNumber(totalPushPurchases)} subtitle="Histórico" icon={Target} accentClass="text-emerald-500" />
-        <KPICard title="Revenue Push"       value={fmtCurrency(totalPushRevenue)} subtitle="Histórico" icon={Bell} accentClass="text-amber-500" />
+        <KPICard title="Compras Atribuidas" value={fmtNumber(totalPushPurchases)} subtitle="Histórico" icon={Target} accentClass="text-blue-500" />
+        <KPICard title="Revenue Push"       value={fmtCurrency(totalPushRevenue)} subtitle="Histórico" icon={Bell} accentClass="text-slate-500" />
         <KPICard title="Conv. Rate"         value={`${convRate.toFixed(3)}%`}     subtitle="envío → compra" icon={Target} accentClass="text-violet-500" />
       </div>
 
@@ -156,8 +156,8 @@ export default function PushAnalysis() {
         <div>
           <p className="text-[11px] text-muted-foreground mb-1">
             Cada punto = una campaña push · Tamaño = volumen enviado ·
-            <span style={{ color: 'hsl(226,71%,40%)' }}> ■</span> Alto revenue ·
-            <span style={{ color: 'hsl(213,96%,80%)' }}> ■</span> Medio ·
+            <span style={{ color: 'hsl(224,76%,42%)' }}> ■</span> Alto revenue ·
+            <span style={{ color: 'hsl(218,33%,70%)' }}> ■</span> Medio ·
             <span className="text-muted-foreground"> ■</span> Bajo
           </p>
           <div className="h-72">
@@ -186,7 +186,7 @@ export default function PushAnalysis() {
             <div className="text-center border border-border/40 rounded p-1.5 text-muted-foreground">↖ Alta apertura · Bajo revenue</div>
             <div className="text-center border border-violet-500/20 rounded p-1.5 bg-violet-500/5 text-violet-600">↗ Alta apertura · Alto revenue ★</div>
             <div className="text-center border border-border/40 rounded p-1.5 text-muted-foreground">↙ Baja apertura · Bajo revenue</div>
-            <div className="text-center border border-amber-500/20 rounded p-1.5 bg-amber-500/5 text-amber-600">↘ Baja apertura · Alto revenue</div>
+            <div className="text-center border border-slate-500/20 rounded p-1.5 bg-slate-500/5 text-slate-600">↘ Baja apertura · Alto revenue</div>
           </div>
         </div>
       )}
@@ -232,7 +232,7 @@ export default function PushAnalysis() {
                     tickFormatter={v => fmtNumber(v)}/>
                   <Tooltip formatter={(v,n) => [fmtNumber(v), n]} labelStyle={{ fontSize: 11 }}/>
                   <Area type="monotone" dataKey="Enviados"  stroke={PUSH_COLOR} fill="url(#pushSentGrad)" strokeWidth={1.5} dot={false}/>
-                  <Area type="monotone" dataKey="Aperturas" stroke="hsl(214,95%,68%)" fill="none" strokeWidth={1.5} dot={false} strokeDasharray="4 2"/>
+                  <Area type="monotone" dataKey="Aperturas" stroke="hsl(220,55%,62%)" fill="none" strokeWidth={1.5} dot={false} strokeDasharray="4 2"/>
                 </AreaChart>
               </ResponsiveContainer>
             </div>

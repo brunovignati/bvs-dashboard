@@ -8,9 +8,9 @@ import { TrendingUp, Sparkles, CalendarDays } from "lucide-react";
 import { motion } from "framer-motion";
 
 const NUTRA_COLOR    = "hsl(221,83%,53%)";
-const VET_COLOR      = "hsl(214,95%,68%)";
-const TICKET_COLOR   = "hsl(213,96%,80%)";
-const FORECAST_COLOR = "hsl(213,96%,80%)";
+const VET_COLOR      = "hsl(220,55%,62%)";
+const TICKET_COLOR   = "hsl(218,33%,70%)";
+const FORECAST_COLOR = "hsl(218,33%,70%)";
 
 // ─── Tooltips ───────────────────────────────────────────────
 const CustomTooltip = ({ active, payload, label }) => {
@@ -292,7 +292,7 @@ export default function RevenueChart() {
           </div>
           <div className="text-xs text-muted-foreground">
             Variación histórica:
-            <span className={`font-mono font-semibold ml-1 ${parseFloat(ticketTrend) >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
+            <span className={`font-mono font-semibold ml-1 ${parseFloat(ticketTrend) >= 0 ? 'text-blue-500' : 'text-slate-500'}`}>
               {parseFloat(ticketTrend) >= 0 ? '+' : ''}{ticketTrend}%
             </span>
           </div>
@@ -342,7 +342,7 @@ export default function RevenueChart() {
               <Tooltip formatter={(v, name) => [`€${Number(v).toLocaleString('es-ES')}`, name]} />
               <Legend iconType="circle" iconSize={6} wrapperStyle={{ fontSize: 10 }} />
               <Bar dataKey="EmailAttr" name="Email"       stackId="a" fill={NUTRA_COLOR} radius={[0,0,0,0]} />
-              <Bar dataKey="PushAttr"  name="Push"        stackId="a" fill="hsl(214,95%,68%)" radius={[0,0,0,0]} />
+              <Bar dataKey="PushAttr"  name="Push"        stackId="a" fill="hsl(220,55%,62%)" radius={[0,0,0,0]} />
               <Bar dataKey="WebAttr"   name="Web Content" stackId="a" fill={VET_COLOR} radius={[4,4,0,0]} />
             </ComposedChart>
           </ResponsiveContainer>

@@ -33,17 +33,17 @@ export const VERBS = {
 
 // ── Puerta del dato / semáforo de madurez ───────────────────────────
 export const MATURITY = {
-  green: { symbol: "●", label: "Responde hoy",   cls: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" },
-  amber: { symbol: "◐", label: "Madura",          cls: "bg-amber-500/10 text-amber-600 border-amber-500/20" },
-  red:   { symbol: "○", label: "Falta dato",      cls: "bg-red-500/10 text-red-600 border-red-500/20" },
+  green: { symbol: "●", label: "Responde hoy",   cls: "bg-blue-500/10 text-blue-600 border-blue-500/20" },
+  amber: { symbol: "◐", label: "Madura",          cls: "bg-blue-400/10 text-blue-500 border-blue-400/20" },
+  red:   { symbol: "○", label: "Falta dato",      cls: "bg-slate-400/10 text-slate-500 border-slate-400/20" },
 };
 
 // ── Severidad de señales (para la cinta de alertas) ─────────────────
 export const SEVERITY = {
-  high:   { rank: 3, cls: "border-l-red-500",    dot: "bg-red-500" },
-  medium: { rank: 2, cls: "border-l-amber-500",  dot: "bg-amber-500" },
+  high:   { rank: 3, cls: "border-l-blue-700",   dot: "bg-blue-700" },
+  medium: { rank: 2, cls: "border-l-blue-400",   dot: "bg-blue-400" },
   low:    { rank: 1, cls: "border-l-slate-400",  dot: "bg-slate-400" },
-  ok:     { rank: 0, cls: "border-l-emerald-500",dot: "bg-emerald-500" },
+  ok:     { rank: 0, cls: "border-l-blue-500",   dot: "bg-blue-500" },
 };
 
 // ── Helpers temporales ──────────────────────────────────────────────

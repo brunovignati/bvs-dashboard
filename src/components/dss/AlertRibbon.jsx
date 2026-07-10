@@ -11,10 +11,10 @@ export default function AlertRibbon({ signals = [] }) {
 
   if (active.length === 0) {
     return (
-      <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-4 flex items-center gap-3">
-        <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+      <div className="bg-blue-500/5 border border-blue-500/20 rounded-2xl p-4 flex items-center gap-3">
+        <CheckCircle2 className="w-5 h-5 text-blue-600 shrink-0" />
         <div>
-          <p className="text-sm font-semibold text-emerald-700">Sin señales críticas hoy</p>
+          <p className="text-sm font-semibold text-blue-700">Sin señales críticas hoy</p>
           <p className="text-xs text-muted-foreground">Ninguna regla ha cruzado su umbral. Puedes cerrar tranquilo.</p>
         </div>
       </div>
@@ -24,7 +24,7 @@ export default function AlertRibbon({ signals = [] }) {
   return (
     <div className="bg-card border border-border rounded-2xl p-4">
       <div className="flex items-center gap-2 mb-3">
-        <AlertTriangle className="w-4 h-4 text-amber-600" />
+        <AlertTriangle className="w-4 h-4 text-slate-600" />
         <p className="text-sm font-semibold text-foreground">Requiere tu atención hoy</p>
         <span className="text-[10px] text-muted-foreground">· ordenado por prioridad</span>
       </div>

@@ -51,7 +51,7 @@ export default function RevenueTargetCard({ delay }) {
       className="bg-card border border-border rounded-2xl p-5">
       <div className="flex items-start justify-between gap-3 mb-2">
         <h3 className="text-sm font-semibold text-foreground">¿Voy camino de cumplir el objetivo?</h3>
-        <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-emerald-500/10 text-emerald-600 border-emerald-500/20">● Responde hoy</span>
+        <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-blue-500/10 text-blue-600 border-blue-500/20">● Responde hoy</span>
       </div>
 
       {/* Controles: periodo + objetivo editable */}
@@ -76,7 +76,7 @@ export default function RevenueTargetCard({ delay }) {
       ) : (
         <div>
           <div className="flex items-baseline gap-2 mb-1">
-            <span className={`text-2xl font-bold font-heading ${onTrack?"text-emerald-600":"text-amber-600"}`}>{fmtCurrency(acc)}</span>
+            <span className={`text-2xl font-bold font-heading ${onTrack?"text-blue-600":"text-slate-600"}`}>{fmtCurrency(acc)}</span>
             <span className="text-xs text-muted-foreground">de {fmtCurrency(target)} · {pctAcc.toFixed(0)}% acumulado</span>
           </div>
           {/* Barra tipo bullet */}
@@ -84,11 +84,11 @@ export default function RevenueTargetCard({ delay }) {
             <div className="absolute inset-y-0 left-0 bg-primary/70" style={{width:`${pctAcc}%`}} />
             {/* marcador de proyección */}
             <div className="absolute inset-y-0 w-0.5 bg-foreground" style={{left:`${Math.min(100,pctProj)}%`}} title="Proyección" />
-            <div className="absolute inset-y-0 right-0 w-0.5 bg-emerald-600" title="Objetivo (100%)" />
+            <div className="absolute inset-y-0 right-0 w-0.5 bg-blue-600" title="Objetivo (100%)" />
           </div>
           <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
             <span>Acumulado · día {daysElapsed}/{daysInPeriod}</span>
-            <span>▏ proyección: <span className={onTrack?"text-emerald-600 font-semibold":"text-amber-600 font-semibold"}>{fmtCurrency(projection)}</span> ({pctProj.toFixed(0)}%)</span>
+            <span>▏ proyección: <span className={onTrack?"text-blue-600 font-semibold":"text-slate-600 font-semibold"}>{fmtCurrency(projection)}</span> ({pctProj.toFixed(0)}%)</span>
           </div>
         </div>
       )}

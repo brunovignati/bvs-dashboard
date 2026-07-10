@@ -49,9 +49,9 @@ export default function CorrelationMatrix() {
 
   const getColor = (val) => {
     const abs = Math.abs(val);
-    if (abs > 0.8) return val > 0 ? "bg-emerald-500/80 text-white" : "bg-red-500/80 text-white";
-    if (abs > 0.6) return val > 0 ? "bg-emerald-500/40 text-foreground" : "bg-red-500/40 text-foreground";
-    if (abs > 0.4) return val > 0 ? "bg-emerald-500/20 text-foreground" : "bg-red-500/20 text-foreground";
+    if (abs > 0.8) return val > 0 ? "bg-blue-500/80 text-white" : "bg-slate-500/80 text-white";
+    if (abs > 0.6) return val > 0 ? "bg-blue-500/40 text-foreground" : "bg-slate-500/40 text-foreground";
+    if (abs > 0.4) return val > 0 ? "bg-blue-500/20 text-foreground" : "bg-slate-500/20 text-foreground";
     return "bg-muted/50 text-muted-foreground";
   };
 

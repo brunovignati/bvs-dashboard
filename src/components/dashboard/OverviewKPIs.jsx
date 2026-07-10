@@ -66,14 +66,14 @@ export default function OverviewKPIs() {
        value={`${openRate.toFixed(1)}%`}
        subtitle={`${fmtNumber(totalOpens)} aperturas únicas`}
        icon={Target}
-       accentClass="text-emerald-500"
+       accentClass="text-blue-500"
      />
      <KPICard
        title="CTR Global"
        value={`${clickRate.toFixed(2)}%`}
        subtitle={`${fmtNumber(totalClicks)} clics únicos`}
        icon={Target}
-       accentClass="text-amber-500"
+       accentClass="text-slate-500"
      />
      <KPICard
        title={`Revenue ${periodLabel}`}

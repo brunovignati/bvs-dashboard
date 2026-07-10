@@ -9,17 +9,17 @@ import { motion } from "framer-motion";
 
 function TrendIcon({ delta }) {
   if (delta === null) return <Minus className="w-3 h-3 text-muted-foreground" />;
-  if (delta > 0)  return <TrendingUp   className="w-3 h-3 text-emerald-500" />;
-  if (delta < 0)  return <TrendingDown className="w-3 h-3 text-red-500" />;
+  if (delta > 0)  return <TrendingUp   className="w-3 h-3 text-blue-500" />;
+  if (delta < 0)  return <TrendingDown className="w-3 h-3 text-slate-500" />;
   return <Minus className="w-3 h-3 text-muted-foreground" />;
 }
 
 const SEGMENT_COLORS = [
   'hsl(221,83%,53%)',
-  'hsl(214,95%,68%)',
-  'hsl(214,95%,68%)',
-  'hsl(213,96%,80%)',
-  'hsl(0,72%,51%)',
+  'hsl(220,55%,62%)',
+  'hsl(220,55%,62%)',
+  'hsl(218,33%,70%)',
+  'hsl(224,76%,42%)',
 ];
 
 export default function SegmentExplorer() {
@@ -123,11 +123,11 @@ export default function SegmentExplorer() {
           </div>
           <div className="bg-muted/50 rounded-xl p-3 text-center">
             <p className="text-[10px] text-muted-foreground uppercase">Creciendo</p>
-            <p className="text-lg font-bold font-heading text-emerald-500">{growing}</p>
+            <p className="text-lg font-bold font-heading text-blue-500">{growing}</p>
           </div>
           <div className="bg-muted/50 rounded-xl p-3 text-center">
             <p className="text-[10px] text-muted-foreground uppercase">Decreciendo</p>
-            <p className="text-lg font-bold font-heading text-red-500">{shrinking}</p>
+            <p className="text-lg font-bold font-heading text-slate-500">{shrinking}</p>
           </div>
         </div>
       )}
@@ -202,7 +202,7 @@ export default function SegmentExplorer() {
                     <div className="flex items-center gap-0.5 shrink-0 w-16 justify-end">
                       <TrendIcon delta={e.delta} />
                       <span className={`text-[10px] font-mono ${
-                        e.delta > 0 ? 'text-emerald-500' : e.delta < 0 ? 'text-red-500' : 'text-muted-foreground'
+                        e.delta > 0 ? 'text-blue-500' : e.delta < 0 ? 'text-slate-500' : 'text-muted-foreground'
                       }`}>
                         {e.delta > 0 ? '+' : ''}{e.deltaPct}%
                       </span>

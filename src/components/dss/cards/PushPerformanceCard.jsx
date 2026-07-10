@@ -12,7 +12,7 @@ const Tip = ({ active, payload }) => {
       <p className="text-xs font-semibold mb-1 line-clamp-2">{d.name}</p>
       <p className="text-[11px] text-muted-foreground">Conversión: <span className="font-mono">{d.conv.toFixed(2)}%</span></p>
       <p className="text-[11px] text-muted-foreground">Enviados: <span className="font-mono">{fmtNumber(d.sent)}</span></p>
-      <p className="text-[11px] text-muted-foreground">Revenue: <span className="font-mono text-emerald-600">{fmtCurrency(d.revenue)}</span></p>
+      <p className="text-[11px] text-muted-foreground">Revenue: <span className="font-mono text-blue-600">{fmtCurrency(d.revenue)}</span></p>
     </div>
   );
 };
@@ -37,7 +37,7 @@ export default function PushPerformanceCard({ delay }) {
   const hasData = pts.length >= 3;
   const avgConv = pts.length ? pts.reduce((s, p) => s + p.conv, 0) / pts.length : 0;
 
-  const color = (p) => p.conv >= avgConv * 1.5 ? "hsl(214,95%,68%)" : p.conv >= avgConv ? "hsl(214,95%,68%)" : "hsl(220,13%,65%)";
+  const color = (p) => p.conv >= avgConv * 1.5 ? "hsl(220,55%,62%)" : p.conv >= avgConv ? "hsl(220,55%,62%)" : "hsl(220,13%,65%)";
 
   return (
     <EvidenceCard

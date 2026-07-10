@@ -65,7 +65,7 @@ export default function ListFatigueCard({ delay }) {
               label={{ value: "Baja %", angle: -90, position: "insideLeft", offset: 12, fontSize: 9, fill: "hsl(220,10%,50%)" }} />
             <Tooltip formatter={(v, n) => [typeof v === "number" ? v.toFixed(2) : v, n]} />
             <Scatter data={pts}>
-              {pts.map((p, i) => <Cell key={i} fill={p.rate > avg * 1.8 ? "hsl(0,72%,51%)" : "hsl(220,13%,65%)"} fillOpacity={0.8} />)}
+              {pts.map((p, i) => <Cell key={i} fill={p.rate > avg * 1.8 ? "hsl(224,76%,42%)" : "hsl(220,13%,65%)"} fillOpacity={0.8} />)}
             </Scatter>
           </ScatterChart>
         </ResponsiveContainer>

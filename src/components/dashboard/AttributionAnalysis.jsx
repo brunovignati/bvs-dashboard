@@ -7,7 +7,7 @@ import InsightCard from "./InsightCard";
 import { GitBranch, Info } from "lucide-react";
 import { motion } from "framer-motion";
 
-const COLORS = ["hsl(221,83%,53%)", "hsl(214,95%,68%)", "hsl(214,95%,68%)"];
+const COLORS = ["hsl(221,83%,53%)", "hsl(220,55%,62%)", "hsl(220,55%,62%)"];
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -77,8 +77,8 @@ export default function AttributionAnalysis() {
       />
 
       {/* Nota de caveat */}
-      <div className="flex items-start gap-2 mb-4 p-3 bg-amber-500/10 border border-amber-500/20 rounded-xl">
-        <Info className="w-3.5 h-3.5 text-amber-500 mt-0.5 flex-shrink-0" />
+      <div className="flex items-start gap-2 mb-4 p-3 bg-slate-500/10 border border-slate-500/20 rounded-xl">
+        <Info className="w-3.5 h-3.5 text-slate-500 mt-0.5 flex-shrink-0" />
         <p className="text-[11px] text-muted-foreground">
           <span className="font-semibold text-foreground">Modelo last-touch:</span> Connectif asigna cada compra al último canal contactado. Los canales son <em>mutuamente excluyentes</em> — no representan revenue adicional, sino cuál canal "cerró" la venta.
         </p>
@@ -116,7 +116,7 @@ export default function AttributionAnalysis() {
           {/* Barra horizontal por canal */}
           <div className="space-y-3 mb-4">
             {[
-              { name: "Total atribuido", value: totAll,   color: "hsl(220,14%,50%)", pct: 100 },
+              { name: "Total atribuido", value: totAll,   color: "hsl(220,10%,50%)", pct: 100 },
               ...barData.map(b => ({ name: b.canal, value: b.compras, color: b.color, pct: totAll > 0 ? (b.compras / totAll) * 100 : 0 })),
             ].map((item, i) => (
               <div key={i} className="flex items-center gap-3">

@@ -38,7 +38,7 @@ export default function CriticalWorkflowCard({ workflows, anyStalled, hasData, d
         {workflows.slice(0, 5).map((w, i) => (
           <div key={i} className="flex items-center justify-between gap-2 text-xs">
             <span className="truncate text-foreground max-w-[65%]" title={w.name}>{w.name}</span>
-            <span className={`font-mono ${w.stalled ? "text-red-600 font-semibold" : "text-muted-foreground"}`}>
+            <span className={`font-mono ${w.stalled ? "text-slate-600 font-semibold" : "text-muted-foreground"}`}>
               {w.stalled ? "parado" : `${fmtNumber(w.recentSent)} env. 7d`}
             </span>
           </div>

@@ -54,7 +54,7 @@ export default function ReactivationCard({ delay }) {
               <YAxis type="category" dataKey="short" width={140} tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false} />
               <Tooltip formatter={(v) => [fmtCurrency(v), "Revenue"]} labelFormatter={(l, p) => p?.[0]?.payload?.name || l} labelStyle={{ fontSize: 10 }} />
               <Bar dataKey="revenue" radius={[0, 4, 4, 0]}>
-                {top.map((w, i) => <Cell key={i} fill={w.channel === "Push" ? "hsl(214,95%,68%)" : i === 0 ? "hsl(214,95%,68%)" : "hsl(221,83%,53%)"} />)}
+                {top.map((w, i) => <Cell key={i} fill={w.channel === "Push" ? "hsl(220,55%,62%)" : i === 0 ? "hsl(220,55%,62%)" : "hsl(221,83%,53%)"} />)}
               </Bar>
             </BarChart>
           </ResponsiveContainer>

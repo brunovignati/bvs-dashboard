@@ -47,7 +47,7 @@ export default function ChannelDropCard({ channels, worst, hasAttribution, delay
             <ReferenceLine y={0} stroke="hsl(220,13%,70%)" />
             <Bar dataKey="delta" radius={[3, 3, 0, 0]}>
               {channels.map((c, i) => (
-                <Cell key={i} fill={c.delta < -25 ? "hsl(0,72%,51%)" : c.delta < 0 ? "hsl(213,96%,80%)" : "hsl(214,95%,68%)"} />
+                <Cell key={i} fill={c.delta < -25 ? "hsl(224,76%,42%)" : c.delta < 0 ? "hsl(218,33%,70%)" : "hsl(220,55%,62%)"} />
               ))}
             </Bar>
           </BarChart>

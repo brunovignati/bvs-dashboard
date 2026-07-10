@@ -117,7 +117,7 @@ export default function EditableTable({ columns, data, onSave, onDelete, onAdd, 
                      <div className="flex items-center justify-end gap-1">
                        {isEditing ? (
                          <>
-                           <Button size="icon" variant="ghost" className="h-6 w-6 text-emerald-500" onClick={commitEdit} disabled={saving}>
+                           <Button size="icon" variant="ghost" className="h-6 w-6 text-blue-500" onClick={commitEdit} disabled={saving}>
                              {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
                            </Button>
                            <Button size="icon" variant="ghost" className="h-6 w-6 text-muted-foreground" onClick={cancelEdit}>
@@ -129,7 +129,7 @@ export default function EditableTable({ columns, data, onSave, onDelete, onAdd, 
                            <Button size="icon" variant="ghost" className="h-6 w-6 text-muted-foreground hover:text-primary" onClick={() => startEdit(row)}>
                              <Pencil className="w-3 h-3" />
                            </Button>
-                           <Button size="icon" variant="ghost" className="h-6 w-6 text-muted-foreground hover:text-red-400" onClick={() => handleDelete(row.id)} disabled={deletingId === row.id}>
+                           <Button size="icon" variant="ghost" className="h-6 w-6 text-muted-foreground hover:text-slate-400" onClick={() => handleDelete(row.id)} disabled={deletingId === row.id}>
                              {deletingId === row.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
                            </Button>
                          </>
@@ -159,7 +159,7 @@ export default function EditableTable({ columns, data, onSave, onDelete, onAdd, 
                  ))}
                  <td className="px-3 py-2">
                    <div className="flex items-center justify-end gap-1">
-                     <Button size="icon" variant="ghost" className="h-6 w-6 text-emerald-500" onClick={commitAdd} disabled={saving}>
+                     <Button size="icon" variant="ghost" className="h-6 w-6 text-blue-500" onClick={commitAdd} disabled={saving}>
                        {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
                      </Button>
                      <Button size="icon" variant="ghost" className="h-6 w-6 text-muted-foreground" onClick={() => setAdding(false)}>

@@ -20,9 +20,9 @@ function MaturityChip({ state = "green" }) {
 }
 
 const TONE = {
-  good:    "text-emerald-600",  // ↑ variación positiva
-  bad:     "text-red-600",      // ↓ variación negativa
-  warn:    "text-foreground",   // sin color extra (estilo Meta)
+  good:    "text-blue-600",         // ↑ predominante
+  bad:     "text-muted-foreground", // ↓ neutro
+  warn:    "text-foreground",
   neutral: "text-foreground",
 };
 
@@ -39,8 +39,8 @@ export default function EvidenceCard({
   delay = 0,
 }) {
   const leftBorder =
-    severity === "high"   ? "border-l-4 border-l-red-500" :
-    severity === "medium" ? "border-l-4 border-l-amber-500" : "";
+    severity === "high"   ? "border-l-4 border-l-slate-500" :
+    severity === "medium" ? "border-l-4 border-l-slate-500" : "";
 
   return (
     <motion.div
