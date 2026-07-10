@@ -1,6 +1,7 @@
 import { ScatterChart, Scatter, XAxis, YAxis, ZAxis, CartesianGrid, Tooltip, Cell, ResponsiveContainer } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { usePushCampaigns } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
 import { latestMonthRows } from "@/lib/dss/dssUtils";
 import { fmtCurrency, fmtNumber } from "@/lib/dashboardData";
 
@@ -19,8 +20,10 @@ const Tip = ({ active, payload }) => {
 
 export default function PushPerformanceCard({ delay }) {
   const { data = [] } = usePushCampaigns();
-  let rows = data.filter(r => r.workflow && r.sent > 50);
-  const latest = latestMonthRows(rows);
+  const { rangeB } = useComparison();
+  const cutoff = rangeB.end.year * 12 + rangeB.end.month;
+  let rows = data.filter(r => r.workflow && r.sent > 50 && (r.year * 12 + r.month) <= cutoff);
+  const latest = latestMonthRows(rows, cutoff);
   const scope = latest.length >= 5 ? latest : rows;
   const periodNote = latest.length >= 5 ? "último mes" : "histórico";
 

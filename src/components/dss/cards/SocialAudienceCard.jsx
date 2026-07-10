@@ -7,15 +7,23 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useIgDaily, useFbDaily, useTkDaily } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
+import { upToCutoff } from "@/lib/dss/dssUtils";
 import { fmtNumber } from "@/lib/dashboardData";
 
 const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 const lbl = (r) => (r.month ? `${r.day || ""} ${M[r.month] || ""}`.trim() : String(r.date_str || "").slice(5));
 
 export default function SocialAudienceCard({ delay }) {
-  const { data: ig = [] } = useIgDaily();
-  const { data: fb = [] } = useFbDaily();
-  const { data: tk = [] } = useTkDaily();
+  const { data: igRaw = [] } = useIgDaily();
+  const { data: fbRaw = [] } = useFbDaily();
+  const { data: tkRaw = [] } = useTkDaily();
+  const { rangeB } = useComparison();
+  // El comparador controla la ventana: hasta el final del período principal.
+  const cutoff = rangeB.end.year * 12 + rangeB.end.month;
+  const ig = upToCutoff(igRaw, cutoff);
+  const fb = upToCutoff(fbRaw, cutoff);
+  const tk = upToCutoff(tkRaw, cutoff);
   const hasData = ig.length + fb.length + tk.length > 0;
 
   const map = {};

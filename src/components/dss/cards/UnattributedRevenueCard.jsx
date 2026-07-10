@@ -1,7 +1,8 @@
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import EvidenceCard from "../EvidenceCard";
-import { MATURITY } from "@/lib/dss/dssUtils";
+import { MATURITY, upToCutoff } from "@/lib/dss/dssUtils";
 import { useDailyRevenue, useGa4Daily } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
 import { fmtNumber } from "@/lib/dashboardData";
 import { CHART_H, GRID, AXIS, TIP, LEGEND, SERIES, STACK_FILL_OPACITY } from "@/lib/dss/chartTheme";
 
@@ -10,8 +11,12 @@ const SRC = /source|medium|channel|organic|direct|paid|referral|social/i;
 const EXCLUDE = new Set(["date_str","year","month","day","updated_at","created_at","id"]);
 
 export default function UnattributedRevenueCard({ delay }) {
-  const { data = [] } = useDailyRevenue();
-  const { data: ga4 = [] } = useGa4Daily();
+  const { data: dataRaw = [] } = useDailyRevenue();
+  const { data: ga4Raw = [] } = useGa4Daily();
+  const { rangeB } = useComparison();
+  const cutoff = rangeB.end.year * 12 + rangeB.end.month;
+  const data = upToCutoff(dataRaw, cutoff);
+  const ga4 = upToCutoff(ga4Raw, cutoff);
 
   // Connectif: no atribuido = total compras − Σ atribuidas, por mes
   const byM = {};

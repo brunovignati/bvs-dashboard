@@ -56,11 +56,21 @@ export function sortByYMD(arr) {
 export function sortByYM(arr) {
   return [...arr].sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month);
 }
-export function latestMonthRows(arr) {
-  if (!arr.length) return [];
-  const maxYm = Math.max(...arr.map(r => r.year * 12 + r.month));
-  return arr.filter(r => r.year * 12 + r.month === maxYm);
+export function latestMonthRows(arr, cutoff = Infinity) {
+  const rows = (arr || []).filter(r => (r.year * 12 + r.month) <= cutoff);
+  if (!rows.length) return [];
+  const maxYm = Math.max(...rows.map(r => r.year * 12 + r.month));
+  return rows.filter(r => r.year * 12 + r.month === maxYm);
 }
+
+// year*12+month de una fila, soportando {year,month} o date_str "YYYY-MM-DD".
+export const rowYM = (r) => {
+  if (r && r.year && r.month) return r.year * 12 + r.month;
+  if (r && r.date_str) { const p = String(r.date_str).split("-"); return (+p[0]) * 12 + (+p[1]); }
+  return 0;
+};
+// Recorta un array temporal al final del período principal del comparador (cutoff = year*12+month).
+export const upToCutoff = (arr, cutoff) => (arr || []).filter(r => rowYM(r) <= cutoff);
 export function ymLabel(row, monthLabelFn) {
   return `${monthLabelFn(row.month)} ${String(row.year).slice(2)}`;
 }

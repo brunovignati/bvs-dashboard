@@ -1,6 +1,7 @@
 import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Cell, ResponsiveContainer } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useEmailCampaigns } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
 import { latestMonthRows } from "@/lib/dss/dssUtils";
 import { fmtNumber } from "@/lib/dashboardData";
 
@@ -12,7 +13,9 @@ function unsubOf(r) {
 
 export default function ListFatigueCard({ delay }) {
   const { data = [] } = useEmailCampaigns();
-  const rows = data.filter(r => r.emailName && r.sent > 100);
+  const { rangeB } = useComparison();
+  const cutoff = rangeB.end.year * 12 + rangeB.end.month;
+  const rows = data.filter(r => r.emailName && r.sent > 100 && (r.year * 12 + r.month) <= cutoff);
   const hasUnsub = rows.some(r => unsubOf(r) !== null);
 
   if (!hasUnsub) {
@@ -32,7 +35,7 @@ export default function ListFatigueCard({ delay }) {
     );
   }
 
-  const latest = latestMonthRows(rows);
+  const latest = latestMonthRows(rows, cutoff);
   const scope = latest.length >= 5 ? latest : rows;
   const pts = scope.map(c => ({
     name: c.emailName, sent: c.sent, x: c.sent,

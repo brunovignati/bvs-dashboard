@@ -6,13 +6,19 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useGa4Daily } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
+import { upToCutoff } from "@/lib/dss/dssUtils";
 import { fmtNumber } from "@/lib/dashboardData";
 
 const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 const lbl = (r) => (r.month ? `${r.day || ""} ${M[r.month] || ""}`.trim() : String(r.date_str || "").slice(5));
 
 export default function Ga4TrafficCard({ delay }) {
-  const { data = [] } = useGa4Daily();
+  const { data: dataRaw = [] } = useGa4Daily();
+  const { rangeB } = useComparison();
+  // El comparador controla la ventana: analizamos hasta el final del período principal.
+  const cutoff = rangeB.end.year * 12 + rangeB.end.month;
+  const data = upToCutoff(dataRaw, cutoff);
   const hasData = data.length > 0;
 
   if (!hasData) {

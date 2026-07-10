@@ -1,7 +1,8 @@
 import EvidenceCard from "../EvidenceCard";
-import { MATURITY } from "@/lib/dss/dssUtils";
+import { MATURITY, upToCutoff } from "@/lib/dss/dssUtils";
 import { CHART } from "@/lib/dss/palette";
 import { useIgDaily, useFbDaily, useTkDaily, useGa4Daily, useDailyRevenue } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
 import { fmtNumber, fmtCurrency } from "@/lib/dashboardData";
 import { ChevronDown } from "lucide-react";
 
@@ -29,11 +30,19 @@ function Stage({ label, source, value, srcState, color }) {
 }
 
 export default function MarketingFunnelCard({ delay }) {
-  const { data: ig = [] } = useIgDaily();
-  const { data: fb = [] } = useFbDaily();
-  const { data: tk = [] } = useTkDaily();
-  const { data: ga4 = [] } = useGa4Daily();
-  const { data: rev = [] } = useDailyRevenue();
+  const { data: igRaw = [] } = useIgDaily();
+  const { data: fbRaw = [] } = useFbDaily();
+  const { data: tkRaw = [] } = useTkDaily();
+  const { data: ga4Raw = [] } = useGa4Daily();
+  const { data: revRaw = [] } = useDailyRevenue();
+  const { rangeB } = useComparison();
+  // El comparador controla la ventana: hasta el final del período principal.
+  const cutoff = rangeB.end.year * 12 + rangeB.end.month;
+  const ig = upToCutoff(igRaw, cutoff);
+  const fb = upToCutoff(fbRaw, cutoff);
+  const tk = upToCutoff(tkRaw, cutoff);
+  const ga4 = upToCutoff(ga4Raw, cutoff);
+  const rev = upToCutoff(revRaw, cutoff);
 
   const followers = [ig, fb, tk].reduce((s, arr) => s + (Number(arr[arr.length-1]?.followers) || 0), 0);
   const socialState = (ig.length + fb.length + tk.length) > 0 ? "green" : "amber";
