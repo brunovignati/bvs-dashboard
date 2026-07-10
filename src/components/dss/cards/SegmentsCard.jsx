@@ -5,7 +5,15 @@ import { fmtNumber } from "@/lib/dashboardData";
 
 export default function SegmentsCard({ delay }) {
   const { data = [] } = useSegments();
-  const clean = data.filter(s => s.segment && !/test|prueba|_old|borrar/i.test(s.segment) && (s.contacts||0) > 0);
+  // segments trae varios snapshots mensuales → deduplicar por nombre al MÁS RECIENTE,
+  // si no cada segmento sale repetido y el total se infla sumando meses.
+  const latest = {};
+  for (const s of data) {
+    if (!s.segment) continue;
+    const ym = (s.year || 0) * 12 + (s.month || 0);
+    if (!latest[s.segment] || ym > latest[s.segment]._ym) latest[s.segment] = { ...s, _ym: ym };
+  }
+  const clean = Object.values(latest).filter(s => !/test|prueba|_old|borrar/i.test(s.segment) && (s.contacts||0) > 0);
   const top = [...clean].sort((a,b)=>(b.contacts||0)-(a.contacts||0)).slice(0,10)
     .map(s => ({ name: s.segment.length>28 ? s.segment.slice(0,27)+"…" : s.segment, full:s.segment, contacts:s.contacts||0 }));
   const hasData = top.length >= 2;

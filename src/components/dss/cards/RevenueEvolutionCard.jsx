@@ -1,18 +1,24 @@
-import { ComposedChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useDailyRevenue } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
 import { fmtCurrency } from "@/lib/dashboardData";
-import { CHART_H, GRID, AXIS, TIP, PRIMARY, AREA_FILL_OPACITY } from "@/lib/dss/chartTheme";
+import { CHART_H, GRID, AXIS, TIP, PRIMARY } from "@/lib/dss/chartTheme";
 
 const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
 export default function RevenueEvolutionCard({ delay }) {
   const { data = [] } = useDailyRevenue();
+  const { rangeB } = useComparison();
+  // Cortamos al final del período del comparador (por defecto, el último mes CERRADO),
+  // para no incluir el mes en curso incompleto — que hundía la serie y disparaba un
+  // "-73%" falso al compararlo con un mes completo.
+  const cutoff = rangeB.end.year * 12 + rangeB.end.month;
 
-  // Agregar revenue total del negocio por mes
   const byMonth = {};
   for (const r of data) {
     const k = r.year * 12 + r.month;
+    if (k > cutoff) continue;
     if (!byMonth[k]) byMonth[k] = { k, year: r.year, month: r.month, revenue: 0, orders: 0 };
     byMonth[k].revenue += r.revenue || 0;
     byMonth[k].orders += r.purchases || 0;
@@ -46,18 +52,20 @@ export default function RevenueEvolutionCard({ delay }) {
         { verb: "reasignar", rationale: mom != null && mom < 0 ? "Revisa qué palanca lo arrastra (canal, ticket o pedidos) y actúa sobre ella." : "Mantén la asignación que funciona y trabaja la palanca más débil." },
       ]}
       delay={delay}
-      note="Revenue total del negocio agregado por mes (Connectif · daily_revenue). Ticket = revenue / pedidos."
+      note="Revenue mensual del negocio (Connectif · daily_revenue) hasta el último mes cerrado — el mes en curso incompleto se excluye para no falsear la comparación. Ticket = revenue / pedidos."
     >
       {hasData && (
         <div className={CHART_H}>
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={chart} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
+            <BarChart data={chart} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
               <CartesianGrid {...GRID} />
               <XAxis dataKey="name" {...AXIS} interval={Math.max(1, Math.floor(chart.length / 9))} />
-              <YAxis {...AXIS} tickFormatter={v => `€${(v/1000).toFixed(0)}K`} />
-              <Tooltip formatter={(v) => [fmtCurrency(v), "Revenue"]} {...TIP} />
-              <Area type="monotone" dataKey="revenue" name="Revenue" stroke={PRIMARY} fill={PRIMARY} fillOpacity={AREA_FILL_OPACITY} strokeWidth={2.2} dot={false} />
-            </ComposedChart>
+              <YAxis {...AXIS} tickFormatter={v => `€${(v / 1000).toFixed(0)}K`} />
+              <Tooltip formatter={(v) => [fmtCurrency(v), "Revenue"]} {...TIP} cursor={{ fill: "hsl(220,13%,91%)", fillOpacity: 0.4 }} />
+              <Bar dataKey="revenue" name="Revenue" radius={[3, 3, 0, 0]} maxBarSize={34}>
+                {chart.map((m, i) => <Cell key={i} fill={i === chart.length - 1 ? "hsl(220,55%,62%)" : PRIMARY} />)}
+              </Bar>
+            </BarChart>
           </ResponsiveContainer>
         </div>
       )}
