@@ -11,14 +11,17 @@ export const VARIABLES = [
 
 const ComparisonContext = createContext(null)
 
-// Mes más reciente disponible — se actualiza en runtime
-const NOW_YEAR  = new Date().getFullYear()
-const NOW_MONTH = new Date().getMonth() + 1  // 1-based
+// Período activo por defecto = ÚLTIMO MES CERRADO (no el mes en curso, que está
+// incompleto y produciría deltas falsos al compararlo con meses completos).
+const _now = new Date()
+let LAST_CLOSED_YEAR  = _now.getFullYear()
+let LAST_CLOSED_MONTH = _now.getMonth() + 1 - 1  // mes anterior al actual (1-based)
+if (LAST_CLOSED_MONTH === 0) { LAST_CLOSED_MONTH = 12; LAST_CLOSED_YEAR -= 1 }
 
 export function ComparisonProvider({ children }) {
-  // periodB = periodo activo/actual  |  periodA = periodo de referencia
-  const [periodA, setPeriodA] = useState({ year: NOW_YEAR - 1, month: NOW_MONTH })
-  const [periodB, setPeriodB] = useState({ year: NOW_YEAR,     month: NOW_MONTH })
+  // periodB = periodo activo (último mes cerrado)  |  periodA = referencia (YoY)
+  const [periodA, setPeriodA] = useState({ year: LAST_CLOSED_YEAR - 1, month: LAST_CLOSED_MONTH })
+  const [periodB, setPeriodB] = useState({ year: LAST_CLOSED_YEAR,     month: LAST_CLOSED_MONTH })
   const [selectedVars, setSelectedVars] = useState(['purchases', 'revenue', 'avgPurchase', 'emailAttr', 'pushAttr', 'webAttr'])
 
   const toggleVar = (key) =>
@@ -35,14 +38,15 @@ export function ComparisonProvider({ children }) {
 
   // Presets rápidos
   const applyPreset = (preset) => {
-    const b = { year: NOW_YEAR, month: NOW_MONTH }
+    // Base = último mes cerrado (coherente con el período por defecto).
+    const b = { year: LAST_CLOSED_YEAR, month: LAST_CLOSED_MONTH }
     if (preset === 'prev_month') {
-      const prevMonth = NOW_MONTH === 1 ? 12 : NOW_MONTH - 1
-      const prevYear  = NOW_MONTH === 1 ? NOW_YEAR - 1 : NOW_YEAR
+      const prevMonth = LAST_CLOSED_MONTH === 1 ? 12 : LAST_CLOSED_MONTH - 1
+      const prevYear  = LAST_CLOSED_MONTH === 1 ? LAST_CLOSED_YEAR - 1 : LAST_CLOSED_YEAR
       setPeriodA({ year: prevYear, month: prevMonth })
       setPeriodB(b)
     } else if (preset === 'yoy') {
-      setPeriodA({ year: NOW_YEAR - 1, month: NOW_MONTH })
+      setPeriodA({ year: LAST_CLOSED_YEAR - 1, month: LAST_CLOSED_MONTH })
       setPeriodB(b)
     }
   }
