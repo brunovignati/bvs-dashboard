@@ -8,6 +8,7 @@ import DomainHeader from "../DomainHeader";
 import MixChannelCard from "../cards/MixChannelCard";
 import RevenueBridgeCard from "../cards/RevenueBridgeCard";
 import UnattributedRevenueCard from "../cards/UnattributedRevenueCard";
+import OwnBrandCard from "../cards/OwnBrandCard";
 import Clientes from "../domains/Clientes";
 import Marketing from "../domains/Marketing";
 import Automatizaciones from "../domains/Automatizaciones";
@@ -20,6 +21,7 @@ export default function GrowthMarketing() {
         <MixChannelCard delay={0.03} />
         <RevenueBridgeCard delay={0.05} />
         <UnattributedRevenueCard delay={0.07} />
+        <OwnBrandCard delay={0.09} />
       </section>
       <Clientes />
       <Marketing />

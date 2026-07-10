@@ -53,6 +53,7 @@ ON_CONFLICT = {
     "email_campaigns":  "year,month,email_name",
     "cart_abandonment": "year,month,email_name",
     "buyer_cohorts":    "year,month",
+    "cohort_retention": "cohort_year,cohort_month,life_month",
     "channel_segmentation": "year,month",
     "push_campaigns":   "year,month,workflow",
     "subscribers":      "year,month,status",
@@ -242,6 +243,50 @@ def t_buyer_cohorts(rows):
             "recurring":  safe_float(r, 'numberOfRecurringBuyers'),
             "updated_at": NOW.isoformat(),
         })
+    return result
+
+def _int(row, *keys, default=None):
+    """Como safe_float pero devuelve int; None si no encuentra clave utilizable."""
+    v = safe_float(row, *keys, default=None)
+    return int(v) if v is not None else default
+
+def t_cohort_retention(rows):
+    """
+    Matriz de cohortes para el LTV real.
+
+    Espera un informe Data Explorer "V. Cohortes" con, por fila, una cohorte de
+    adquisición (mes de la primera compra) × mes de vida. Nombres de columna
+    admitidos (defensivo — el primer run revela los reales en el log):
+      cohorte:   cohortYear/cohortMonth  o  firstPurchaseYear/firstPurchaseMonth
+      life:      lifeMonth / monthsSinceFirstPurchase / monthNumber (0,1,2,...)
+      buyers:    numberOfBuyers / numberOfContacts / buyers
+      revenue:   totalPurchaseAmount / revenue
+
+    Calcula cohort_size (buyers en life_month=0) y lo adjunta a cada fila.
+    """
+    parsed = []
+    for r in rows:
+        cy = _int(r, 'cohortYear', 'firstPurchaseYear', 'year')
+        cm = _int(r, 'cohortMonth', 'firstPurchaseMonth', 'month')
+        lm = _int(r, 'lifeMonth', 'monthsSinceFirstPurchase', 'monthNumber',
+                  'monthsSincePurchase', default=None)
+        if cy is None or cm is None or lm is None:
+            continue
+        parsed.append({
+            "cohort_year": cy, "cohort_month": cm, "life_month": lm,
+            "buyers":  _int(r, 'numberOfBuyers', 'numberOfContacts', 'buyers', default=0) or 0,
+            "revenue": safe_float(r, 'totalPurchaseAmount', 'revenue'),
+        })
+    # cohort_size = buyers en life_month 0 de cada cohorte
+    size = {}
+    for p in parsed:
+        if p["life_month"] == 0:
+            size[(p["cohort_year"], p["cohort_month"])] = p["buyers"]
+    result = []
+    for p in parsed:
+        p["cohort_size"] = size.get((p["cohort_year"], p["cohort_month"]), 0)
+        p["updated_at"] = NOW.isoformat()
+        result.append(p)
     return result
 
 def t_channel_segmentation(rows):
@@ -624,6 +669,7 @@ REPORT_MAP = [
     ("email_campaigns",  ["tricas looker", "audit newsletters"],                      t_email_campaigns),
     ("cart_abandonment", ["carritos abandonados", "carrito abandon"],       t_cart_abandonment),
     ("buyer_cohorts",    ["primerizos"],                                    t_buyer_cohorts),
+    ("cohort_retention", ["cohorte", "cohort", "ltv"],                       t_cohort_retention),
     ("channel_segmentation", ["compradores por origen", "channel buyers"],    t_channel_segmentation),
     ("push_campaigns",   ["push ds", "mÃ©tricas push"],                     t_push_campaigns),
     ("subscribers",      ["evolutivo suscritos"],                           t_subscribers),

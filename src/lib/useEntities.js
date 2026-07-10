@@ -88,6 +88,14 @@ export function useBuyerCohorts() {
   })
 }
 
+export function useCohortRetention() {
+  return useQuery({
+    queryKey: ['cohort_retention'],
+    queryFn: () => fetchTable('cohort_retention', 'cohort_year', true),
+    initialData: [],
+  })
+}
+
 export function usePushCampaigns() {
   return useQuery({
     queryKey: ['push_campaigns'],
