@@ -1,8 +1,6 @@
 import DomainHeader from "../DomainHeader";
 import { usePulso } from "@/lib/dss/usePulso";
-import StorytellingHero from "@/components/dashboard/StorytellingHero";
-import OverviewKPIs from "@/components/dashboard/OverviewKPIs";
-import QuickComparison from "@/components/dashboard/QuickComparison";
+import SaludResumen from "./SaludResumen";
 import RevenueDailyCard from "../cards/RevenueDailyCard";
 import EmailDeliverabilityCard from "../cards/EmailDeliverabilityCard";
 import ChannelDropCard from "../cards/ChannelDropCard";
@@ -13,9 +11,7 @@ export default function SaludDelNegocio() {
   return (
     <div className="space-y-6">
       <DomainHeader title="Salud del Negocio" objetivo="Estado del negocio de un vistazo y detección rápida de lo que se desvía." />
-      <StorytellingHero />
-      <OverviewKPIs />
-      <QuickComparison />
+      <SaludResumen />
       <div>
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">¿Qué se ha desviado de lo normal? (últimos días)</p>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
