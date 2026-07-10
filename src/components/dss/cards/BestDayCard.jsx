@@ -4,12 +4,14 @@ import { useEnvios } from "@/lib/useEntities";
 import { fmtCurrency } from "@/lib/dashboardData";
 
 const DAYS = ["", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+const DAYS_FULL = ["", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 
 export default function BestDayCard({ delay }) {
   const { data = [] } = useEnvios();
   const rows = [...data].sort((a,b)=>(a.dayOfWeek||0)-(b.dayOfWeek||0)).map(d => ({
     // El mapa local por número es fiable; d.dayName viene mal codificado en la fuente ("SÃ¡b").
-    name: DAYS[d.dayOfWeek] || d.dayName || String(d.dayOfWeek),
+    name: DAYS[d.dayOfWeek] || d.dayName || String(d.dayOfWeek),        // abreviatura (eje)
+    full: DAYS_FULL[d.dayOfWeek] || d.dayName || String(d.dayOfWeek),   // nombre completo (texto)
     rpm: (d.sent||0) > 0 ? ((d.revenue||0)/d.sent)*1000 : 0,
     revenue: d.revenue||0, sent: d.sent||0,
   }));
@@ -19,12 +21,12 @@ export default function BestDayCard({ delay }) {
   return (
     <EvidenceCard
       question="¿Cuál es el mejor día para enviar?"
-      answer={hasData && best ? `${best.name}` : "Sin datos"}
+      answer={hasData && best ? best.full : "Sin datos"}
       answerTone={hasData ? "good" : "neutral"}
       context={hasData && best ? `Mayor revenue por 1.000 envíos (€${best.rpm.toFixed(0)}). Normaliza por volumen, no por total bruto.` : undefined}
       maturity="amber"
       actions={[
-        { verb: "mantener", rationale: hasData && best ? `Concentra los envíos importantes en ${best.name} y días de eficiencia similar.` : "Define el calendario de envío por eficiencia, no por costumbre." },
+        { verb: "mantener", rationale: hasData && best ? `Concentra los envíos importantes en ${best.full} y días de eficiencia similar.` : "Define el calendario de envío por eficiencia, no por costumbre." },
         { verb: "crear", rationale: "Prueba mover una campaña al mejor día y compara el resultado la semana siguiente." },
       ]}
       delay={delay}
