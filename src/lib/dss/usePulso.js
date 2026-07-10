@@ -4,7 +4,7 @@
  * contador de señales del nav). React Query cachea los fetch, así que no duplica red.
  */
 import { useMemo } from "react";
-import { useDailyRevenue, useDailyEmail, useDailyPush } from "@/lib/useEntities";
+import { useDailyRevenue, useDailyPush } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
 import { sortByYMD, trailingStats, matchName } from "./dssUtils";
 
@@ -14,7 +14,6 @@ const CRITICAL = /carrito|reactiv|reabast|recuper|abandon/i;
 
 export function usePulso() {
   const { data: dailyRev = [] } = useDailyRevenue();
-  const { data: dailyEmail = [] } = useDailyEmail();
   const { data: dailyPush = [] } = useDailyPush();
   const { rangeB } = useComparison();
   // El comparador controla la ventana: analizamos hasta el final del período principal
@@ -48,36 +47,9 @@ export function usePulso() {
     }
 
     // ── Entregabilidad / apertura email ──
+    // La apertura de email vive en EmailDeliverabilityCard (email_campaigns, mensual);
+    // usePulso ya NO descarga daily_email (150k filas) para no penalizar la carga.
     const email = { series: [], lastRate: 0, mean: 0, drop: false, hasData: false };
-    const emailRows = leq(dailyEmail);
-    if (emailRows.length >= 20) {
-      const byDay = {};
-      for (const r of emailRows) {
-        const k = r.year * 10000 + r.month * 100 + (r.day || 0);
-        if (!byDay[k]) byDay[k] = { k, r, sent: 0, opens: 0 };
-        byDay[k].sent += r.sent || 0;
-        byDay[k].opens += r.opens || 0;
-      }
-      const days = Object.values(byDay).sort((a, b) => a.k - b.k)
-        .filter(d => d.sent > 0)
-        .map(d => ({ name: dLabel(d.r), value: (d.opens / d.sent) * 100 }));
-      if (days.length >= 8) {
-        email.hasData = true;
-        email.series = days.slice(-45);
-        email.lastRate = days[days.length - 1].value;
-        const prior = days.slice(-15, -1).map(d => d.value);
-        email.mean = trailingStats(prior).mean;
-        email.drop = email.mean > 0 && email.lastRate < email.mean * 0.7;
-        if (email.drop) {
-          signals.push({
-            severity: "medium",
-            title: "Caída de apertura de email",
-            detail: `${email.lastRate.toFixed(1)}% vs. media ${email.mean.toFixed(1)}%`,
-            verb: "Investigar",
-          });
-        }
-      }
-    }
 
     // ── Caída de canal atribuido ──
     const CH = [
@@ -153,5 +125,5 @@ export function usePulso() {
     const signalCount = signals.filter(s => s.severity !== "ok").length;
 
     return { signals, signalCount, revenue, email, channelData, wf };
-  }, [dailyRev, dailyEmail, dailyPush, cutoff]);
+  }, [dailyRev, dailyPush, cutoff]);
 }
