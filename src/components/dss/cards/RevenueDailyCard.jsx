@@ -32,12 +32,6 @@ export default function RevenueDailyCard({ series, lastValue, mean, std, outside
       <div className="h-40">
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={series} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
-            <defs>
-              <linearGradient id="dssRevGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="hsl(221,83%,53%)" stopOpacity={0.25} />
-                <stop offset="95%" stopColor="hsl(221,83%,53%)" stopOpacity={0} />
-              </linearGradient>
-            </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
             <XAxis dataKey="name" tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false}
               interval={Math.max(1, Math.floor(series.length / 8))} />
@@ -45,7 +39,7 @@ export default function RevenueDailyCard({ series, lastValue, mean, std, outside
               tickFormatter={(v) => `€${(v/1000).toFixed(0)}K`} />
             <Tooltip formatter={(v) => [fmtCurrency(v), "Revenue"]} labelStyle={{ fontSize: 11 }} />
             {std > 0 && <ReferenceArea y1={lo} y2={hi} fill="hsl(220,55%,62%)" fillOpacity={0.06} />}
-            <Area type="monotone" dataKey="value" stroke="hsl(221,83%,53%)" fill="url(#dssRevGrad)" strokeWidth={1.5} dot={false} />
+            <Area type="monotone" dataKey="value" stroke="hsl(221,83%,53%)" fill="hsl(221,83%,53%)" fillOpacity={0.12} strokeWidth={1.5} dot={false} />
           </ComposedChart>
         </ResponsiveContainer>
       </div>
