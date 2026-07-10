@@ -5,8 +5,8 @@
  *
  * Coherencia:
  *  - Las dos líneas (Nutracéuticos BVS y BVS Vet Shop) se comparan por las MISMAS
- *    dos métricas, ambas comparables: Revenue (€) y su Aporte al crecimiento (€ que
- *    cada línea suma/resta al cambio total del negocio entre A y B).
+ *    dos métricas, ambas comparables: Revenue (€) y su Aporte a las ventas (peso de
+ *    cada línea sobre el revenue total del negocio, en %, con variación en puntos).
  *  - Recurrencia = reparto de compradores del negocio (primerizos vs recurrentes)
  *    agregado sobre el rango, con su variación en puntos.
  */
@@ -41,31 +41,18 @@ function DeltaPts({ pts, suffix }) {
   );
 }
 
-/* Fila "Aporte al crecimiento": € con signo + % del crecimiento total (si el negocio creció) */
-function Contribution({ eur, sharePct }) {
-  const up = eur >= 0;
-  const col = up ? "text-primary" : "text-muted-foreground";
-  return (
-    <div className="flex items-baseline justify-between text-xs">
-      <span className="text-muted-foreground">Aporte al crecimiento</span>
-      <span className="flex items-baseline gap-1.5">
-        <span className={`font-semibold ${col}`}>{up ? "+" : ""}{fmtCurrency(eur)}</span>
-        {sharePct != null && <span className="text-[11px] text-muted-foreground">{sharePct.toFixed(0)}%</span>}
-      </span>
-    </div>
-  );
-}
-
-/* Fila secundaria con variación % inline */
-function Row({ label, value, pct }) {
-  const up = pct != null && pct > 0;
-  const col = pct == null ? "text-muted-foreground/60" : up ? "text-primary" : "text-muted-foreground";
+/* Fila secundaria con variación inline (% o pts) */
+function Row({ label, value, pct, pts }) {
+  const d = pts != null ? pts : pct;
+  const up = d != null && d > 0;
+  const col = d == null ? "text-muted-foreground/60" : up ? "text-primary" : "text-muted-foreground";
+  const txt = d == null ? "—" : pts != null ? `${up ? "+" : ""}${pts.toFixed(1)} pts` : `${up ? "+" : ""}${pct.toFixed(0)}%`;
   return (
     <div className="flex items-baseline justify-between text-xs">
       <span className="text-muted-foreground">{label}</span>
       <span className="flex items-baseline gap-1.5">
         <span className="font-semibold text-foreground">{value}</span>
-        <span className={`text-[11px] font-semibold ${col}`}>{pct == null ? "—" : `${up ? "+" : ""}${pct.toFixed(0)}%`}</span>
+        <span className={`text-[11px] font-semibold ${col}`}>{txt}</span>
       </span>
     </div>
   );
@@ -85,11 +72,16 @@ export default function SaludResumen() {
   const vetRevB = sumRange(compradores, rangeB, "revenue");
   const vetRevA = sumRange(compradores, rangeA, "revenue");
 
-  // Aporte al crecimiento (opción 2): € que cada línea añade al cambio total B−A
-  const nutraGrowth = nutraRevB - nutraRevA;
-  const vetGrowth = vetRevB - vetRevA;
-  const totalGrowth = nutraGrowth + vetGrowth;
-  const shareOf = (g) => totalGrowth > 0 ? (g / totalGrowth) * 100 : null;
+  // Aporte a las ventas: peso de cada línea sobre el revenue total del negocio (siempre
+  // definido, crezca o no). Su variación en puntos muestra el desplazamiento del mix.
+  const combinedB = nutraRevB + vetRevB;
+  const combinedA = nutraRevA + vetRevA;
+  const nutraShareB = combinedB > 0 ? (nutraRevB / combinedB) * 100 : 0;
+  const vetShareB = combinedB > 0 ? (vetRevB / combinedB) * 100 : 0;
+  const nutraShareA = combinedA > 0 ? (nutraRevA / combinedA) * 100 : null;
+  const vetShareA = combinedA > 0 ? (vetRevA / combinedA) * 100 : null;
+  const nutraSharePts = nutraShareA == null ? null : nutraShareB - nutraShareA;
+  const vetSharePts = vetShareA == null ? null : vetShareB - vetShareA;
 
   // Recurrencia del negocio, agregada sobre cada rango
   const recurB = sumRange(cohorts, rangeB, "recurring");
@@ -117,7 +109,7 @@ export default function SaludResumen() {
             <p className="text-xl font-black">{fmtCurrency(nutraRevB)}</p>
             <Delta pct={pctChange(nutraRevB, nutraRevA)} suffix={cmp} />
             <div className="pt-2">
-              <Contribution eur={nutraGrowth} sharePct={shareOf(nutraGrowth)} />
+              <Row label="Aporte a las ventas" value={`${nutraShareB.toFixed(0)}%`} pts={nutraSharePts} />
             </div>
           </div>
 
@@ -127,7 +119,7 @@ export default function SaludResumen() {
             <p className="text-xl font-black">{fmtCurrency(vetRevB)}</p>
             <Delta pct={pctChange(vetRevB, vetRevA)} suffix={cmp} />
             <div className="pt-2">
-              <Contribution eur={vetGrowth} sharePct={shareOf(vetGrowth)} />
+              <Row label="Aporte a las ventas" value={`${vetShareB.toFixed(0)}%`} pts={vetSharePts} />
             </div>
           </div>
 

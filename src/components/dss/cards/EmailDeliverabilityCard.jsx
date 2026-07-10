@@ -7,17 +7,22 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useEmailCampaigns } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
 import { CHART_H, GRID, AXIS, TIP, PRIMARY } from "@/lib/dss/chartTheme";
 
 const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
 export default function EmailDeliverabilityCard({ delay }) {
   const { data = [] } = useEmailCampaigns();
+  const { rangeB } = useComparison();
+  // El comparador controla la ventana: el "mes actual" es el final del período principal.
+  const cutoff = rangeB.end.year * 12 + rangeB.end.month;
 
   const byM = {};
   for (const r of data) {
     if (!(r.sent > 0)) continue;
     const k = r.year * 12 + r.month;
+    if (k > cutoff) continue;
     if (!byM[k]) byM[k] = { k, year: r.year, month: r.month, sent: 0, opens: 0 };
     byM[k].sent += r.sent || 0;
     byM[k].opens += r.opens || 0;

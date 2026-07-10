@@ -5,6 +5,7 @@
  */
 import { useMemo } from "react";
 import { useDailyRevenue, useDailyEmail, useDailyPush } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
 import { sortByYMD, trailingStats, matchName } from "./dssUtils";
 
 const MONTHS = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
@@ -15,12 +16,17 @@ export function usePulso() {
   const { data: dailyRev = [] } = useDailyRevenue();
   const { data: dailyEmail = [] } = useDailyEmail();
   const { data: dailyPush = [] } = useDailyPush();
+  const { rangeB } = useComparison();
+  // El comparador controla la ventana: analizamos hasta el final del período principal
+  // (rangeB.end), de modo que el usuario pueda mirar periodos anteriores, no solo lo último.
+  const cutoff = rangeB.end.year * 12 + rangeB.end.month;
 
   return useMemo(() => {
+    const leq = (arr) => (arr || []).filter(r => (r.year || 0) * 12 + (r.month || 0) <= cutoff);
     const signals = [];
 
     // ── Revenue diario vs. banda ──
-    const rev = sortByYMD(dailyRev);
+    const rev = sortByYMD(leq(dailyRev));
     const revenue = { series: [], lastValue: 0, mean: 0, std: 0, outside: false, direction: 0 };
     if (rev.length >= 8) {
       revenue.series = rev.slice(-60).map(r => ({ name: dLabel(r), value: r.revenue || 0 }));
@@ -43,9 +49,10 @@ export function usePulso() {
 
     // ── Entregabilidad / apertura email ──
     const email = { series: [], lastRate: 0, mean: 0, drop: false, hasData: false };
-    if (dailyEmail.length >= 20) {
+    const emailRows = leq(dailyEmail);
+    if (emailRows.length >= 20) {
       const byDay = {};
-      for (const r of dailyEmail) {
+      for (const r of emailRows) {
         const k = r.year * 10000 + r.month * 100 + (r.day || 0);
         if (!byDay[k]) byDay[k] = { k, r, sent: 0, opens: 0 };
         byDay[k].sent += r.sent || 0;
@@ -103,10 +110,11 @@ export function usePulso() {
 
     // ── Workflows críticos parados ──
     const wf = { workflows: [], anyStalled: false, hasData: false };
-    if (dailyPush.length >= 20) {
-      const crit = dailyPush.filter(r => matchName(r, CRITICAL));
+    const pushRows = leq(dailyPush);
+    if (pushRows.length >= 20) {
+      const crit = pushRows.filter(r => matchName(r, CRITICAL));
       const ord = (r) => r.year * 10000 + r.month * 100 + (r.day || 0);
-      const allDays = [...new Set(dailyPush.map(ord))].sort((a, b) => a - b);
+      const allDays = [...new Set(pushRows.map(ord))].sort((a, b) => a - b);
       if (allDays.length >= 5 && crit.length > 0) {
         wf.hasData = true;
         const last7 = new Set(allDays.slice(-7));
@@ -145,5 +153,5 @@ export function usePulso() {
     const signalCount = signals.filter(s => s.severity !== "ok").length;
 
     return { signals, signalCount, revenue, email, channelData, wf };
-  }, [dailyRev, dailyEmail, dailyPush]);
+  }, [dailyRev, dailyEmail, dailyPush, cutoff]);
 }
