@@ -68,7 +68,6 @@ export function useEmailCampaigns() {
     queryKey: ['email_campaigns'],
     // 25k+ filas: paginar por id (clave única) para traer todo el histórico.
     queryFn: () => fetchPaged('email_campaigns', [['id', true]], 60000),
-    staleTime: 5 * 60 * 1000,
     initialData: [],
   })
 }
@@ -158,7 +157,6 @@ export function useDailyRevenue() {
     queryKey: ['daily_revenue'],
     // Una fila por día: paginar por fecha para no toparse con el tope de 1000 al crecer.
     queryFn: () => fetchPaged('daily_revenue', [['year', true], ['month', true], ['day', true]], 8000),
-    staleTime: 5 * 60 * 1000,
     initialData: [],
   })
 }
@@ -168,7 +166,6 @@ export function useDailyEmail() {
     queryKey: ['daily_email'],
     // 150k+ filas: traer las MÁS RECIENTES (orden descendente) para las tendencias diarias.
     queryFn: () => fetchPaged('daily_email', [['year', false], ['month', false], ['day', false], ['email_name', true]], 20000),
-    staleTime: 5 * 60 * 1000,
     initialData: [],
   })
 }
@@ -178,7 +175,6 @@ export function useDailyPush() {
     queryKey: ['daily_push'],
     // 7k+ filas: paginar por fecha (descendente) para incluir los días recientes.
     queryFn: () => fetchPaged('daily_push', [['year', false], ['month', false], ['day', false], ['workflow', true]], 12000),
-    staleTime: 5 * 60 * 1000,
     initialData: [],
   })
 }
