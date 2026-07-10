@@ -3,7 +3,7 @@
  * El comparador vive en el panel izquierdo (usable desde aquí) para liberar
  * espacio en la parte superior y ver mejor cada sección.
  */
-import { DOMAINS } from "@/lib/dss/domains";
+import { VIEWS } from "@/lib/dss/domains";
 import ComparisonPanel from "@/components/dashboard/ComparisonPanel";
 
 export default function DomainNav({ active, onSelect }) {
@@ -13,7 +13,7 @@ export default function DomainNav({ active, onSelect }) {
         <p className="text-sm font-bold font-heading text-foreground leading-tight">BVS Analytics</p>
       </div>
       <nav className="p-2 space-y-1">
-        {DOMAINS.map((d) => {
+        {VIEWS.map((d) => {
           const Icon = d.icon;
           const isActive = active === d.id;
           return (

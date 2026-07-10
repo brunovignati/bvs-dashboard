@@ -2,41 +2,31 @@ import { useState } from "react";
 import { ComparisonProvider } from "@/lib/ComparisonContext";
 import ComparisonPanel from "@/components/dashboard/ComparisonPanel";
 import DomainNav from "@/components/dss/DomainNav";
-import { DOMAINS } from "@/lib/dss/domains";
-import SaludDelNegocio from "@/components/dss/domains/SaludDelNegocio";
-import Revenue from "@/components/dss/domains/Revenue";
-import Clientes from "@/components/dss/domains/Clientes";
-import Marketing from "@/components/dss/domains/Marketing";
-import Automatizaciones from "@/components/dss/domains/Automatizaciones";
-import CRM from "@/components/dss/domains/CRM";
-import Producto from "@/components/dss/domains/Producto";
-import Operaciones from "@/components/dss/domains/Operaciones";
+import { VIEWS } from "@/lib/dss/domains";
+import DailyHealth from "@/components/dss/views/DailyHealth";
+import GrowthMarketing from "@/components/dss/views/GrowthMarketing";
+import OpsCRM from "@/components/dss/views/OpsCRM";
 
-const VIEWS = {
-  salud: SaludDelNegocio,
-  revenue: Revenue,
-  clientes: Clientes,
-  marketing: Marketing,
-  automatizaciones: Automatizaciones,
-  crm: CRM,
-  producto: Producto,
-  operaciones: Operaciones,
+const VIEW_MAP = {
+  daily: DailyHealth,
+  growth: GrowthMarketing,
+  ops: OpsCRM,
 };
 
 export default function DecisionSupport() {
-  const [domain, setDomain] = useState("salud");
-  const View = VIEWS[domain] || SaludDelNegocio;
+  const [view, setView] = useState("daily");
+  const View = VIEW_MAP[view] || DailyHealth;
 
   return (
     <ComparisonProvider>
       <div className="flex min-h-screen bg-background">
-        <DomainNav active={domain} onSelect={setDomain} />
+        <DomainNav active={view} onSelect={setView} />
         <main className="flex-1 min-w-0">
-          {/* Selector móvil de dominio */}
+          {/* Selector móvil de vista */}
           <div className="md:hidden border-b border-border p-2 flex gap-1 overflow-x-auto">
-            {DOMAINS.map((d) => (
-              <button key={d.id} onClick={() => setDomain(d.id)}
-                className={`text-xs px-3 py-1.5 rounded-lg whitespace-nowrap ${domain === d.id ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground"}`}>
+            {VIEWS.map((d) => (
+              <button key={d.id} onClick={() => setView(d.id)}
+                className={`text-xs px-3 py-1.5 rounded-lg whitespace-nowrap ${view === d.id ? "bg-primary text-primary-foreground" : "bg-muted/50 text-muted-foreground"}`}>
                 {d.label}
               </button>
             ))}

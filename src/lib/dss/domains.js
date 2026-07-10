@@ -4,6 +4,17 @@
  */
 import { HeartPulse, TrendingUp, Users, Megaphone, Zap, Layers, Package, Wrench } from "lucide-react";
 
+// ── Vistas de alto nivel (rol × momento) — la navegación agrupa los 8 dominios en 3 ──
+// Daily Health (café de la mañana) · Growth & Marketing (análisis) · Ops & CRM (mantenimiento).
+export const VIEWS = [
+  { id: "daily",  label: "Daily Health",       icon: HeartPulse,
+    objetivo: "La vista de cada mañana: qué se desvió y si vamos a objetivo." },
+  { id: "growth", label: "Growth & Marketing", icon: TrendingUp,
+    objetivo: "Análisis de ingresos, clientes, marketing y automatizaciones." },
+  { id: "ops",    label: "Ops & CRM",          icon: Wrench,
+    objetivo: "Salud de la base, entregabilidad, envíos y producto." },
+];
+
 export const DOMAINS = [
   { id: "salud",           label: "Salud del Negocio", icon: HeartPulse,
     objetivo: "Estado del negocio de un vistazo y detección de desviaciones." },
