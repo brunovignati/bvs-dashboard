@@ -1,23 +1,23 @@
 /**
  * ListPressureCard (CRM) — ¿la presión de envío está quemando la base?
  *
- * Cruce a nivel de LISTA (dato agregado disponible hoy en Supabase):
- *   eje X = envíos de email del mes (email_campaigns · presión)
- *   eje Y = tasa de baja mensual de la lista = subscribers.unsubs / base activa
- * Cada punto es un mes. La correlación indica si más presión se asocia a más bajas.
- * NOTA: es fatiga a nivel de lista, no por suscriptor (eso exige dato a nivel contacto,
- * pendiente de export de Connectif). Complementa a "fatiga por campaña" (Marketing).
+ * Serie temporal mensual (más legible que un scatter, y muestra recencia/tendencia):
+ *   barras = presión = envíos por suscriptor del mes (email_campaigns.sent / base activa)
+ *   línea  = tasa de baja de la lista = subscribers.unsubs / base activa
+ * Usamos envíos POR SUSCRIPTOR (no brutos) para no confundir presión con el crecimiento
+ * de la lista. La correlación queda como dato de apoyo (correlación ≠ causa).
+ * Fatiga a nivel de LISTA; la fatiga por suscriptor exige dato a nivel contacto (pendiente).
  */
-import { ScatterChart, Scatter, XAxis, YAxis, CartesianGrid, Tooltip, Cell, ResponsiveContainer, ReferenceLine } from "recharts";
+import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useSubscribers, useEmailCampaigns } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
 import { pearsonCorrelation } from "@/lib/dashboardData";
-import { fmtNumber } from "@/lib/dashboardData";
+import { CHART_H, GRID, AXIS, TIP } from "@/lib/dss/chartTheme";
 
 const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-const isSub = (s) => /^subscrib/i.test(String(s || ""));       // "subscribed"
-const isUnsub = (s) => /^unsubscrib/i.test(String(s || ""));   // "unsubscribed"
+const isSub = (s) => /^subscrib/i.test(String(s || ""));
+const isUnsub = (s) => /^unsubscrib/i.test(String(s || ""));
 
 export default function ListPressureCard({ delay }) {
   const { data: subs = [] } = useSubscribers();
@@ -36,8 +36,12 @@ export default function ListPressureCard({ delay }) {
   const rows = Object.keys(sentByM).map(Number)
     .filter(k => baseByM[k] > 0 && unsubByM[k] != null && sentByM[k] > 0)
     .sort((a, b) => a - b)
-    .map(k => ({ ym: k, name: `${M[((k - 1) % 12) + 1]} ${String(Math.floor((k - 1) / 12)).slice(2)}`,
-      x: sentByM[k], y: (unsubByM[k] / baseByM[k]) * 100, sent: sentByM[k], unsubs: unsubByM[k] }));
+    .map(k => ({
+      ym: k, name: `${M[((k - 1) % 12) + 1]} ${String(Math.floor((k - 1) / 12)).slice(2)}`,
+      presion: sentByM[k] / baseByM[k],                 // envíos por suscriptor
+      rate: (unsubByM[k] / baseByM[k]) * 100,           // % de baja
+    }))
+    .slice(-18);
 
   const hasData = rows.length >= 4;
 
@@ -50,44 +54,41 @@ export default function ListPressureCard({ delay }) {
     );
   }
 
-  const corr = pearsonCorrelation(rows.map(r => r.x), rows.map(r => r.y));
+  const corr = pearsonCorrelation(rows.map(r => r.presion), rows.map(r => r.rate));
   const last = rows[rows.length - 1];
-  const avgRate = rows.reduce((s, r) => s + r.y, 0) / rows.length;
+  const prev = rows[rows.length - 2];
+  const avgRate = rows.reduce((s, r) => s + r.rate, 0) / rows.length;
+  const rateTrend = prev ? last.rate - prev.rate : 0;
   const strong = corr != null && corr >= 0.4;
 
   return (
     <EvidenceCard
       question="¿La presión de envío está quemando la base?"
-      answer={`${last.y.toFixed(2)}% baja · correlación ${corr == null ? "—" : corr.toFixed(2)}`}
+      answer={`${last.rate.toFixed(2)}% de baja este mes${rateTrend ? ` (${rateTrend >= 0 ? "+" : ""}${rateTrend.toFixed(2)} pts vs mes anterior)` : ""}`}
       answerTone={strong ? "bad" : "good"}
       context={strong
-        ? `Más envíos se asocian a más bajas (correlación ${corr.toFixed(2)}): señal de fatiga de lista. Tasa de baja media ${avgRate.toFixed(2)}%.`
-        : `Sin relación clara entre volumen de envío y bajas (correlación ${corr == null ? "—" : corr.toFixed(2)}). Tasa de baja media ${avgRate.toFixed(2)}%.`}
+        ? `Cuando sube la presión (envíos por suscriptor), tiende a subir la baja — correlación ${corr.toFixed(2)}. Señal de fatiga de lista. Baja media ${avgRate.toFixed(2)}%.`
+        : `No se ve una relación clara entre presión y bajas (correlación ${corr == null ? "—" : corr.toFixed(2)}). Baja media ${avgRate.toFixed(2)}%.`}
       maturity="green"
       severity={strong ? "medium" : undefined}
       actions={strong
-        ? [{ verb: "investigar", rationale: "Baja la frecuencia o segmenta mejor: la lista reacciona al volumen. Cruza con la fatiga por campaña (Marketing)." }]
-        : [{ verb: "mantener", rationale: "La base tolera el ritmo de envío actual; vigila si la correlación sube." }]}
+        ? [{ verb: "investigar", rationale: "Baja la frecuencia o segmenta mejor en los meses de más presión; cruza con la fatiga por campaña (Marketing)." }]
+        : [{ verb: "mantener", rationale: "La base tolera el ritmo actual; vigila si la línea de baja empieza a seguir a la presión." }]}
       delay={delay}
-      note="Cada punto = un mes. X = envíos de email (Connectif · email_campaigns) · Y = bajas de lista / base activa (Connectif · subscribers). Fatiga a nivel de lista; la fatiga por suscriptor exige dato a nivel contacto (pendiente)."
+      note="Barras = envíos por suscriptor · línea = bajas / base activa, por mes (Connectif · email_campaigns + subscribers). Correlación sobre la presión normalizada; correlación ≠ causa. Fatiga a nivel de lista."
     >
-      <div className="h-56">
+      <div className={CHART_H}>
         <ResponsiveContainer width="100%" height="100%">
-          <ScatterChart margin={{ top: 10, right: 12, bottom: 22, left: 6 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" />
-            <XAxis type="number" dataKey="x" name="Envíos" tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }}
-              tickFormatter={v => `${(v / 1000).toFixed(0)}K`}
-              label={{ value: "Envíos del mes", position: "insideBottom", offset: -12, fontSize: 9, fill: "hsl(220,10%,50%)" }} />
-            <YAxis type="number" dataKey="y" name="Baja %" tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }}
-              tickFormatter={v => `${v.toFixed(1)}%`}
-              label={{ value: "Tasa de baja", angle: -90, position: "insideLeft", offset: 12, fontSize: 9, fill: "hsl(220,10%,50%)" }} />
-            <Tooltip formatter={(v, n) => n === "Baja %" ? [`${Number(v).toFixed(2)}%`, "Tasa de baja"] : [fmtNumber(v), "Envíos"]}
-              labelFormatter={() => ""} cursor={{ strokeDasharray: "3 3" }} />
-            <ReferenceLine y={avgRate} stroke="hsl(220,13%,75%)" strokeDasharray="4 4" />
-            <Scatter data={rows}>
-              {rows.map((r, i) => <Cell key={i} fill={i === rows.length - 1 ? "hsl(221,83%,53%)" : "hsl(220,13%,65%)"} fillOpacity={0.85} />)}
-            </Scatter>
-          </ScatterChart>
+          <ComposedChart data={rows} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
+            <CartesianGrid {...GRID} />
+            <XAxis dataKey="name" {...AXIS} interval={Math.max(0, Math.floor(rows.length / 8))} />
+            <YAxis yAxisId="p" {...AXIS} tickFormatter={v => v.toFixed(1)} />
+            <YAxis yAxisId="r" orientation="right" {...AXIS} tickFormatter={v => `${v.toFixed(1)}%`} />
+            <Tooltip {...TIP} formatter={(v, n) => n === "Tasa de baja" ? [`${Number(v).toFixed(2)}%`, n] : [`${Number(v).toFixed(1)} env./suscriptor`, "Presión"]} />
+            <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
+            <Bar yAxisId="p" dataKey="presion" name="Presión (env./suscriptor)" fill="hsl(218,33%,72%)" radius={[2, 2, 0, 0]} maxBarSize={22} />
+            <Line yAxisId="r" dataKey="rate" name="Tasa de baja" type="monotone" stroke="hsl(221,83%,53%)" strokeWidth={2.2} dot={false} />
+          </ComposedChart>
         </ResponsiveContainer>
       </div>
     </EvidenceCard>
