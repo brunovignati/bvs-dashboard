@@ -51,7 +51,7 @@ export default function EmailPerformance() {
   const scatterData = allCampaigns.map(c => ({
     name: c.emailName,
     openRate: (c.opens / c.sent) * 100,
-    x: (c.opens / c.sent) * 100,           // eje X: open rate
+    x: Math.min(100, (c.opens / c.sent) * 100),  // eje X: open rate (acotado a 100% por outliers de opens acumulados)
     y: c.revenue || 0,                      // eje Y: revenue
     z: Math.max(80, Math.min(1200, c.sent / 20)), // tamaño burbuja = volumen
     revenue: c.revenue || 0,
@@ -135,7 +135,7 @@ export default function EmailPerformance() {
               <ScatterChart margin={{ top: 15, right: 20, bottom: 35, left: 30 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" />
                 <XAxis type="number" dataKey="x" name="Open Rate" unit="%"
-                  tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} domain={[0, 'auto']}
+                  tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} domain={[0, 100]} allowDataOverflow
                   label={{ value: 'Tasa de Apertura (%)', position: 'insideBottom', offset: -20, fontSize: 10, fill: 'hsl(220,10%,50%)' }} />
                 <YAxis type="number" dataKey="y" name="Revenue"
                   tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }}
