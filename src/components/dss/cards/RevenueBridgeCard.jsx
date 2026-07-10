@@ -15,11 +15,10 @@ import EvidenceCard from "../EvidenceCard";
 import { useMonthlyMetrics } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
 import { fmtCurrency } from "@/lib/dashboardData";
+import { CHART_H, GRID, AXIS, TIP, SERIES, PRIMARY, NEUTRAL } from "@/lib/dss/chartTheme";
 
 const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-const PRIMARY = "hsl(221,83%,53%)";
-const ACCENT = "hsl(224,76%,42%)";
-const NEUTRAL = "hsl(215,16%,62%)";
+const ACCENT = SERIES[1];
 
 function ticketOf(m) {
   if (!m) return 0;
@@ -94,17 +93,16 @@ export default function RevenueBridgeCard({ delay }) {
       note="Descomposición volumen/precio (Connectif · monthly_metrics). ΔRev = Δpedidos·ticket_ant + Δticket·pedidos_actual."
     >
       {hasData && (
-        <div className="h-56">
+        <div className={CHART_H}>
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={steps} margin={{ top: 8, right: 8, left: 4, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
-              <XAxis dataKey="name" tick={{ fontSize: 9, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false}
-                tickFormatter={v => `€${(v / 1000).toFixed(0)}K`} />
+              <CartesianGrid {...GRID} />
+              <XAxis dataKey="name" {...AXIS} />
+              <YAxis {...AXIS} tickFormatter={v => `€${(v / 1000).toFixed(0)}K`} />
               <Tooltip
                 cursor={{ fill: "hsl(220,13%,91%)", fillOpacity: 0.3 }}
                 formatter={(v, n, p) => [`${p.payload.up ? "" : "−"}${fmtCurrency(p.payload.val)}`, p.payload.kind === "total" ? "Revenue" : "Efecto"]}
-                labelStyle={{ fontSize: 11 }} />
+                {...TIP} />
               {/* base invisible */}
               <Bar dataKey="base" stackId="w" fill="transparent" />
               <Bar dataKey="val" stackId="w" radius={[3, 3, 0, 0]}>

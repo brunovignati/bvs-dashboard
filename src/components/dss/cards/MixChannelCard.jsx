@@ -1,6 +1,7 @@
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useDailyRevenue } from "@/lib/useEntities";
+import { CHART_H, GRID, AXIS, TIP, LEGEND, SERIES, STACK_FILL_OPACITY } from "@/lib/dss/chartTheme";
 
 const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
@@ -44,19 +45,19 @@ export default function MixChannelCard({ delay }) {
       note="Compras atribuidas por canal (Connectif · daily_revenue). No atribuido = total − Σ atribuido."
     >
       {hasData && (
-        <div className="h-48">
+        <div className={CHART_H}>
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={rows} stackOffset="expand" margin={{ top:5, right:8, left:4, bottom:0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
-              <XAxis dataKey="name" tick={{ fontSize:9, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} interval={Math.max(1,Math.floor(rows.length/8))} />
-              <YAxis tick={{ fontSize:8, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} tickFormatter={v=>`${(v*100).toFixed(0)}%`} />
-              <Tooltip formatter={(v,n)=>[Math.round(v),n]} labelStyle={{ fontSize:11 }} />
-              <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize:10 }} />
-              <Area type="monotone" dataKey="Email" stackId="1" stroke="hsl(221,83%,53%)" fill="hsl(221,83%,53%)" fillOpacity={0.7} />
-              <Area type="monotone" dataKey="Push" stackId="1" stroke="hsl(220,55%,62%)" fill="hsl(220,55%,62%)" fillOpacity={0.7} />
-              <Area type="monotone" dataKey="Web" stackId="1" stroke="hsl(220,55%,62%)" fill="hsl(220,55%,62%)" fillOpacity={0.7} />
-              <Area type="monotone" dataKey="SMS" stackId="1" stroke="hsl(218,33%,70%)" fill="hsl(218,33%,70%)" fillOpacity={0.7} />
-              <Area type="monotone" dataKey="No atribuido" stackId="1" stroke="hsl(220,13%,65%)" fill="hsl(220,13%,65%)" fillOpacity={0.5} />
+              <CartesianGrid {...GRID} />
+              <XAxis dataKey="name" {...AXIS} interval={Math.max(1,Math.floor(rows.length/8))} />
+              <YAxis {...AXIS} tickFormatter={v=>`${(v*100).toFixed(0)}%`} />
+              <Tooltip formatter={(v,n)=>[Math.round(v),n]} {...TIP} />
+              <Legend {...LEGEND} />
+              <Area type="monotone" dataKey="Email" stackId="1" stroke={SERIES[0]} fill={SERIES[0]} fillOpacity={STACK_FILL_OPACITY} />
+              <Area type="monotone" dataKey="Push" stackId="1" stroke={SERIES[1]} fill={SERIES[1]} fillOpacity={STACK_FILL_OPACITY} />
+              <Area type="monotone" dataKey="Web" stackId="1" stroke={SERIES[2]} fill={SERIES[2]} fillOpacity={STACK_FILL_OPACITY} />
+              <Area type="monotone" dataKey="SMS" stackId="1" stroke={SERIES[3]} fill={SERIES[3]} fillOpacity={STACK_FILL_OPACITY} />
+              <Area type="monotone" dataKey="No atribuido" stackId="1" stroke={SERIES[4]} fill={SERIES[4]} fillOpacity={STACK_FILL_OPACITY} />
             </AreaChart>
           </ResponsiveContainer>
         </div>

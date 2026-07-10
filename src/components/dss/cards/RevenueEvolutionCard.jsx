@@ -1,7 +1,8 @@
-import { ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { ComposedChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useDailyRevenue } from "@/lib/useEntities";
 import { fmtCurrency } from "@/lib/dashboardData";
+import { CHART_H, GRID, AXIS, TIP, PRIMARY, AREA_FILL_OPACITY } from "@/lib/dss/chartTheme";
 
 const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
@@ -48,20 +49,14 @@ export default function RevenueEvolutionCard({ delay }) {
       note="Revenue total del negocio agregado por mes (Connectif · daily_revenue). Ticket = revenue / pedidos."
     >
       {hasData && (
-        <div className="h-52">
+        <div className={CHART_H}>
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={chart} margin={{ top: 5, right: 40, left: 4, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
-              <XAxis dataKey="name" tick={{ fontSize: 9, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false}
-                interval={Math.max(1, Math.floor(chart.length / 9))} />
-              <YAxis yAxisId="l" tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false}
-                tickFormatter={v => `€${(v/1000).toFixed(0)}K`} />
-              <YAxis yAxisId="r" orientation="right" tick={{ fontSize: 8, fill: "hsl(218,33%,70%)" }} axisLine={false} tickLine={false}
-                tickFormatter={v => `€${v.toFixed(0)}`} />
-              <Tooltip formatter={(v, n) => [n === "Ticket medio" ? `€${Number(v).toFixed(0)}` : fmtCurrency(v), n]} labelStyle={{ fontSize: 11 }} />
-              <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
-              <Area yAxisId="l" type="monotone" dataKey="revenue" name="Revenue" stroke="hsl(221,83%,53%)" fill="hsl(221,83%,53%)" fillOpacity={0.12} strokeWidth={2.2} dot={false} />
-              <Line yAxisId="r" type="monotone" dataKey="ticket" name="Ticket medio" stroke="hsl(218,33%,70%)" strokeWidth={1.8} dot={false} strokeDasharray="5 3" />
+            <ComposedChart data={chart} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
+              <CartesianGrid {...GRID} />
+              <XAxis dataKey="name" {...AXIS} interval={Math.max(1, Math.floor(chart.length / 9))} />
+              <YAxis {...AXIS} tickFormatter={v => `€${(v/1000).toFixed(0)}K`} />
+              <Tooltip formatter={(v) => [fmtCurrency(v), "Revenue"]} {...TIP} />
+              <Area type="monotone" dataKey="revenue" name="Revenue" stroke={PRIMARY} fill={PRIMARY} fillOpacity={AREA_FILL_OPACITY} strokeWidth={2.2} dot={false} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>
