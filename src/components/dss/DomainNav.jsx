@@ -12,7 +12,7 @@ export default function DomainNav({ active, onSelect }) {
       <div className="px-4 py-4 border-b border-border">
         <p className="text-sm font-bold font-heading text-foreground leading-tight">BVS Analytics</p>
       </div>
-      <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
+      <nav className="p-2 space-y-1">
         {DOMAINS.map((d) => {
           const Icon = d.icon;
           const isActive = active === d.id;
