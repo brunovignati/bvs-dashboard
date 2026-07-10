@@ -1,29 +1,27 @@
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+/**
+ * Ga4TrafficCard (Marketing) — tráfico web y su comportamiento desde GA4.
+ * Usa todo el esquema disponible de ga4_daily: sessions, users, pageviews, bounce_rate.
+ * Responde: ¿cuánta gente llega a la web y con qué calidad de visita?
+ */
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useGa4Daily } from "@/lib/useEntities";
 import { fmtNumber } from "@/lib/dashboardData";
 
 const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-const lbl = (r) => r.month ? `${r.day||""} ${M[r.month]||""}`.trim() : String(r.date_str||"").slice(5);
-const EXCLUDE = new Set(["date_str","year","month","day","updated_at","created_at","id"]);
-const PREF = ["sessions","users","total_users","totalUsers","active_users","activeUsers","page_views","pageviews","screen_page_views","screenPageViews","conversions","engaged_sessions"];
+const lbl = (r) => (r.month ? `${r.day || ""} ${M[r.month] || ""}`.trim() : String(r.date_str || "").slice(5));
 
 export default function Ga4TrafficCard({ delay }) {
   const { data = [] } = useGa4Daily();
   const hasData = data.length > 0;
 
-  // Detectar la métrica de tráfico dinámicamente (esquema no documentado)
-  const sample = data[data.length - 1] || {};
-  const numericKeys = Object.keys(sample).filter(k => !EXCLUDE.has(k) && typeof sample[k] === "number");
-  const metric = PREF.find(p => numericKeys.includes(p)) || numericKeys[0];
-
-  if (!hasData || !metric) {
+  if (!hasData) {
     return (
       <EvidenceCard
-        question="MK-6 · ¿De dónde llega el tráfico y cómo se comporta?"
+        question="¿Cuánto tráfico web llega y cómo se comporta?"
         answer="Sin datos de GA4 aún"
         answerTone="neutral"
-        context={hasData ? "La tabla ga4_daily tiene filas pero no una métrica numérica reconocible." : "La tabla ga4_daily todavía no tiene filas."}
+        context="La tabla ga4_daily todavía no tiene filas."
         maturity="amber"
         actions={[{ verb: "investigar", rationale: "Confirma que el sync de GA4 esté poblando ga4_daily (sesiones/usuarios por día)." }]}
         delay={delay}
@@ -32,34 +30,49 @@ export default function Ga4TrafficCard({ delay }) {
     );
   }
 
-  const rows = [...data].sort((a,b)=>((a.date_str||"")<(b.date_str||"")?-1:1))
-    .map(r => ({ name: lbl(r), value: Number(r[metric]) || 0 })).slice(-90);
-  const last = rows[rows.length-1]?.value || 0;
-  const metricLabel = metric.replace(/_/g, " ");
+  const rows = [...data]
+    .sort((a, b) => ((a.date_str || "") < (b.date_str || "") ? -1 : 1))
+    .map(r => ({
+      name: lbl(r),
+      Sesiones: Number(r.sessions) || 0,
+      Usuarios: Number(r.users) || 0,
+      "Páginas vistas": Number(r.pageviews) || 0,
+      bounce: Number(r.bounce_rate) || 0,
+    }))
+    .slice(-90);
+
+  const last = rows[rows.length - 1] || {};
+  const first = rows[0] || {};
+  const sesTrend = first.Sesiones > 0 ? ((last.Sesiones - first.Sesiones) / first.Sesiones) * 100 : null;
+  const avgBounce = rows.reduce((s, r) => s + r.bounce, 0) / rows.length;
+  const bouncePct = avgBounce > 1 ? avgBounce : avgBounce * 100; // GA4 devuelve ratio 0-1
 
   return (
     <EvidenceCard
-      question="MK-6 · ¿De dónde llega el tráfico y cómo se comporta?"
-      answer={`${fmtNumber(last)} ${metricLabel}/día`}
+      question="¿Cuánto tráfico web llega y cómo se comporta?"
+      answer={`${fmtNumber(last.Sesiones)} sesiones/día`}
       answerTone="neutral"
-      context={`Métrica de tráfico detectada: "${metricLabel}". Evolución diaria del comportamiento web.`}
+      context={`${fmtNumber(last.Usuarios)} usuarios y ${fmtNumber(last["Páginas vistas"])} páginas vistas el último día · rebote medio ${bouncePct.toFixed(0)}%${sesTrend != null ? ` · sesiones ${sesTrend >= 0 ? "+" : ""}${sesTrend.toFixed(0)}% en el rango` : ""}.`}
       maturity="amber"
       actions={[
-        { verb: "investigar", rationale: "Cruza los picos de tráfico con las campañas de Email/Push para ver qué canal atrae visitas." },
-        { verb: "crear", rationale: "Si el tráfico crece pero no la venta, revisa la conversión on-site (sticky/contenido web)." },
+        { verb: "investigar", rationale: "Cruza los picos de tráfico con los envíos de Email/Push para ver qué canal atrae visitas." },
+        { verb: "crear", rationale: bouncePct >= 60 ? "Rebote alto: revisa velocidad y relevancia de la landing." : "Si el tráfico sube pero no la venta, revisa la conversión on-site (sticky/contenido web)." },
       ]}
       delay={delay}
-      note="Fuente: GA4 · ga4_daily. Métrica detectada dinámicamente (esquema no fijado). Histórico corto."
+      note="Fuente: GA4 · ga4_daily (sessions, users, pageviews, bounce_rate). Histórico corto: madura con el tiempo."
     >
-      <div className="h-48">
+      <div className="h-52">
         <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={rows} margin={{ top:5, right:8, left:4, bottom:0 }}>
+          <LineChart data={rows} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
-            <XAxis dataKey="name" tick={{ fontSize:8, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} interval={Math.max(0,Math.floor(rows.length/8))} />
-            <YAxis tick={{ fontSize:8, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} tickFormatter={v=>fmtNumber(v)} />
-            <Tooltip formatter={(v)=>[fmtNumber(v),metricLabel]} labelStyle={{ fontSize:11 }} />
-            <Area type="monotone" dataKey="value" stroke="hsl(218,33%,70%)" fill="hsl(221,83%,53%)" fillOpacity={0.12} strokeWidth={1.8} dot={false} />
-          </AreaChart>
+            <XAxis dataKey="name" tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false} interval={Math.max(0, Math.floor(rows.length / 8))} />
+            <YAxis tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false} tickFormatter={v => fmtNumber(v)} />
+            <Tooltip formatter={(v, n) => [fmtNumber(v), n]} labelStyle={{ fontSize: 11 }} />
+            <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
+            <Line type="monotone" dataKey="Sesiones" stroke="hsl(221,83%,53%)" strokeWidth={2} dot={false} />
+            <Line type="monotone" dataKey="Usuarios" stroke="hsl(220,55%,62%)" strokeWidth={1.8} dot={false} />
+            <Line type="monotone" dataKey="Páginas vistas" stroke="hsl(218,33%,70%)" strokeWidth={1.6} dot={false} strokeDasharray="4 2" />
+          </LineChart>
         </ResponsiveContainer>
       </div>
     </EvidenceCard>
