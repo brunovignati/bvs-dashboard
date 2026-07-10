@@ -42,9 +42,10 @@ export default function DecisionSupport() {
             ))}
           </div>
 
-          {/* Comparador global de periodos (lo usan los componentes trasladados) */}
-          <div className="bg-background/95 border-b border-border">
-            <div className="max-w-6xl mx-auto px-4 md:px-6 py-2">
+          {/* Comparador de periodos: en desktop vive en el panel izquierdo.
+              En móvil (sin sidebar) se muestra aquí arriba. */}
+          <div className="md:hidden bg-background/95 border-b border-border">
+            <div className="px-4 py-2">
               <ComparisonPanel />
             </div>
           </div>

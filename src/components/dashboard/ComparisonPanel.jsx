@@ -99,13 +99,13 @@ export default function ComparisonPanel() {
                 ))}
               </div>
 
-              {/* Selectores de periodo */}
-              <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr] gap-2 items-center">
-                <PeriodSelector label="Periodo A · referencia" value={periodA} onChange={setPeriodA} accent="border-slate-500/40" />
-                <div className="flex justify-center">
-                  <ArrowLeftRight className="w-4 h-4 text-muted-foreground" />
-                </div>
+              {/* Selectores de periodo (apilados, para el panel lateral) */}
+              <div className="grid grid-cols-1 gap-2">
                 <PeriodSelector label="Periodo B · activo" value={periodB} onChange={setPeriodB} accent="border-primary/40" />
+                <div className="flex justify-center">
+                  <ArrowLeftRight className="w-4 h-4 text-muted-foreground rotate-90" />
+                </div>
+                <PeriodSelector label="Periodo A · referencia" value={periodA} onChange={setPeriodA} accent="border-slate-500/40" />
               </div>
 
             </div>

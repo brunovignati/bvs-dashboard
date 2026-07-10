@@ -1,16 +1,18 @@
 /**
- * DomainNav — navegación por dominios de negocio. Entrada libre a cualquiera,
- * sin recorridos ni vocabulario nuevo (filosofía GA4/Looker/Power BI).
+ * DomainNav — navegación por dominios de negocio + comparador de periodos.
+ * El comparador vive en el panel izquierdo (usable desde aquí) para liberar
+ * espacio en la parte superior y ver mejor cada sección.
  */
 import { DOMAINS } from "@/lib/dss/domains";
+import ComparisonPanel from "@/components/dashboard/ComparisonPanel";
 
 export default function DomainNav({ active, onSelect }) {
   return (
-    <aside className="w-56 shrink-0 border-r border-border bg-card/40 min-h-screen sticky top-0 hidden md:flex flex-col">
+    <aside className="w-64 shrink-0 border-r border-border bg-card/40 min-h-screen sticky top-0 hidden md:flex flex-col">
       <div className="px-4 py-4 border-b border-border">
         <p className="text-sm font-bold font-heading text-foreground leading-tight">BVS Analytics</p>
       </div>
-      <nav className="flex-1 p-2 space-y-1">
+      <nav className="flex-1 p-2 space-y-1 overflow-y-auto">
         {DOMAINS.map((d) => {
           const Icon = d.icon;
           const isActive = active === d.id;
@@ -26,6 +28,10 @@ export default function DomainNav({ active, onSelect }) {
           );
         })}
       </nav>
+      {/* Comparador de periodos — afecta a todo el panel */}
+      <div className="border-t border-border p-2">
+        <ComparisonPanel />
+      </div>
     </aside>
   );
 }
