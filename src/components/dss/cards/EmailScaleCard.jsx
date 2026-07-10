@@ -2,7 +2,7 @@ import { ScatterChart, Scatter, XAxis, YAxis, ZAxis, CartesianGrid, Tooltip, Cel
 import EvidenceCard from "../EvidenceCard";
 import { useEmailCampaigns } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
-import { latestMonthRows } from "@/lib/dss/dssUtils";
+import { latestMonthRows, wilson } from "@/lib/dss/dssUtils";
 import { fmtCurrency, fmtNumber } from "@/lib/dashboardData";
 
 const Tip = ({ active, payload }) => {
@@ -42,6 +42,8 @@ export default function EmailScaleCard({ delay }) {
   const tot = scope.reduce((a, c) => ({ sent: a.sent + (c.sent || 0), opens: a.opens + (c.opens || 0), clicks: a.clicks + (c.clicks || 0) }), { sent: 0, opens: 0, clicks: 0 });
   const openRate = tot.sent > 0 ? (tot.opens / tot.sent) * 100 : 0;
   const ctr = tot.sent > 0 ? (tot.clicks / tot.sent) * 100 : 0;
+  const openW = wilson(tot.opens, tot.sent);
+  const ctrW = wilson(tot.clicks, tot.sent);
 
   const scatter = pts.map(p => ({ ...p, x: p.sent, y: p.rpm, z: Math.max(60, Math.min(600, p.revenue / 5)) }));
   const byRpm = [...pts].sort((a, b) => b.rpm - a.rpm);
@@ -56,8 +58,8 @@ export default function EmailScaleCard({ delay }) {
     <EvidenceCard
       question="¿Rinde el email y qué campañas escalo?"
       kpis={hasData ? [
-        { value: `${openRate.toFixed(1)}%`, label: `Apertura · ${periodNote}` },
-        { value: `${ctr.toFixed(1)}%`, label: "CTR" },
+        { value: `${openRate.toFixed(1)}%`, label: `Apertura ±${openW.half.toFixed(1)}pp · ${periodNote}` },
+        { value: `${ctr.toFixed(1)}%`, label: `CTR ±${ctrW.half.toFixed(1)}pp` },
         { value: `€${avgRpm.toFixed(1)}`, label: "Revenue / 1.000 env." },
       ] : undefined}
       answer={!hasData ? "Sin campañas suficientes" : undefined}
@@ -70,7 +72,7 @@ export default function EmailScaleCard({ delay }) {
         { verb: "detener", rationale: bottom.length ? `Bajo retorno con volumen alto: ${bottom.map(b => b.name).slice(0,2).join(", ")}.` : "Retira las de RPMil bajo persistente." },
       ] : [{ verb: "investigar", rationale: "Aún no hay suficientes campañas con volumen para decidir." }]}
       delay={delay}
-      note="Apertura = opens/enviados · CTR = clics/enviados · Revenue/1.000 env. sobre email_campaigns."
+      note="Apertura = opens/enviados · CTR = clics/enviados (± = IC 95% de Wilson) · Revenue/1.000 env. sobre email_campaigns."
     >
       {hasData && (
         <div className="h-56">

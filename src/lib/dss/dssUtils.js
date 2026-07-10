@@ -88,6 +88,21 @@ export function pctDelta(current, base) {
   return ((current - base) / base) * 100;
 }
 
+// ── Intervalo de confianza de Wilson para una proporción ─────────────
+// Para tasas (apertura, conversión) con n pequeño: no se sale de [0,1] y
+// es fiable con pocos casos. Devuelve porcentajes {low, mid, high, half}.
+export function wilson(successes, n, z = 1.96) {
+  if (!n || n <= 0) return { low: 0, mid: 0, high: 0, half: 0 };
+  const p = Math.min(1, Math.max(0, successes / n));
+  const z2 = z * z;
+  const denom = 1 + z2 / n;
+  const center = (p + z2 / (2 * n)) / denom;
+  const margin = (z * Math.sqrt((p * (1 - p)) / n + z2 / (4 * n * n))) / denom;
+  const low = Math.max(0, center - margin);
+  const high = Math.min(1, center + margin);
+  return { low: low * 100, mid: p * 100, high: high * 100, half: ((high - low) / 2) * 100 };
+}
+
 // ── Prioridad = impacto × urgencia × reversibilidad (0..1 c/u) ──────
 export function priorityScore({ impact = 0.5, urgency = 0.5, reversibility = 0.5 }) {
   // reversibilidad alta favorece ejecutar; se pondera positivamente

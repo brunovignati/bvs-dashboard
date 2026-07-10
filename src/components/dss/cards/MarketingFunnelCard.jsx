@@ -9,6 +9,15 @@ import { ChevronDown } from "lucide-react";
 const EXCLUDE = new Set(["date_str","year","month","day","updated_at","created_at","id"]);
 const PREF = ["sessions","users","total_users","totalUsers","active_users","activeUsers","page_views","pageviews","screen_page_views","screenPageViews","engaged_sessions"];
 
+function Gap({ text }) {
+  return (
+    <div className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground">
+      <ChevronDown className="w-3.5 h-3.5 shrink-0" />
+      {text && <span className="font-medium">{text}</span>}
+    </div>
+  );
+}
+
 function Stage({ label, source, value, srcState, color }) {
   const m = MATURITY[srcState] || MATURITY.amber;
   return (
@@ -60,27 +69,35 @@ export default function MarketingFunnelCard({ delay }) {
   const revenue = last30.reduce((s,r)=>s+(r.revenue||0),0);
   const connState = rev.length > 0 ? "green" : "amber";
 
+  // Eficiencia RELATIVA entre tramos (tendencia, no conversión real: los universos no son 1:1)
+  const perFollower = followers > 0 && traffic > 0 ? traffic / followers : null;   // sesiones por seguidor (30d)
+  const convOnsite  = traffic > 0 ? (purchases / traffic) * 100 : null;            // % pedidos por sesión
+  const ticket      = purchases > 0 ? revenue / purchases : null;                  // € por pedido
+
   return (
     <EvidenceCard
       question="¿Está funcionando el marketing? (embudo completo)"
       answer={`${fmtCurrency(revenue)} · ${fmtNumber(purchases)} compras (30d)`}
       answerTone="neutral"
-      context="Una sola narrativa de punta a punta: notoriedad (Metricool) → tráfico y comportamiento (GA4) → conversión y revenue (Connectif)."
+      context="Narrativa de punta a punta: notoriedad (Metricool) → tráfico (GA4) → conversión y revenue (Connectif). Léelo como tendencia por tramo, no como una tasa de conversión única."
       maturity="green"
       actions={[
-        { verb: "investigar", rationale: "Localiza dónde se rompe el embudo: mucha audiencia y poco tráfico = problema de contenido; mucho tráfico y poca compra = problema de conversión on-site." },
-        { verb: "escalar", rationale: "Refuerza el tramo que mejor convierte al siguiente." },
+        { verb: "investigar", rationale: "Localiza dónde pierde eficiencia el embudo: si cae 'sesiones/seguidor' es contenido/alcance; si cae 'pedidos/sesión' es conversión on-site." },
+        { verb: "escalar", rationale: "Refuerza el tramo cuya eficiencia relativa mejora mes a mes." },
       ]}
       delay={delay}
-      note="Embudo multifuente. Cada tramo indica su fuente y su estado de dato; los tramos con ◐ se activan al acumular histórico."
+      note="Embudo multifuente. Ratios = eficiencia RELATIVA entre tramos (para tendencia), no conversión real. Fuentes: Metricool · GA4 · Connectif."
     >
-      <div className="space-y-1.5">
+      <div className="mb-2 rounded-lg bg-amber-500/10 border border-amber-500/20 px-2.5 py-1.5 text-[10px] leading-snug text-amber-700">
+        ⚠︎ Las etapas no están conectadas 1:1: cada una vive en un universo distinto (Metricool mide alcance, GA4 sesiones con su propia atribución, Connectif compras). No sumes ni dividas etapas como si fueran el mismo usuario; usa los ratios como <span className="font-semibold">tendencia</span>.
+      </div>
+      <div className="space-y-1">
         <Stage label="1 · Notoriedad" source="Metricool" value={socialState==="green"?`${fmtNumber(followers)} seguidores`:"pendiente de datos"} srcState={socialState} color={CHART.accent} />
-        <div className="flex justify-center"><ChevronDown className="w-4 h-4 text-muted-foreground" /></div>
+        <Gap text={perFollower!=null ? `${perFollower.toFixed(1)} sesiones/seguidor · 30d` : null} />
         <Stage label={`2 · Tráfico (${trafficLabel})`} source="GA4" value={trafficState==="green"?`${fmtNumber(traffic)} / 30d`:"pendiente de datos"} srcState={trafficState} color={CHART.warning} />
-        <div className="flex justify-center"><ChevronDown className="w-4 h-4 text-muted-foreground" /></div>
+        <Gap text={convOnsite!=null ? `${convOnsite.toFixed(2)}% pedidos/sesión` : null} />
         <Stage label="3 · Conversión" source="Connectif" value={connState==="green"?`${fmtNumber(purchases)} compras`:"pendiente de datos"} srcState={connState} color={CHART.primary} />
-        <div className="flex justify-center"><ChevronDown className="w-4 h-4 text-muted-foreground" /></div>
+        <Gap text={ticket!=null ? `${fmtCurrency(ticket)} / pedido` : null} />
         <Stage label="4 · Revenue" source="Connectif" value={connState==="green"?fmtCurrency(revenue):"pendiente de datos"} srcState={connState} color={CHART.positive} />
       </div>
     </EvidenceCard>

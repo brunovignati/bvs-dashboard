@@ -50,30 +50,31 @@ export default function CustomerValueCard({ delay }) {
   return (
     <EvidenceCard
       question="¿Cuánto vale un cliente? (estimación agregada)"
-      answer={`≈ ${fmtCurrency(clvEst)} CLV estimado`}
+      answer={`≈ ${fmtCurrency(revPerBuyer)} por comprador/mes`}
       answerTone="neutral"
-      context={`Estimación a nivel negocio (no individual): valor/mes por comprador × vida útil estimada (${lifespan.toFixed(1)} meses).`}
+      context={`Gasto medio por comprador cada mes (media 12m). NO es LTV acumulado: las cohortes recientes tienen menos vida, así que la línea no debe leerse como "el valor del cliente sube/baja". CLV real → heatmap de cohortes (pendiente de dato a nivel contacto).`}
       maturity="amber"
       actions={[
-        { verb: "crear", rationale: "Si la frecuencia o la recompra son bajas, un programa de fidelización sube el CLV." },
-        { verb: "reasignar", rationale: "Compara el CLV estimado con tu coste de captación para calibrar cuánto invertir en captar." },
+        { verb: "crear", rationale: "Si la frecuencia o la recompra son bajas, un programa de fidelización sube el gasto por comprador." },
+        { verb: "reasignar", rationale: "Compara el gasto por comprador con tu coste de captación para calibrar cuánto invertir en captar." },
       ]}
       delay={delay}
-      note="Estimación agregada con datos existentes (daily_revenue + buyer_cohorts). El CLV individual real exige dato a nivel contacto (Contact ID), no disponible."
+      note={`Corte transversal mensual (daily_revenue + buyer_cohorts), no acumulado por cohorte. CLV aprox. muy grueso ≈ ${fmtCurrency(clvEst)} (asume vida ~${lifespan.toFixed(0)}m); el CLV fiable exige seguimiento por cohorte (Contact ID), no disponible aún.`}
     >
       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
-        <Tile label="Rev/comprador mes" value={fmtCurrency(revPerBuyer)} />
+        <Tile label="Gasto/comprador·mes" value={fmtCurrency(revPerBuyer)} />
         <Tile label="Ticket medio" value={fmtCurrency(aov)} />
         <Tile label="Frecuencia/mes" value={freq.toFixed(2)} />
         <Tile label="Tasa recompra" value={`${(repeat*100).toFixed(0)}%`} />
       </div>
-      <div className="h-56">
+      <p className="text-[10px] text-muted-foreground/70 mb-1">Gasto mensual por comprador — corte transversal, no acumulado (no interpretar como tendencia de LTV).</p>
+      <div className="h-52">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={recent} margin={{ top:5, right:8, left:4, bottom:0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
             <XAxis dataKey="name" tick={{ fontSize:8, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fontSize:8, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} tickFormatter={v=>`€${v.toFixed(0)}`} />
-            <Tooltip formatter={(v)=>[fmtCurrency(v),"Rev/comprador"]} labelStyle={{ fontSize:11 }} />
+            <Tooltip formatter={(v)=>[fmtCurrency(v),"Gasto/comprador·mes"]} labelStyle={{ fontSize:11 }} />
             <Line type="monotone" dataKey="revPerBuyer" stroke="hsl(221,83%,53%)" strokeWidth={1.8} dot={false} />
           </LineChart>
         </ResponsiveContainer>

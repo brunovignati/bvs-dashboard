@@ -32,8 +32,9 @@ export default function CriticalWorkflowCard({ workflows, anyStalled, hasData, d
         ? [{ verb: "investigar", rationale: "Un workflow parado suele indicar un error de configuración o de trigger en Connectif. Revísalo hoy." }]
         : [{ verb: "mantener", rationale: "Automatizaciones críticas operativas." }]}
       delay={delay}
-      note="Crítico = workflows de carrito y reactivación/reabastecimiento (D15/D08). Madura con el histórico diario."
+      note="Crítico = workflows de carrito y reactivación/reabastecimiento (D15/D08). Regla de 'parado': tiene historial de ≥8 días con envíos y 0 envíos en los últimos 3 días. Madura con el histórico diario."
     >
+      <p className="text-[10px] text-muted-foreground/70 mb-1.5">Regla: <span className="font-semibold text-foreground">parado</span> = ≥8 días de envío en su historial y sin ningún envío en los últimos 3 días.</p>
       <div className="space-y-1.5 mt-1">
         {workflows.slice(0, 5).map((w, i) => (
           <div key={i} className="flex items-center justify-between gap-2 text-xs">
