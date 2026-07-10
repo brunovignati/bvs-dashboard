@@ -33,6 +33,28 @@ async function fetchTable(table, column = 'year', ascending = false, limit = 200
   return (data || []).map(mapRow)
 }
 
+// Supabase limita cada respuesta a 1000 filas. Para tablas grandes (email_campaigns,
+// daily_email, daily_push) hay que paginar con .range() hasta reunir todas las filas
+// necesarias; si no, un simple .limit() ordenado por año devuelve solo las más antiguas
+// y las secciones que filtran por período reciente aparecen vacías.
+// orderCols: array de [columna, ascending] para un orden estable (evita duplicar/saltar
+// filas entre páginas). Usa una clave única o casi-única (id, o year+month+day+nombre).
+async function fetchPaged(table, orderCols, limit = 20000) {
+  const PAGE = 1000
+  const all = []
+  for (let from = 0; from < limit; from += PAGE) {
+    const to = Math.min(from + PAGE, limit) - 1
+    let q = supabase.from(table).select('*')
+    for (const [col, asc] of orderCols) q = q.order(col, { ascending: asc })
+    const { data, error } = await q.range(from, to)
+    if (error) throw error
+    if (!data || data.length === 0) break
+    all.push(...data)
+    if (data.length < PAGE) break
+  }
+  return all.map(mapRow)
+}
+
 export function useMonthlyMetrics() {
   return useQuery({
     queryKey: ['monthly_metrics'],
@@ -44,7 +66,9 @@ export function useMonthlyMetrics() {
 export function useEmailCampaigns() {
   return useQuery({
     queryKey: ['email_campaigns'],
-    queryFn: () => fetchTable('email_campaigns', 'year', true),
+    // 25k+ filas: paginar por id (clave única) para traer todo el histórico.
+    queryFn: () => fetchPaged('email_campaigns', [['id', true]], 60000),
+    staleTime: 5 * 60 * 1000,
     initialData: [],
   })
 }
@@ -132,7 +156,9 @@ export function useVentasPush() {
 export function useDailyRevenue() {
   return useQuery({
     queryKey: ['daily_revenue'],
-    queryFn: () => fetchTable('daily_revenue', 'year', true, 5000),
+    // Una fila por día: paginar por fecha para no toparse con el tope de 1000 al crecer.
+    queryFn: () => fetchPaged('daily_revenue', [['year', true], ['month', true], ['day', true]], 8000),
+    staleTime: 5 * 60 * 1000,
     initialData: [],
   })
 }
@@ -140,7 +166,9 @@ export function useDailyRevenue() {
 export function useDailyEmail() {
   return useQuery({
     queryKey: ['daily_email'],
-    queryFn: () => fetchTable('daily_email', 'year', true, 10000),
+    // 150k+ filas: traer las MÁS RECIENTES (orden descendente) para las tendencias diarias.
+    queryFn: () => fetchPaged('daily_email', [['year', false], ['month', false], ['day', false], ['email_name', true]], 20000),
+    staleTime: 5 * 60 * 1000,
     initialData: [],
   })
 }
@@ -148,7 +176,9 @@ export function useDailyEmail() {
 export function useDailyPush() {
   return useQuery({
     queryKey: ['daily_push'],
-    queryFn: () => fetchTable('daily_push', 'year', true, 5000),
+    // 7k+ filas: paginar por fecha (descendente) para incluir los días recientes.
+    queryFn: () => fetchPaged('daily_push', [['year', false], ['month', false], ['day', false], ['workflow', true]], 12000),
+    staleTime: 5 * 60 * 1000,
     initialData: [],
   })
 }
