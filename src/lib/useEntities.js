@@ -160,6 +160,22 @@ export function useVentasPush() {
   })
 }
 
+export function useRendimientoPush() {
+  return useQuery({
+    queryKey: ['rendimiento_push'],
+    queryFn: () => fetchTable('rendimiento_push', 'year', true),
+    initialData: [],
+  })
+}
+
+export function useCarrito() {
+  return useQuery({
+    queryKey: ['carrito'],
+    queryFn: () => fetchTable('carrito', 'year', true),
+    initialData: [],
+  })
+}
+
 export function useDailyRevenue() {
   return useQuery({
     queryKey: ['daily_revenue'],

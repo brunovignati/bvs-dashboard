@@ -2,6 +2,7 @@ import DomainHeader from "../DomainHeader";
 import MarketingFunnelCard from "../cards/MarketingFunnelCard";
 import EmailScaleCard from "../cards/EmailScaleCard";
 import PushPerformanceCard from "../cards/PushPerformanceCard";
+import PushChannelTrendCard from "../cards/PushChannelTrendCard";
 import WebStickyCard from "../cards/WebStickyCard";
 import BestDayCard from "../cards/BestDayCard";
 import ListFatigueCard from "../cards/ListFatigueCard";
@@ -17,6 +18,7 @@ export default function Marketing() {
       <MarketingFunnelCard delay={0.03} />
       <EmailScaleCard delay={0.05} />
       <PushPerformanceCard delay={0.07} />
+      <PushChannelTrendCard delay={0.08} />
       <WebStickyCard delay={0.09} />
       <BestDayCard delay={0.11} />
       <ListFatigueCard delay={0.13} />
