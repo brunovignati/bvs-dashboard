@@ -16,10 +16,6 @@ import SubscriberHealth from "@/components/dashboard/SubscriberHealth";
 import SegmentExplorer from "@/components/dashboard/SegmentExplorer";
 import StickyWebContent from "@/components/dashboard/StickyWebContent";
 import AuditComparison from "@/components/dashboard/AuditComparison";
-import InstagramAnalysis from "@/components/dashboard/InstagramAnalysis";
-import FacebookAnalysis from "@/components/dashboard/FacebookAnalysis";
-import TiktokAnalysis from "@/components/dashboard/TiktokAnalysis";
-import GA4Analysis from "@/components/dashboard/GA4Analysis";
 import QuickComparison from "@/components/dashboard/QuickComparison";
 import ChannelSegmentation from "@/components/dashboard/ChannelSegmentation";
 
@@ -117,21 +113,8 @@ export default function Dashboard() {
               <StickyWebContent />
             </section>
 
-            <section ref={setRef("instagram")} data-section="instagram">
-              <InstagramAnalysis />
-            </section>
 
-            <section ref={setRef("facebook")} data-section="facebook">
-              <FacebookAnalysis />
-            </section>
 
-            <section ref={setRef("tiktok")} data-section="tiktok">
-              <TiktokAnalysis />
-            </section>
-
-            <section ref={setRef("ga4")} data-section="ga4">
-              <GA4Analysis />
-            </section>
 
             <section ref={setRef("audit")} data-section="audit">
               <AuditComparison />
