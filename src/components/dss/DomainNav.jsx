@@ -8,7 +8,7 @@ import ComparisonPanel from "@/components/dashboard/ComparisonPanel";
 
 export default function DomainNav({ active, onSelect }) {
   return (
-    <aside className="w-64 shrink-0 border-r border-border bg-card/40 min-h-screen sticky top-0 hidden md:flex flex-col">
+    <aside className="w-64 shrink-0 border-r border-border bg-card/40 h-screen sticky top-0 self-start hidden md:flex flex-col overflow-y-auto">
       <div className="px-4 py-4 border-b border-border">
         <p className="text-sm font-bold font-heading text-foreground leading-tight">BVS Analytics</p>
       </div>
