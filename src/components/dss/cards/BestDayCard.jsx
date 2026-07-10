@@ -8,7 +8,8 @@ const DAYS = ["", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 export default function BestDayCard({ delay }) {
   const { data = [] } = useEnvios();
   const rows = [...data].sort((a,b)=>(a.dayOfWeek||0)-(b.dayOfWeek||0)).map(d => ({
-    name: d.dayName || DAYS[d.dayOfWeek] || String(d.dayOfWeek),
+    // El mapa local por número es fiable; d.dayName viene mal codificado en la fuente ("SÃ¡b").
+    name: DAYS[d.dayOfWeek] || d.dayName || String(d.dayOfWeek),
     rpm: (d.sent||0) > 0 ? ((d.revenue||0)/d.sent)*1000 : 0,
     revenue: d.revenue||0, sent: d.sent||0,
   }));

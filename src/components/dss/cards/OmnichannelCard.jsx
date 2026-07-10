@@ -3,29 +3,34 @@ import EvidenceCard from "../EvidenceCard";
 import { useChannelSegmentation } from "@/lib/useEntities";
 
 const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+// Partición MECE que suma exactamente a total_buyers (online + retail + omnicanal).
+// NO se incluyen api_buyers/web_buyers: son otro corte (origen técnico) que solapa con
+// digital y produce doble conteo si se apila. Ese era el defecto de la versión anterior.
 const KEYS = [
-  { k: "api", label: "API" },
-  { k: "web", label: "Web" },
+  { k: "digital", label: "Online" },
   { k: "retail", label: "Retail" },
-  { k: "digital", label: "Digital" },
   { k: "omnichannel", label: "Omnicanal" },
 ];
-const COLORS = ["hsl(221,83%,53%)", "hsl(220,55%,62%)", "hsl(218,33%,70%)", "hsl(220,55%,62%)", "hsl(220,55%,62%)"];
+const COLORS = ["hsl(221,83%,53%)", "hsl(220,55%,62%)", "hsl(218,33%,70%)"];
 
 export default function OmnichannelCard({ delay }) {
   const { data = [] } = useChannelSegmentation();
-  const present = KEYS.filter(kk => data.some(r => typeof r[kk.k] === "number"));
+  const present = KEYS.filter(kk => data.some(r => (r[kk.k] || 0) > 0));
   const rows = [...data].sort((a,b)=>a.year!==b.year?a.year-b.year:a.month-b.month)
     .map(r => { const o = { name:`${M[r.month]} ${String(r.year).slice(2)}` }; present.forEach(p=>o[p.label]=r[p.k]||0); return o; })
     .slice(-18);
   const hasData = rows.length >= 2 && present.length > 0;
+  const last = hasData ? rows[rows.length - 1] : null;
+  const lastTotal = last ? present.reduce((s,p)=>s+(last[p.label]||0),0) : 0;
 
   return (
     <EvidenceCard
       question="¿Cómo se reparte la venta por canal (online / retail / omnicanal)?"
-      answer={hasData ? `${present.length} canales de venta` : "Sin datos de canal de venta"}
+      answer={hasData && lastTotal > 0
+        ? present.map(p => `${p.label} ${Math.round(((last[p.label] || 0) / lastTotal) * 100)}%`).join(" · ")
+        : "Sin datos de canal de venta"}
       answerTone="neutral"
-      context={hasData ? "Reparto de compradores por canal físico/digital — dimensión distinta de la atribución de marketing." : "Dataset 20 (channel_segmentation) aún sin histórico suficiente."}
+      context={hasData ? "Reparto de compradores por canal (online / retail / omnicanal). Partición exclusiva que suma el 100% del total — dimensión distinta de la atribución de marketing." : "Dataset 20 (channel_segmentation) aún sin histórico suficiente."}
       maturity="amber"
       actions={[
         { verb: "reasignar", rationale: "Si el peso online/retail cambia, ajusta dónde refuerzas la captación." },
@@ -41,7 +46,7 @@ export default function OmnichannelCard({ delay }) {
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
               <XAxis dataKey="name" tick={{ fontSize:9, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} interval={Math.max(1,Math.floor(rows.length/8))} />
               <YAxis tick={{ fontSize:8, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} tickFormatter={v=>`${(v*100).toFixed(0)}%`} />
-              <Tooltip formatter={(v,n)=>[Math.round(v),n]} labelStyle={{ fontSize:11 }} />
+              <Tooltip formatter={(v,n)=>[`${Math.round(v).toLocaleString("es-ES")} compradores`,n]} labelStyle={{ fontSize:11 }} />
               <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize:10 }} />
               {present.map((p,i)=>(
                 <Area key={p.k} type="monotone" dataKey={p.label} stackId="1" stroke={COLORS[i%COLORS.length]} fill={COLORS[i%COLORS.length]} fillOpacity={0.65} />
