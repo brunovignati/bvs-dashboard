@@ -212,6 +212,32 @@ export function useDailySticky() {
   })
 }
 
+// ── Vistas de agregación (perf): ~745 filas por día en una sola petición, en vez de
+// paginar decenas de miles. Ver sql/create_agg_views.sql.
+export function useEmailDiario() {
+  return useQuery({
+    queryKey: ['v_daily_email_diario'],
+    queryFn: () => fetchTable('v_daily_email_diario', 'year', true, 3000),
+    initialData: [],
+  })
+}
+
+export function usePushDiario() {
+  return useQuery({
+    queryKey: ['v_daily_push_diario'],
+    queryFn: () => fetchTable('v_daily_push_diario', 'year', true, 3000),
+    initialData: [],
+  })
+}
+
+export function useStickyDiario() {
+  return useQuery({
+    queryKey: ['v_daily_sticky_diario'],
+    queryFn: () => fetchTable('v_daily_sticky_diario', 'year', true, 3000),
+    initialData: [],
+  })
+}
+
 export function useChannelSegmentation() {
   return useQuery({
     queryKey: ['channel_segmentation'],

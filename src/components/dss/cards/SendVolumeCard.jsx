@@ -1,6 +1,6 @@
 import { ComposedChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import EvidenceCard from "../EvidenceCard";
-import { useDailyEmail, useDailyPush } from "@/lib/useEntities";
+import { useEmailDiario, usePushDiario } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
 import { upToCutoff } from "@/lib/dss/dssUtils";
 import { fmtNumber } from "@/lib/dashboardData";
@@ -8,8 +8,9 @@ import { fmtNumber } from "@/lib/dashboardData";
 const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
 export default function SendVolumeCard({ delay }) {
-  const { data: emailRaw = [] } = useDailyEmail();
-  const { data: pushRaw = [] } = useDailyPush();
+  // Lee las vistas de agregación por día (~745 filas) en vez de daily_email (150k) / daily_push (7k).
+  const { data: emailRaw = [] } = useEmailDiario();
+  const { data: pushRaw = [] } = usePushDiario();
   const { rangeB } = useComparison();
   const cutoff = rangeB.end.year * 12 + rangeB.end.month;
   const email = upToCutoff(emailRaw, cutoff);

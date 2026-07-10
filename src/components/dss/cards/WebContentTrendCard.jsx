@@ -7,7 +7,7 @@
  */
 import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import EvidenceCard from "../EvidenceCard";
-import { useDailySticky } from "@/lib/useEntities";
+import { useStickyDiario } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
 import { fmtCurrency, fmtNumber } from "@/lib/dashboardData";
 import { CHART_H, GRID, AXIS, TIP } from "@/lib/dss/chartTheme";
@@ -15,7 +15,8 @@ import { CHART_H, GRID, AXIS, TIP } from "@/lib/dss/chartTheme";
 const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
 export default function WebContentTrendCard({ delay }) {
-  const { data = [] } = useDailySticky();
+  // Lee la vista de agregación por día (~745 filas) en vez de daily_sticky (24k).
+  const { data = [] } = useStickyDiario();
   const { rangeB } = useComparison();
   const cutoff = rangeB.end.year * 12 + rangeB.end.month;
 
