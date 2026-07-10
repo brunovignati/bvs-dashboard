@@ -9,6 +9,7 @@ import MarketingFunnelCard from "../cards/MarketingFunnelCard";
 import Ga4TrafficCard from "../cards/Ga4TrafficCard";
 import SocialReachCard from "../cards/SocialReachCard";
 import SocialContentCard from "../cards/SocialContentCard";
+import SocialAudienceCard from "../cards/SocialAudienceCard";
 
 export default function Marketing() {
   return (
@@ -27,8 +28,9 @@ export default function Marketing() {
       <Ga4TrafficCard delay={0.05} />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <SocialReachCard delay={0.05} />
-        <SocialContentCard delay={0.1} />
+        <SocialAudienceCard delay={0.08} />
       </div>
+      <SocialContentCard delay={0.1} />
     </div>
   );
 }

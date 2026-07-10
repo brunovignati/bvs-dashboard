@@ -1,76 +1,87 @@
 /**
- * SocialContentCard (Marketing) — ¿qué contenido social rinde?
- * Usa ig_reels (views, interactions, engagement, saved, likes, comments) para rankear
- * las piezas por alcance y ver qué formato replicar. Complementa a SocialReachCard
- * (agregado por red) con el detalle por pieza — sin duplicar la misma serie.
+ * SocialContentCard (Marketing) — ¿qué contenido funciona en cada red?
+ * Mide ÉXITO por engagement (interacciones por alcance, rate normalizado de Metricool)
+ * y no solo por views, más un segundo indicador de valor (guardados / compartidos).
+ * Cubre las 3 redes con datos por pieza: Instagram (ig_reels), Facebook (fb_posts),
+ * TikTok (tk_videos). Selector de red; cada una lee su propio hook.
  */
+import { useState } from "react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import EvidenceCard from "../EvidenceCard";
-import { useIgReels } from "@/lib/useEntities";
+import { useIgReels, useFbPosts, useTkVideos } from "@/lib/useEntities";
 import { fmtNumber } from "@/lib/dashboardData";
 
 const clip = (s, n) => { s = String(s || "").replace(/\s+/g, " ").trim(); return s.length > n ? s.slice(0, n) + "…" : (s || "(sin texto)"); };
+const num = (v) => Number(v) || 0;
+
+const NETS = [
+  { id: "ig", label: "Instagram", secLabel: "Guardados" },
+  { id: "fb", label: "Facebook", secLabel: "Compartidos" },
+  { id: "tk", label: "TikTok", secLabel: "Compartidos" },
+];
 
 export default function SocialContentCard({ delay }) {
-  const { data = [] } = useIgReels();
-  const hasData = data.length > 0;
+  const [net, setNet] = useState("ig");
+  const { data: ig = [] } = useIgReels();
+  const { data: fb = [] } = useFbPosts();
+  const { data: tk = [] } = useTkVideos();
 
-  const ranked = [...data]
-    .map(r => ({
-      full: r.content,
-      name: clip(r.content, 34),
-      views: Number(r.views) || 0,
-      interactions: Number(r.interactions) || 0,
-      engagement: Number(r.engagement) || 0,
-      saved: Number(r.saved) || 0,
-    }))
-    .sort((a, b) => b.views - a.views);
-  const top = ranked.slice(0, 6);
+  // Normalizar cada red a {full, name, engagement, reach, views, secondary}
+  const norm = {
+    ig: ig.map(r => ({ full: r.content, engagement: num(r.engagement), reach: num(r.reach), views: num(r.views), secondary: num(r.saved) })),
+    fb: fb.map(r => ({ full: r.content, engagement: num(r.engagement), reach: num(r.reach), views: num(r.video_views), secondary: num(r.shares) })),
+    tk: tk.map(r => ({ full: r.description, engagement: num(r.engagement), reach: num(r.reach), views: num(r.views), secondary: num(r.shares) })),
+  };
+  const cfg = NETS.find(n => n.id === net);
+  const items = [...norm[net]].sort((a, b) => b.engagement - a.engagement);
+  const top = items.slice(0, 6).map(r => ({ ...r, name: clip(r.full, 32) }));
+  const hasData = items.length > 0;
   const best = top[0];
-  const avgViews = ranked.length ? ranked.reduce((s, r) => s + r.views, 0) / ranked.length : 0;
-
-  if (!hasData) {
-    return (
-      <EvidenceCard
-        question="¿Qué contenido social genera más alcance?"
-        answer="Sin datos de reels aún"
-        answerTone="neutral"
-        context="La tabla ig_reels todavía no tiene filas."
-        maturity="amber"
-        actions={[{ verb: "investigar", rationale: "Confirma que el sync de Metricool esté trayendo el detalle de reels." }]}
-        delay={delay}
-        note="Fuente: Metricool · ig_reels. Se enciende cuando haya reels sincronizados."
-      />
-    );
-  }
+  const avgEng = items.length ? items.reduce((s, r) => s + r.engagement, 0) / items.length : 0;
 
   return (
     <EvidenceCard
-      question="¿Qué contenido social genera más alcance?"
-      answer={best ? `Top reel · ${fmtNumber(best.views)} views` : "Sin reels"}
-      answerTone="good"
-      context={best ? `"${clip(best.full, 60)}" · ${fmtNumber(best.interactions)} interacciones. Media por reel: ${fmtNumber(avgViews)} views.` : undefined}
+      question="¿Qué contenido funciona en cada red?"
+      answer={hasData ? `${cfg.label}: top ${best.engagement.toFixed(1)} engagement` : `Sin datos de ${cfg.label} aún`}
+      answerTone={hasData ? "good" : "neutral"}
+      context={hasData
+        ? `"${clip(best.full, 60)}" · ${fmtNumber(best.reach || best.views)} de alcance · ${fmtNumber(best.secondary)} ${cfg.secLabel.toLowerCase()}. Engagement medio ${avgEng.toFixed(1)}.`
+        : (net === "ig" ? "La tabla ig_reels aún no tiene filas." : `La tabla ${net === "fb" ? "fb_posts" : "tk_videos"} se enciende cuando el sync la rellene.`)}
       maturity="amber"
       actions={[
-        { verb: "crear", rationale: "Replica el formato/tema de los reels con más views: es tu contenido de mayor alcance orgánico." },
-        { verb: "escalar", rationale: "Impulsa (o convierte en anuncio) los reels top para amplificar su alcance." },
+        { verb: "crear", rationale: "Replica el tema/formato de las piezas con más engagement: es el contenido que de verdad resuena, no solo el más visto." },
+        { verb: "escalar", rationale: `Impulsa (o convierte en anuncio) las piezas con más ${cfg.secLabel.toLowerCase()}: son señal de valor real.` },
       ]}
       delay={delay}
-      note="Fuente: Metricool · ig_reels (views, interactions, engagement, saved). Top 6 por views."
+      note="Éxito = engagement (interacciones / alcance) de Metricool. Fuente: ig_reels / fb_posts / tk_videos. Top 6 por engagement."
     >
-      <div className="h-56">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={top} layout="vertical" margin={{ top: 4, right: 16, left: 4, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" horizontal={false} />
-            <XAxis type="number" tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false} tickFormatter={v => fmtNumber(v)} />
-            <YAxis type="category" dataKey="name" width={150} tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false} />
-            <Tooltip formatter={(v) => [fmtNumber(v), "Views"]} labelFormatter={(l, p) => p?.[0]?.payload?.full || l} labelStyle={{ fontSize: 10 }} />
-            <Bar dataKey="views" radius={[0, 4, 4, 0]}>
-              {top.map((_, i) => <Cell key={i} fill={i === 0 ? "hsl(220,55%,62%)" : "hsl(221,83%,53%)"} />)}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+      <div className="flex gap-1 p-0.5 bg-muted/40 rounded-lg w-fit mb-3">
+        {NETS.map(n => (
+          <button key={n.id} onClick={() => setNet(n.id)}
+            className={`text-xs px-2.5 py-1 rounded-md ${net === n.id ? "bg-card shadow text-foreground font-semibold" : "text-muted-foreground"}`}>
+            {n.label}
+          </button>
+        ))}
       </div>
+      {hasData ? (
+        <div className="h-56">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={top} layout="vertical" margin={{ top: 4, right: 16, left: 4, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" horizontal={false} />
+              <XAxis type="number" tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="name" width={150} tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false} />
+              <Tooltip
+                formatter={(v, n, p) => [`${Number(v).toFixed(1)} · ${fmtNumber(p.payload.reach || p.payload.views)} alcance · ${fmtNumber(p.payload.secondary)} ${cfg.secLabel.toLowerCase()}`, "Engagement"]}
+                labelFormatter={(l, p) => p?.[0]?.payload?.full || l} labelStyle={{ fontSize: 10 }} />
+              <Bar dataKey="engagement" radius={[0, 4, 4, 0]}>
+                {top.map((_, i) => <Cell key={i} fill={i === 0 ? "hsl(220,55%,62%)" : "hsl(221,83%,53%)"} />)}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground py-8 text-center">Sin datos de {cfg.label} aún — se encenderá cuando el sync de Metricool acumule contenido.</p>
+      )}
     </EvidenceCard>
   );
 }

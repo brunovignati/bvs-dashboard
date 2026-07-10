@@ -107,4 +107,31 @@ print("\nTikTok diario")
 tk = fetch_metricool(["TKEV07","TKEV12","TKEV11","TKEV06","TKEV01","TKEV08","TKEV09"], from_60)
 print(f"  tk_daily: {upsert('tk_daily', [{"date_str":str(r[7]),**pd(r[7]),"followers":fv(r[0]),"account_views":fv(r[1]),"reach":fv(r[2]),"interactions":fv(r[3]),"videos":fv(r[4]),"new_followers":fv(r[5]),"profile_views":fv(r[6]),"updated_at":NOW_ISO} for r in tk], 'date_str')}")
 
+# ── Facebook posts (contenido por pieza) ─────────────────────
+# Orden con la fecha AL FINAL: fetch_metricool filtra por r[-1] == fecha (8 chars).
+print("\nFacebook posts")
+fbp = fetch_metricool(["FBPO03","FBPO06","FBPO12","FBPO10","FBPO13","FBPO14","FBPO08","FBPO16","FBPO01"], from_180)
+fb_posts = []
+for r in fbp:
+    url = str(r[1]) if r[1] else ""
+    if not url: continue
+    d = str(r[8])
+    fb_posts.append({"url":url,"date_str":d,"year":int(d[:4]),"month":int(d[4:6]),"content":str(r[0]) if r[0] else "",
+                     "reach":fv(r[2]),"engagement":fv(r[3]),"reactions":fv(r[4]),"shares":fv(r[5]),
+                     "comments":fv(r[6]),"video_views":fv(r[7]),"updated_at":NOW_ISO})
+print(f"  fb_posts: {upsert('fb_posts', fb_posts, 'url')}")
+
+# ── TikTok vídeos (contenido por pieza) ──────────────────────
+print("\nTikTok vídeos")
+tkv = fetch_metricool(["TKPO05","TKPO03","TKPO11","TKPO9999","TKPO08","TKPO09","TKPO10","TKPO07","TKPO01"], from_180)
+tk_videos = []
+for r in tkv:
+    url = str(r[1]) if r[1] else ""
+    if not url: continue
+    d = str(r[8])
+    tk_videos.append({"url":url,"date_str":d,"year":int(d[:4]),"month":int(d[4:6]),"description":str(r[0]) if r[0] else "",
+                      "reach":fv(r[2]),"engagement":fv(r[3]),"likes":fv(r[4]),"comments":fv(r[5]),
+                      "shares":fv(r[6]),"views":fv(r[7]),"updated_at":NOW_ISO})
+print(f"  tk_videos: {upsert('tk_videos', tk_videos, 'url')}")
+
 print("\nSync completo.")

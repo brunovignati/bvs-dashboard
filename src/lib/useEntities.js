@@ -213,3 +213,21 @@ export function useGa4Daily() {
     initialData: [],
   })
 }
+
+// ─── Contenido por pieza (Metricool: Facebook posts / TikTok vídeos) ──
+
+export function useFbPosts() {
+  return useQuery({
+    queryKey: ['fb_posts'],
+    queryFn: () => fetchTable('fb_posts', 'date_str', false, 500),
+    initialData: [],
+  })
+}
+
+export function useTkVideos() {
+  return useQuery({
+    queryKey: ['tk_videos'],
+    queryFn: () => fetchTable('tk_videos', 'date_str', false, 500),
+    initialData: [],
+  })
+}
