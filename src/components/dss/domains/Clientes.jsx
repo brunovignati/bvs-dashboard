@@ -1,15 +1,15 @@
 import DomainHeader from "../DomainHeader";
-import CohortAnalysis from "@/components/dashboard/CohortAnalysis";
-import ChannelSegmentation from "@/components/dashboard/ChannelSegmentation";
+import AcquisitionRetentionCard from "../cards/AcquisitionRetentionCard";
 import CustomerValueCard from "../cards/CustomerValueCard";
+import OmnichannelCard from "../cards/OmnichannelCard";
 
 export default function Clientes() {
   return (
     <div className="space-y-6">
       <DomainHeader title="Clientes" objetivo="La economía del comprador: si el negocio crece captando o fidelizando." />
-      <CohortAnalysis />
-      <ChannelSegmentation />
+      <AcquisitionRetentionCard delay={0.03} />
       <CustomerValueCard delay={0.05} />
+      <OmnichannelCard delay={0.07} />
     </div>
   );
 }

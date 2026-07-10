@@ -54,7 +54,7 @@ export default function PushPerformanceCard({ delay }) {
       note="Conversión = compras / envíos por campaña push (D12)."
     >
       {hasData && (
-        <div className="h-48">
+        <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 10, right: 12, bottom: 22, left: 6 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" />

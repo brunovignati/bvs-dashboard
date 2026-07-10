@@ -68,7 +68,7 @@ export default function SocialReachCard({ delay }) {
       delay={delay}
       note="Fuente: Metricool · ig_daily.views / fb_daily.page_media_view / tk_daily.account_views."
     >
-      <div className="h-48">
+      <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={rows} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />

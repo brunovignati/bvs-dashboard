@@ -36,7 +36,7 @@ export default function ChannelDropCard({ channels, worst, hasAttribution, delay
       delay={delay}
       note="Δ = compras atribuidas del último día vs. media de 14 días, por canal (D17)."
     >
-      <div className="h-40">
+      <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={channels} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />

@@ -60,7 +60,7 @@ export default function EmailScaleCard({ delay }) {
       note="RPMil = revenue por cada 1.000 emails enviados (D13/D04). Compara campañas de distinto tamaño."
     >
       {hasData && (
-        <div className="h-48">
+        <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 10, right: 12, bottom: 22, left: 6 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" />

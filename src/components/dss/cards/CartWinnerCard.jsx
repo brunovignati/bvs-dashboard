@@ -43,7 +43,7 @@ export default function CartWinnerCard({ delay }) {
       note="Revenue recuperado agregado por plantilla de carrito (D05/D06). A/B detectado por nombre."
     >
       {hasData && (
-        <div className="h-48">
+        <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={top} layout="vertical" margin={{ top: 4, right: 12, left: 4, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" horizontal={false} />

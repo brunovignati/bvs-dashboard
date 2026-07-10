@@ -35,7 +35,7 @@ export default function OmnichannelCard({ delay }) {
       note="Fuente: Dataset 20 · channel_segmentation. Histórico corto: madura con el tiempo."
     >
       {hasData && (
-        <div className="h-48">
+        <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={rows} stackOffset="expand" margin={{ top:5, right:8, left:4, bottom:0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />

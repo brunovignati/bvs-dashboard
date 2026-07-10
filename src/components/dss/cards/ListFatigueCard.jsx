@@ -55,7 +55,7 @@ export default function ListFatigueCard({ delay }) {
       delay={delay}
       note="Tasa de baja = bajas / envíos por campaña (D04)."
     >
-      <div className="h-44">
+      <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">
           <ScatterChart margin={{ top: 10, right: 12, bottom: 20, left: 6 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" />

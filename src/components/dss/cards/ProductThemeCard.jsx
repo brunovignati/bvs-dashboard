@@ -62,7 +62,7 @@ export default function ProductThemeCard({ delay }) {
       delay={delay}
       note="Proxy con datos existentes (email_campaigns + push_campaigns). Es revenue atribuido por temática de campaña, NO ventas totales por categoría (eso exigiría un export de ventas por categoría)."
     >
-      <div className="h-48">
+      <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={rows} layout="vertical" margin={{ top:4, right:16, left:4, bottom:0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" horizontal={false} />

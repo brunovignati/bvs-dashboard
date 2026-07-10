@@ -67,7 +67,7 @@ export default function CustomerValueCard({ delay }) {
         <Tile label="Frecuencia/mes" value={freq.toFixed(2)} />
         <Tile label="Tasa recompra" value={`${(repeat*100).toFixed(0)}%`} />
       </div>
-      <div className="h-32">
+      <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={recent} margin={{ top:5, right:8, left:4, bottom:0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />

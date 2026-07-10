@@ -67,7 +67,7 @@ export default function SocialAudienceCard({ delay }) {
       delay={delay}
       note="Fuente: Metricool · followers por red + fb followers_acquired/lost y tk new_followers."
     >
-      <div className="h-48">
+      <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={rows} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />

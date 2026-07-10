@@ -30,7 +30,7 @@ export default function BestDayCard({ delay }) {
       note="Fuente: Connectif · envios (agregado histórico por día de la semana). RPMil = revenue / envíos × 1.000."
     >
       {hasData && (
-        <div className="h-44">
+        <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={rows} margin={{ top:5, right:8, left:4, bottom:0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />

@@ -32,7 +32,7 @@ export default function AcquisitionRetentionCard({ delay }) {
       note="Mix mensual de compradores primerizos vs. recurrentes (Connectif · buyer_cohorts). La retención real por cohorte exige Contact ID (no disponible)."
     >
       {hasData && (
-        <div className="h-48">
+        <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={rows.slice(-18)} stackOffset="expand" margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
