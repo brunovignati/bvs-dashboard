@@ -66,7 +66,17 @@ export default function ListFatigueCard({ delay }) {
               label={{ value: "Volumen", position: "insideBottom", offset: -10, fontSize: 9, fill: "hsl(220,10%,50%)" }} />
             <YAxis type="number" dataKey="y" tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} tickFormatter={v => `${v.toFixed(1)}%`}
               label={{ value: "Baja %", angle: -90, position: "insideLeft", offset: 12, fontSize: 9, fill: "hsl(220,10%,50%)" }} />
-            <Tooltip formatter={(v, n) => [typeof v === "number" ? v.toFixed(2) : v, n]} />
+            <Tooltip cursor={{ strokeDasharray: "3 3" }} content={({ active, payload }) => {
+              if (!active || !payload?.length) return null;
+              const d = payload[0].payload;
+              return (
+                <div className="bg-card/95 backdrop-blur border border-border rounded-lg p-2.5 shadow-xl max-w-56">
+                  <p className="text-xs font-semibold mb-1 line-clamp-2">{d.name}</p>
+                  <p className="text-[11px] text-muted-foreground">Tasa de baja: <span className="font-mono text-blue-600">{d.rate.toFixed(2)}%</span></p>
+                  <p className="text-[11px] text-muted-foreground">Envíos: <span className="font-mono">{fmtNumber(d.sent)}</span></p>
+                </div>
+              );
+            }} />
             <Scatter data={pts}>
               {pts.map((p, i) => <Cell key={i} fill={p.rate > avg * 1.8 ? "hsl(224,76%,42%)" : "hsl(220,13%,65%)"} fillOpacity={0.8} />)}
             </Scatter>
