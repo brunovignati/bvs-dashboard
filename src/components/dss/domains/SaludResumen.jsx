@@ -44,18 +44,18 @@ function DeltaPts({ pts }) {
   );
 }
 
-/* Fila secundaria: etiqueta · valor · variación YoY inline */
-function Row({ label, value, pct }) {
-  const up = pct != null && pct > 0;
-  const col = pct == null ? "text-muted-foreground/60" : up ? "text-primary" : "text-muted-foreground";
+/* Fila secundaria: etiqueta · valor · variación YoY inline (% o pts) */
+function Row({ label, value, pct, pts }) {
+  const d = pts != null ? pts : pct;
+  const up = d != null && d > 0;
+  const col = d == null ? "text-muted-foreground/60" : up ? "text-primary" : "text-muted-foreground";
+  const txt = d == null ? "—" : pts != null ? `${up ? "+" : ""}${pts.toFixed(1)} pts` : `${up ? "+" : ""}${pct.toFixed(0)}%`;
   return (
     <div className="flex items-baseline justify-between text-xs">
       <span className="text-muted-foreground">{label}</span>
       <span className="flex items-baseline gap-1.5">
         <span className="font-semibold text-foreground">{value}</span>
-        <span className={`text-[11px] font-semibold ${col}`}>
-          {pct == null ? "—" : `${up ? "+" : ""}${pct.toFixed(0)}%`}
-        </span>
+        <span className={`text-[11px] font-semibold ${col}`}>{txt}</span>
       </span>
     </div>
   );
@@ -89,17 +89,21 @@ export default function SaludResumen() {
   const periodo = baseRow ? `${monthLabel(baseRow.month)} ${baseRow.year}` : `${monthLabel(periodEnd.month)} ${periodEnd.year}`;
   const refPeriodo = baseRow ? `${monthLabel(baseRow.month)} ${baseRow.year - 1}` : "año ant.";
 
-  // Nutracéuticos
+  // Revenue por línea (única métrica homogénea entre las dos fuentes)
   const nutraRev = m?.revenue ?? 0;
-  const nutraOrders = m?.purchases ?? 0;
-  const nutraRevYoY = yoyDelta(nutraRev, mYoY?.revenue);
-  const nutraOrdersYoY = yoyDelta(nutraOrders, mYoY?.purchases);
-
-  // Vet Shop
   const vetRev = c?.revenue ?? 0;
-  const vetBuyers = c?.buyers ?? 0;
+  const nutraRevYoY = yoyDelta(nutraRev, mYoY?.revenue);
   const vetRevYoY = yoyDelta(vetRev, cYoY?.revenue);
-  const vetBuyersYoY = yoyDelta(vetBuyers, cYoY?.buyers);
+
+  // Peso de cada línea sobre el revenue del negocio (comparable en ambas columnas)
+  const combined = nutraRev + vetRev;
+  const combinedYoY = (mYoY?.revenue ?? 0) + (cYoY?.revenue ?? 0);
+  const share = (rev) => (combined > 0 ? (rev / combined) * 100 : 0);
+  const shareYoY = (rev) => (combinedYoY > 0 && rev != null ? (rev / combinedYoY) * 100 : null);
+  const nutraShare = share(nutraRev);
+  const vetShare = share(vetRev);
+  const nutraSharePts = shareYoY(mYoY?.revenue) == null ? null : nutraShare - shareYoY(mYoY?.revenue);
+  const vetSharePts = shareYoY(cYoY?.revenue) == null ? null : vetShare - shareYoY(cYoY?.revenue);
 
   // Recurrencia
   const coTotal = (co?.firstTime ?? 0) + (co?.recurring ?? 0);
@@ -126,7 +130,7 @@ export default function SaludResumen() {
             <p className="text-xl font-black">{fmtCurrency(nutraRev)}</p>
             <Delta pct={nutraRevYoY} />
             <div className="pt-2">
-              <Row label="Pedidos" value={fmtNumber(nutraOrders)} pct={nutraOrdersYoY} />
+              <Row label="% del revenue del negocio" value={`${nutraShare.toFixed(0)}%`} pts={nutraSharePts} />
             </div>
           </div>
 
@@ -136,7 +140,7 @@ export default function SaludResumen() {
             <p className="text-xl font-black">{fmtCurrency(vetRev)}</p>
             <Delta pct={vetRevYoY} />
             <div className="pt-2">
-              <Row label="Compradores" value={fmtNumber(vetBuyers)} pct={vetBuyersYoY} />
+              <Row label="% del revenue del negocio" value={`${vetShare.toFixed(0)}%`} pts={vetSharePts} />
             </div>
           </div>
 
