@@ -3,6 +3,7 @@ import EmailPerformance from "@/components/dashboard/EmailPerformance";
 import PushAnalysis from "@/components/dashboard/PushAnalysis";
 import StickyWebContent from "@/components/dashboard/StickyWebContent";
 import DayOfWeekAnalysis from "@/components/dashboard/DayOfWeekAnalysis";
+import AttributionAnalysis from "@/components/dashboard/AttributionAnalysis";
 import ListFatigueCard from "../cards/ListFatigueCard";
 import MarketingFunnelCard from "../cards/MarketingFunnelCard";
 
@@ -11,6 +12,7 @@ export default function Marketing() {
     <div className="space-y-6">
       <DomainHeader title="Marketing" objetivo="Que cada canal y campaña rinda al máximo sin dañar el activo (la lista)." />
       <MarketingFunnelCard delay={0.03} />
+      <AttributionAnalysis />
       <EmailPerformance />
       <PushAnalysis />
       <StickyWebContent />

@@ -1,9 +1,7 @@
 import DomainHeader from "../DomainHeader";
 import RevenueChart from "@/components/dashboard/RevenueChart";
-import AttributionAnalysis from "@/components/dashboard/AttributionAnalysis";
-import ChannelSegmentation from "@/components/dashboard/ChannelSegmentation";
-import CorrelationMatrix from "@/components/dashboard/CorrelationMatrix";
 import RevenueTargetCard from "../cards/RevenueTargetCard";
+import RevenueBridgeCard from "../cards/RevenueBridgeCard";
 import UnattributedRevenueCard from "../cards/UnattributedRevenueCard";
 
 export default function Revenue() {
@@ -12,10 +10,8 @@ export default function Revenue() {
       <DomainHeader title="Revenue" objetivo="Entender y hacer crecer los ingresos, y saber de dónde viene cada euro." />
       <RevenueTargetCard delay={0.03} />
       <RevenueChart />
-      <AttributionAnalysis />
+      <RevenueBridgeCard delay={0.05} />
       <UnattributedRevenueCard delay={0.06} />
-      <ChannelSegmentation />
-      <CorrelationMatrix />
     </div>
   );
 }
