@@ -70,23 +70,25 @@ export default function RevenueBridgeCard({ delay }) {
     : (s.up ? PRIMARY : NEUTRAL);
 
   const driver = Math.abs(volEffect) >= Math.abs(priceEffect) ? "volumen" : "ticket";
-  const answer = hasData ? `${deltaRev >= 0 ? "+" : ""}${fmtCurrency(deltaRev)}` : "Sin datos";
-  const context = hasData
-    ? `${M[cur.month]} ${cur.year} vs ${M[prev.month]} ${prev.year} · volumen ${volEffect >= 0 ? "+" : ""}${fmtCurrency(volEffect)} · ticket ${priceEffect >= 0 ? "+" : ""}${fmtCurrency(priceEffect)}. La palanca dominante es ${driver}.`
-    : undefined;
+  const momPct = hasData && prev.revenue ? (deltaRev / prev.revenue) * 100 : undefined;
 
   return (
     <EvidenceCard
       question="¿Qué impulsa el cambio de revenue: volumen o ticket?"
-      answer={answer}
-      answerTone={hasData ? (deltaRev >= 0 ? "good" : "bad") : "neutral"}
-      context={context}
+      kpis={hasData ? [
+        { value: fmtCurrency(deltaRev), label: `Δ revenue ${M[cur.month]} ${cur.year}`, delta: momPct },
+        { value: fmtCurrency(volEffect), label: "Efecto volumen" },
+        { value: fmtCurrency(priceEffect), label: "Efecto ticket" },
+      ] : undefined}
+      answer={!hasData ? "Sin datos" : undefined}
       maturity="green"
+      insight={hasData
+        ? `El cambio del mes lo explica sobre todo el ${driver} (${driver === "volumen" ? "nº de pedidos" : "ticket medio"}).`
+        : undefined}
       actions={[
         { verb: "reasignar", rationale: hasData && driver === "volumen"
           ? "El cambio viene del nº de pedidos: actúa sobre captación y frecuencia de compra."
           : "El cambio viene del ticket medio: actúa sobre cross-sell, bundles y precio." },
-        { verb: "crear", rationale: "Trabaja la palanca débil del mes para equilibrar crecimiento por volumen y por valor." },
       ]}
       delay={delay}
       note="Descomposición volumen/precio (Connectif · monthly_metrics). ΔRev = Δpedidos·ticket_ant + Δticket·pedidos_actual."

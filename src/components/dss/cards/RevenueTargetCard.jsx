@@ -62,44 +62,50 @@ export default function RevenueTargetCard({ delay }) {
     </div>
   );
 
-  const kpis = target > 0 && hasData ? [
+  // Referencia del bullet: objetivo si está fijado, si no la proyección del período.
+  const ref = target > 0 ? target : (projection || 1);
+  const fillPct = Math.min(100, (acc / ref) * 100);
+  const projMarker = Math.min(100, (projection / ref) * 100);
+
+  const kpis = hasData ? [
     { value: fmtCurrency(acc), label: `Acumulado ${periodLabel}` },
-    { value: `${pctAcc.toFixed(0)}%`, label: "del objetivo" },
-    { value: fmtCurrency(projection), label: "Proyección fin de período" },
+    { value: fmtCurrency(projection), label: `Proyección ${periodLabel}` },
+    { value: target > 0 ? `${pctProj.toFixed(0)}%` : "—", label: "Proyección vs objetivo" },
   ] : undefined;
 
   return (
     <EvidenceCard
       question="¿Voy camino de cumplir el objetivo de revenue?"
       kpis={kpis}
-      answer={!kpis ? (hasData ? "Fija un objetivo para ver el progreso" : "Sin datos de revenue") : undefined}
-      answerTone="neutral"
+      answer={!hasData ? "Sin datos de revenue" : undefined}
       maturity="green"
-      insight={target > 0 && hasData ? (onTrack
-        ? `Al ritmo actual (día ${daysElapsed}/${daysInPeriod}) superarás el objetivo: proyección ${pctProj.toFixed(0)}%.`
-        : `Al ritmo actual (día ${daysElapsed}/${daysInPeriod}) te quedarás por debajo: proyección ${pctProj.toFixed(0)}%.`) : undefined}
-      action={target > 0 && hasData
-        ? (onTrack ? "Mantén la inversión y el calendario promocional que están funcionando."
-          : "Refuerza campañas/promoción si quieres cerrar la brecha antes de fin de período.")
-        : undefined}
+      insight={hasData ? (target > 0
+        ? (onTrack
+          ? `Al ritmo actual (día ${daysElapsed}/${daysInPeriod}) superarás el objetivo: proyección ${pctProj.toFixed(0)}%.`
+          : `Al ritmo actual (día ${daysElapsed}/${daysInPeriod}) te quedarás por debajo del objetivo: proyección ${pctProj.toFixed(0)}%.`)
+        : `Llevas ${fmtCurrency(acc)} acumulados (día ${daysElapsed}/${daysInPeriod}); a este ritmo cerrarás el período en ${fmtCurrency(projection)}.`) : undefined}
+      action={hasData ? (target > 0
+        ? (onTrack ? "Mantén la inversión y el calendario promocional que funcionan."
+          : "Refuerza campañas/promoción para cerrar la brecha antes de fin de período.")
+        : "Fija un objetivo para activar el seguimiento de cumplimiento.") : undefined}
       note="Objetivo editable, guardado en tu navegador. Fuente: Connectif · daily_revenue. Proyección lineal por ritmo diario."
     >
-      <div className="space-y-3">
-        {controls}
-        {target > 0 && hasData && (
+      {hasData && (
+        <div className="space-y-3">
+          {controls}
           <div>
             <div className="relative h-6 bg-muted/50 rounded-md overflow-hidden">
-              <div className="absolute inset-y-0 left-0 bg-primary/70" style={{ width: `${pctAcc}%` }} />
-              <div className="absolute inset-y-0 w-0.5 bg-foreground" style={{ left: `${Math.min(100, pctProj)}%` }} title="Proyección" />
-              <div className="absolute inset-y-0 right-0 w-0.5 bg-blue-600" title="Objetivo (100%)" />
+              <div className="absolute inset-y-0 left-0 bg-primary/70" style={{ width: `${fillPct}%` }} />
+              <div className="absolute inset-y-0 w-0.5 bg-foreground" style={{ left: `${projMarker}%` }} title="Proyección" />
+              {target > 0 && <div className="absolute inset-y-0 right-0 w-0.5 bg-blue-600" title="Objetivo (100%)" />}
             </div>
             <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
               <span>Acumulado · día {daysElapsed}/{daysInPeriod}</span>
-              <span>▏ objetivo {fmtCurrency(target)}</span>
+              <span>{target > 0 ? `▏ objetivo ${fmtCurrency(target)}` : "sin objetivo fijado"}</span>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </EvidenceCard>
   );
 }

@@ -14,16 +14,18 @@
 
 export const fmtCurrency = (val) => {
   if (val === undefined || val === null) return '—'
-  if (val >= 1000000) return `€${(val / 1000000).toFixed(1)}M`
-  if (val >= 1000)    return `€${(val / 1000).toFixed(1)}K`
-  return `€${Number(val).toFixed(2)}`
+  const n = Number(val); const sign = n < 0 ? '-' : ''; const a = Math.abs(n)
+  if (a >= 1000000) return `${sign}€${(a / 1000000).toFixed(1)}M`
+  if (a >= 1000)    return `${sign}€${(a / 1000).toFixed(1)}K`
+  return `${sign}€${a.toFixed(0)}`
 }
 
 export const fmtNumber = (val) => {
   if (val === undefined || val === null) return '—'
-  if (val >= 1000000) return `${(val / 1000000).toFixed(1)}M`
-  if (val >= 1000)    return `${(val / 1000).toFixed(1)}K`
-  return Number(val).toLocaleString('es-ES')
+  const n = Number(val); const sign = n < 0 ? '-' : ''; const a = Math.abs(n)
+  if (a >= 1000000) return `${sign}${(a / 1000000).toFixed(1)}M`
+  if (a >= 1000)    return `${sign}${(a / 1000).toFixed(1)}K`
+  return n.toLocaleString('es-ES')
 }
 
 export const fmtPct = (val) => {

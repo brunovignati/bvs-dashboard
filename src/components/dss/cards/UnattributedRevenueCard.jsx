@@ -2,7 +2,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import EvidenceCard from "../EvidenceCard";
 import { MATURITY } from "@/lib/dss/dssUtils";
 import { useDailyRevenue, useGa4Daily } from "@/lib/useEntities";
-import { fmtCurrency } from "@/lib/dashboardData";
+import { fmtNumber } from "@/lib/dashboardData";
 
 const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 const SRC = /source|medium|channel|organic|direct|paid|referral|social/i;
@@ -34,13 +34,16 @@ export default function UnattributedRevenueCard({ delay }) {
   return (
     <EvidenceCard
       question="¿Cuánto revenue es no atribuido y de dónde viene?"
-      answer={hasData ? `${last.pct.toFixed(0)}% sin atribuir` : "Sin datos"}
-      answerTone={hasData ? (last.pct > 50 ? "warn" : "neutral") : "neutral"}
-      context="Connectif mide el hueco (total − Σ atribuido); GA4 aporta la explicación (orgánico / directo / paid / referral)."
+      kpis={hasData ? [
+        { value: `${last.pct.toFixed(0)}%`, label: "Compras sin atribuir" },
+        { value: fmtNumber(last["No atribuido"]), label: "Compras no atribuidas" },
+        { value: fmtNumber(last.Atribuido), label: "Compras atribuidas" },
+      ] : undefined}
+      answer={!hasData ? "Sin datos" : undefined}
       maturity="green"
+      insight="Connectif mide el hueco (total − Σ atribuido); GA4 aporta la explicación (orgánico / directo / paid / referral)."
       actions={[
         { verb: "investigar", rationale: "Un no atribuido alto sugiere instrumentar mejor el tracking o que el peso orgánico/directo es grande (bueno si es marca fuerte)." },
-        { verb: "crear", rationale: "Si GA4 revela mucho orgánico, invierte en SEO/contenido; si es directo, en marca." },
       ]}
       delay={delay}
       note="Principal: Connectif · daily_revenue. Explicativa: GA4 · ga4_daily (desglose de fuentes)."
