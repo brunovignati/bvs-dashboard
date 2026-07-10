@@ -35,6 +35,11 @@ export default function EmailScaleCard({ delay }) {
   const q75 = rpms[Math.floor(rpms.length * 0.75)] || 0;
   const avgRpm = pts.length ? pts.reduce((s, p) => s + p.rpm, 0) / pts.length : 0;
 
+  // Salud del email en el período: apertura y CTR (agregado sobre email_campaigns).
+  const tot = scope.reduce((a, c) => ({ sent: a.sent + (c.sent || 0), opens: a.opens + (c.opens || 0), clicks: a.clicks + (c.clicks || 0) }), { sent: 0, opens: 0, clicks: 0 });
+  const openRate = tot.sent > 0 ? (tot.opens / tot.sent) * 100 : 0;
+  const ctr = tot.sent > 0 ? (tot.clicks / tot.sent) * 100 : 0;
+
   const scatter = pts.map(p => ({ ...p, x: p.sent, y: p.rpm, z: Math.max(60, Math.min(600, p.revenue / 5)) }));
   const byRpm = [...pts].sort((a, b) => b.rpm - a.rpm);
   const top = byRpm.slice(0, 3);
@@ -46,18 +51,23 @@ export default function EmailScaleCard({ delay }) {
 
   return (
     <EvidenceCard
-      question="¿Qué campañas de email escalo y cuáles retiro?"
-      answer={hasData && top[0] ? `Escalar: ${top[0].name}` : "Sin campañas suficientes"}
-      answerTone={hasData ? "good" : "neutral"}
-      context={hasData ? `${scope.length} campañas (${periodNote}) · eficiencia media €${avgRpm.toFixed(1)} por 1.000 envíos` : undefined}
+      question="¿Rinde el email y qué campañas escalo?"
+      kpis={hasData ? [
+        { value: `${openRate.toFixed(1)}%`, label: `Apertura · ${periodNote}` },
+        { value: `${ctr.toFixed(1)}%`, label: "CTR" },
+        { value: `€${avgRpm.toFixed(1)}`, label: "Revenue / 1.000 env." },
+      ] : undefined}
+      answer={!hasData ? "Sin campañas suficientes" : undefined}
       maturity="green"
+      insight={hasData
+        ? `Apertura ${openRate.toFixed(1)}% y CTR ${ctr.toFixed(1)}% en ${scope.length} campañas (${periodNote}). Escalar la de mayor eficiencia${top[0] ? `: ${top[0].name}` : ""}.`
+        : undefined}
       actions={hasData ? [
-        { verb: "escalar", rationale: top.length ? `Alta eficiencia (RPMil): ${top.map(t => t.name).slice(0,2).join(", ")}.` : "Replica las de mayor RPMil." },
+        { verb: "escalar", rationale: top.length ? `Alta eficiencia (revenue/1.000 env.): ${top.map(t => t.name).slice(0,2).join(", ")}.` : "Replica las de mayor RPMil." },
         { verb: "detener", rationale: bottom.length ? `Bajo retorno con volumen alto: ${bottom.map(b => b.name).slice(0,2).join(", ")}.` : "Retira las de RPMil bajo persistente." },
-        { verb: "mantener", rationale: "El resto, en observación un ciclo más." },
       ] : [{ verb: "investigar", rationale: "Aún no hay suficientes campañas con volumen para decidir." }]}
       delay={delay}
-      note="RPMil = revenue por cada 1.000 emails enviados (D13/D04). Compara campañas de distinto tamaño."
+      note="Apertura = opens/enviados · CTR = clics/enviados · Revenue/1.000 env. sobre email_campaigns."
     >
       {hasData && (
         <div className="h-56">

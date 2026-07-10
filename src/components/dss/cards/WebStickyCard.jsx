@@ -14,7 +14,7 @@ export default function WebStickyCard({ delay }) {
 
   return (
     <EvidenceCard
-      question="MK-3 · ¿Convierte el contenido web / sticky? (captación)"
+      question="¿Convierte el contenido web / sticky? (captación)"
       answer={hasData ? (best ? `Top: ${best.name}` : "Sin piezas activas") : "Sin datos"}
       answerTone={hasData && best ? "good" : "warn"}
       context={hasData ? `${active.length}/${rows.length} piezas con conversión > 0. El resto, candidatas a retirar.` : undefined}

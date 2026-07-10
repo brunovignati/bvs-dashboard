@@ -17,7 +17,7 @@ export default function BestDayCard({ delay }) {
 
   return (
     <EvidenceCard
-      question="MK-5 · ¿Cuál es el mejor día para enviar?"
+      question="¿Cuál es el mejor día para enviar?"
       answer={hasData && best ? `${best.name}` : "Sin datos"}
       answerTone={hasData ? "good" : "neutral"}
       context={hasData && best ? `Mayor revenue por 1.000 envíos (€${best.rpm.toFixed(0)}). Normaliza por volumen, no por total bruto.` : undefined}

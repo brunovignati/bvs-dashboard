@@ -22,7 +22,7 @@ export default function OmnichannelCard({ delay }) {
 
   return (
     <EvidenceCard
-      question="RV-2b · ¿Cómo se reparte la venta por canal (online / retail / omnicanal)?"
+      question="¿Cómo se reparte la venta por canal (online / retail / omnicanal)?"
       answer={hasData ? `${present.length} canales de venta` : "Sin datos de canal de venta"}
       answerTone="neutral"
       context={hasData ? "Reparto de compradores por canal físico/digital — dimensión distinta de la atribución de marketing." : "Dataset 20 (channel_segmentation) aún sin histórico suficiente."}
