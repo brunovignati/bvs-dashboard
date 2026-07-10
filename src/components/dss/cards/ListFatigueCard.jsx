@@ -5,9 +5,9 @@ import { useComparison } from "@/lib/ComparisonContext";
 import { latestMonthRows } from "@/lib/dss/dssUtils";
 import { fmtNumber } from "@/lib/dashboardData";
 
-// Detecta el campo de bajas si existe en los datos (puerta del dato).
+// Bajas por campaña. El campo real en email_campaigns es `unsubs`.
 function unsubOf(r) {
-  const v = r.unsubscribes ?? r.unsub ?? r.emailUnsubscribes ?? r.unsubscribe;
+  const v = r.unsubs ?? r.unsubscribes ?? r.unsub ?? r.emailUnsubscribes ?? r.unsubscribe;
   return typeof v === "number" ? v : null;
 }
 
