@@ -22,18 +22,23 @@ export default function MixChannelCard({ delay }) {
 
   const last = rows[rows.length-1] || {};
   const parts = hasData ? [["Email",last.Email],["Push",last.Push],["Web",last.Web],["SMS",last.SMS]] : [];
-  const top = parts.sort((a,b)=>b[1]-a[1])[0];
+  const sorted = [...parts].sort((a,b)=>b[1]-a[1]);
+  const top = sorted[0];
+  const lastAttr = hasData ? last.Email+last.Push+last.Web+last.SMS : 0;
+  const topPct = top && lastAttr>0 ? (top[1]/lastAttr)*100 : 0;
 
   return (
     <EvidenceCard
-      question="RV-2 · ¿De dónde viene cada euro (mix de canal de marketing)?"
-      answer={hasData && top ? `Canal líder: ${top[0]}` : "Sin atribución"}
-      answerTone="neutral"
-      context={hasData ? "Reparto de compras atribuidas por canal (last-touch) + resto no atribuido." : undefined}
+      question="¿De dónde viene cada euro (mix de canal)?"
+      kpis={hasData && top ? [
+        { value: top[0], label: "Canal líder" },
+        { value: `${topPct.toFixed(0)}%`, label: "de lo atribuido" },
+      ] : undefined}
+      answer={!hasData ? "Sin atribución" : undefined}
       maturity={hasData ? "green" : "amber"}
+      insight={hasData && top ? `${top[0]} concentra el ${topPct.toFixed(0)}% de las compras atribuidas del último mes; vigila si el mix se desplaza entre canales.` : undefined}
       actions={[
-        { verb: "reasignar", rationale: "Si un canal gana peso de forma sostenida, considera reforzarlo; si otro se apaga, revísalo." },
-        { verb: "investigar", rationale: "Un 'no atribuido' alto sugiere instrumentar mejor el tracking (orgánico/directo)." },
+        { verb: "reasignar", rationale: "Si un canal gana peso de forma sostenida, refuérzalo; si otro se apaga, revísalo." },
       ]}
       delay={delay}
       note="Compras atribuidas por canal (Connectif · daily_revenue). No atribuido = total − Σ atribuido."

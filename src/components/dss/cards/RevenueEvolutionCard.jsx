@@ -31,13 +31,18 @@ export default function RevenueEvolutionCard({ delay }) {
   return (
     <EvidenceCard
       question="¿Cómo evoluciona el revenue y qué lo impulsa?"
-      answer={hasData ? fmtCurrency(last.revenue) : "Sin datos"}
-      answerTone={mom == null ? "neutral" : mom >= 0 ? "good" : "bad"}
-      context={hasData ? `${M[last.month]} ${last.year} · MoM ${mom == null ? "—" : (mom >= 0 ? "+" : "") + mom.toFixed(1) + "%"} · YoY ${yoyPct == null ? "—" : (yoyPct >= 0 ? "+" : "") + yoyPct.toFixed(1) + "%"} · ticket €${last.ticket.toFixed(0)}` : undefined}
+      kpis={hasData ? [
+        { value: fmtCurrency(last.revenue), label: `Revenue ${M[last.month]} ${last.year}`, delta: mom == null ? undefined : mom },
+        { value: `€${last.ticket.toFixed(0)}`, label: "Ticket medio" },
+        { value: yoyPct == null ? "—" : `${yoyPct >= 0 ? "+" : ""}${yoyPct.toFixed(0)}%`, label: "vs. año anterior" },
+      ] : undefined}
+      answer={!hasData ? "Sin datos" : undefined}
       maturity="green"
+      insight={hasData ? (mom != null && mom < 0
+        ? "El revenue cae respecto al mes anterior: revisa si arrastra el nº de pedidos o el ticket medio."
+        : "Revenue en crecimiento sostenido; observa si lo impulsa el volumen o el ticket para saber qué reforzar.") : undefined}
       actions={[
-        { verb: "reasignar", rationale: mom != null && mom < 0 ? "Revenue a la baja: revisa qué palanca lo arrastra (canal, ticket, pedidos)." : "Crecimiento sostenido: mantén la asignación que funciona." },
-        { verb: "crear", rationale: "Si el crecimiento viene de ticket y no de pedidos (o viceversa), trabaja la palanca débil." },
+        { verb: "reasignar", rationale: mom != null && mom < 0 ? "Revisa qué palanca lo arrastra (canal, ticket o pedidos) y actúa sobre ella." : "Mantén la asignación que funciona y trabaja la palanca más débil." },
       ]}
       delay={delay}
       note="Revenue total del negocio agregado por mes (Connectif · daily_revenue). Ticket = revenue / pedidos."
