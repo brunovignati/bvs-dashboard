@@ -25,9 +25,11 @@ function MaturityChip({ state = "green" }) {
   );
 }
 
+// Un solo color para el enunciado bajo la pregunta: coherencia visual en TODAS
+// las tarjetas. El matiz (sube/baja) se transmite solo por los deltas numéricos.
 const TONE = {
-  good:    "text-primary",          // ↑ celeste (marca)
-  bad:     "text-muted-foreground", // ↓ neutro
+  good:    "text-foreground",
+  bad:     "text-foreground",
   warn:    "text-foreground",
   neutral: "text-foreground",
 };
@@ -59,7 +61,7 @@ export default function EvidenceCard({
   children,               // 3. la visualización
   delay = 0,              // (compat; sin animación)
 }) {
-  const leftBorder = severity ? "border-l-4 border-l-slate-500" : "";
+  const leftBorder = severity ? "border-l-4 border-l-primary" : "";
   const rec = action
     ? { rationale: action }
     : (actions && actions.length ? actions[0] : null);
