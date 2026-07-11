@@ -84,8 +84,8 @@ export default function SocialReachCard({ delay }) {
             <YAxis tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false} tickFormatter={v => fmtNumber(v)} />
             <Tooltip formatter={(v, n) => [fmtNumber(v), n]} labelStyle={{ fontSize: 11 }} />
             <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
-            <Line type="monotone" dataKey="Instagram" stroke="hsl(220,55%,62%)" strokeWidth={1.8} dot={false} connectNulls />
-            <Line type="monotone" dataKey="Facebook" stroke="hsl(221,83%,53%)" strokeWidth={1.8} dot={false} connectNulls />
+            <Line type="monotone" dataKey="Instagram" stroke="hsl(199,80%,64%)" strokeWidth={1.8} dot={false} connectNulls />
+            <Line type="monotone" dataKey="Facebook" stroke="hsl(199,89%,48%)" strokeWidth={1.8} dot={false} connectNulls />
             <Line type="monotone" dataKey="TikTok" stroke="hsl(220,9%,20%)" strokeWidth={1.8} dot={false} connectNulls />
           </LineChart>
         </ResponsiveContainer>

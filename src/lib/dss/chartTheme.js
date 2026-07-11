@@ -22,9 +22,9 @@ export const TIP = { labelStyle: { fontSize: 11 } };
 // Paleta de series (escala de dos colores): azul predominante → neutro.
 // Usar SIEMPRE en este orden para que el color signifique lo mismo en todo el panel.
 export const SERIES = [
-  "hsl(221,83%,53%)", // 1 · predominante
-  "hsl(220,55%,62%)", // 2
-  "hsl(218,33%,70%)", // 3
+  "hsl(199,89%,48%)", // 1 · predominante
+  "hsl(199,80%,64%)", // 2
+  "hsl(199,60%,78%)", // 3
   "hsl(216,20%,78%)", // 4
   "hsl(215,16%,62%)", // neutro (p.ej. "no atribuido")
 ];

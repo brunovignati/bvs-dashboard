@@ -63,7 +63,7 @@ export default function RevenueEvolutionCard({ delay }) {
               <YAxis {...AXIS} tickFormatter={v => `€${(v / 1000).toFixed(0)}K`} />
               <Tooltip formatter={(v) => [fmtCurrency(v), "Revenue"]} {...TIP} cursor={{ fill: "hsl(220,13%,91%)", fillOpacity: 0.4 }} />
               <Bar dataKey="revenue" name="Revenue" radius={[3, 3, 0, 0]} maxBarSize={34}>
-                {chart.map((m, i) => <Cell key={i} fill={i === chart.length - 1 ? "hsl(220,55%,62%)" : PRIMARY} />)}
+                {chart.map((m, i) => <Cell key={i} fill={i === chart.length - 1 ? "hsl(199,80%,64%)" : PRIMARY} />)}
               </Bar>
             </BarChart>
           </ResponsiveContainer>

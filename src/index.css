@@ -12,7 +12,7 @@
     --card-foreground: 220 20% 10%;
     --popover: 0 0% 100%;
     --popover-foreground: 220 20% 10%;
-    --primary: 221 83% 53%;
+    --primary: 199 89% 48%;
     --primary-foreground: 0 0% 100%;
     --secondary: 220 14% 96%;
     --secondary-foreground: 220 20% 25%;
@@ -24,7 +24,7 @@
     --destructive-foreground: 0 0% 98%;
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 221 83% 53%;
+    --ring: 199 89% 48%;
     --radius: 0.75rem;
     --font-heading: 'Inter', ui-sans-serif, system-ui, sans-serif;
     --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
@@ -36,7 +36,7 @@
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 221 83% 53%;
+    --sidebar-ring: 199 89% 48%;
   }
 
   .dark {
@@ -44,7 +44,7 @@
     --foreground: 210 40% 96%;
     --card: 222 47% 10%;
     --card-foreground: 210 40% 96%;
-    --primary: 221 83% 53%;
+    --primary: 199 89% 48%;
     --primary-foreground: 0 0% 100%;
     --secondary: 222 47% 14%;
     --secondary-foreground: 210 40% 90%;
@@ -56,15 +56,15 @@
     --destructive-foreground: 0 0% 98%;
     --border: 222 47% 16%;
     --input: 222 47% 16%;
-    --ring: 221 83% 53%;
+    --ring: 199 89% 48%;
     --sidebar-background: 222 47% 7%;
     --sidebar-foreground: 210 40% 90%;
-    --sidebar-primary: 217 91% 60%;
+    --sidebar-primary: 199 89% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 222 47% 14%;
     --sidebar-accent-foreground: 210 40% 90%;
     --sidebar-border: 222 47% 16%;
-    --sidebar-ring: 217 91% 60%;
+    --sidebar-ring: 199 89% 55%;
   }
 }
 
@@ -77,3 +77,12 @@
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: hsl(var(--muted-foreground) / 0.3); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.5); }
+
+/* Look & feel: lavado celeste suave en la parte superior (estilo Metricool, marca BVS). */
+body {
+  background:
+    radial-gradient(1100px 300px at 50% -90px, hsl(199 89% 90% / 0.65), transparent 72%),
+    hsl(var(--background));
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+}

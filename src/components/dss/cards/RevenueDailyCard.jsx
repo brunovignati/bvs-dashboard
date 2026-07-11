@@ -38,8 +38,8 @@ export default function RevenueDailyCard({ series, lastValue, mean, std, outside
             <YAxis tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false}
               tickFormatter={(v) => `€${(v/1000).toFixed(0)}K`} />
             <Tooltip formatter={(v) => [fmtCurrency(v), "Revenue"]} labelStyle={{ fontSize: 11 }} />
-            {std > 0 && <ReferenceArea y1={lo} y2={hi} fill="hsl(220,55%,62%)" fillOpacity={0.06} />}
-            <Area type="monotone" dataKey="value" stroke="hsl(221,83%,53%)" fill="hsl(221,83%,53%)" fillOpacity={0.12} strokeWidth={1.5} dot={false} />
+            {std > 0 && <ReferenceArea y1={lo} y2={hi} fill="hsl(199,80%,64%)" fillOpacity={0.06} />}
+            <Area type="monotone" dataKey="value" stroke="hsl(199,89%,48%)" fill="hsl(199,89%,48%)" fillOpacity={0.12} strokeWidth={1.5} dot={false} />
           </ComposedChart>
         </ResponsiveContainer>
       </div>

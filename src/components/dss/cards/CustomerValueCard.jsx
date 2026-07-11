@@ -75,7 +75,7 @@ export default function CustomerValueCard({ delay }) {
             <XAxis dataKey="name" tick={{ fontSize:8, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fontSize:8, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} tickFormatter={v=>`€${v.toFixed(0)}`} />
             <Tooltip formatter={(v)=>[fmtCurrency(v),"Gasto/comprador·mes"]} labelStyle={{ fontSize:11 }} />
-            <Line type="monotone" dataKey="revPerBuyer" stroke="hsl(221,83%,53%)" strokeWidth={1.8} dot={false} />
+            <Line type="monotone" dataKey="revPerBuyer" stroke="hsl(199,89%,48%)" strokeWidth={1.8} dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>

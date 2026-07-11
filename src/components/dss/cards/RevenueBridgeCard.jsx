@@ -14,7 +14,7 @@ import { fmtCurrency, fmtNumber } from "@/lib/dashboardData";
 import { SERIES, PRIMARY } from "@/lib/dss/chartTheme";
 
 const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-const REV_COLOR = "hsl(221,45%,30%)";
+const REV_COLOR = "hsl(200,55%,30%)";
 const pct = (v) => (v == null ? "—" : `${v >= 0 ? "+" : ""}${v.toFixed(1)}%`);
 
 function SmallMultiples({ labels, series }) {

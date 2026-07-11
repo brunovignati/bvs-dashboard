@@ -39,7 +39,7 @@ export default function WebStickyCard({ delay }) {
               <YAxis type="category" dataKey="name" width={140} tick={{ fontSize:8, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} />
               <Tooltip formatter={(v,n,p)=>[`${Number(v).toFixed(2)}% · ${fmtCurrency(p?.payload?.revenue||0)}`,"Conversión · Revenue"]} labelFormatter={(l,p)=>p?.[0]?.payload?.full||l} labelStyle={{ fontSize:10 }} />
               <Bar dataKey="conv" radius={[0,4,4,0]}>
-                {rows.map((r,i)=><Cell key={i} fill={r.inactive?"hsl(220,13%,70%)":i===0?"hsl(220,55%,62%)":"hsl(221,83%,53%)"} />)}
+                {rows.map((r,i)=><Cell key={i} fill={r.inactive?"hsl(220,13%,70%)":i===0?"hsl(199,80%,64%)":"hsl(199,89%,48%)"} />)}
               </Bar>
             </BarChart>
           </ResponsiveContainer>

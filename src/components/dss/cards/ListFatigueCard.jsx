@@ -78,7 +78,7 @@ export default function ListFatigueCard({ delay }) {
               );
             }} />
             <Scatter data={pts}>
-              {pts.map((p, i) => <Cell key={i} fill={p.rate > avg * 1.8 ? "hsl(224,76%,42%)" : "hsl(220,13%,65%)"} fillOpacity={0.8} />)}
+              {pts.map((p, i) => <Cell key={i} fill={p.rate > avg * 1.8 ? "hsl(200,90%,38%)" : "hsl(220,13%,65%)"} fillOpacity={0.8} />)}
             </Scatter>
           </ScatterChart>
         </ResponsiveContainer>

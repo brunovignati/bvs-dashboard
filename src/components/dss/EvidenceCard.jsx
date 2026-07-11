@@ -25,7 +25,7 @@ function MaturityChip({ state = "green" }) {
 }
 
 const TONE = {
-  good:    "text-blue-600",         // ↑ predominante
+  good:    "text-primary",          // ↑ celeste (marca)
   bad:     "text-muted-foreground", // ↓ neutro
   warn:    "text-foreground",
   neutral: "text-foreground",
@@ -65,7 +65,7 @@ export default function EvidenceCard({
   const hasFooter = insight || rec;
 
   return (
-    <div className={`bg-card border border-border rounded-2xl p-5 ${leftBorder}`}>
+    <div className={`bg-card border border-border/70 rounded-2xl p-6 shadow-sm ${leftBorder}`}>
       {/* 1. Pregunta + estado */}
       <div className="flex items-start justify-between gap-3 mb-3">
         <h3 className="text-base font-semibold leading-snug text-foreground">{question}</h3>

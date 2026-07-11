@@ -42,7 +42,7 @@ export default function SegmentsCard({ delay }) {
               <YAxis type="category" dataKey="name" width={150} tick={{ fontSize:8, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} />
               <Tooltip formatter={(v)=>[fmtNumber(v),"Contactos"]} labelFormatter={(l,p)=>p?.[0]?.payload?.full||l} labelStyle={{ fontSize:10 }} />
               <Bar dataKey="contacts" radius={[0,4,4,0]}>
-                {top.map((_,i)=><Cell key={i} fill={i===0?"hsl(220,55%,62%)":"hsl(221,83%,53%)"} />)}
+                {top.map((_,i)=><Cell key={i} fill={i===0?"hsl(199,80%,64%)":"hsl(199,89%,48%)"} />)}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
