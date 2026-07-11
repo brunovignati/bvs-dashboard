@@ -12,6 +12,7 @@
  * Escala tipográfica fija: pregunta = text-base/semibold · KPI = text-3xl/bold ·
  * insight = text-sm · acción = text-sm · fuente = text-[10px]. Paleta de dos colores.
  */
+import { motion } from "framer-motion";
 import { MATURITY } from "@/lib/dss/dssUtils";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
@@ -65,7 +66,12 @@ export default function EvidenceCard({
   const hasFooter = insight || rec;
 
   return (
-    <div className={`bg-card border border-border/70 rounded-2xl p-6 shadow-sm ${leftBorder}`}>
+    <motion.div
+      initial={{ opacity: 0, y: 14 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
+      transition={{ duration: 0.4, delay: delay || 0, ease: [0.22, 1, 0.36, 1] }}
+      className={`h-full bg-card border border-border/70 rounded-2xl p-6 shadow-sm transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 hover:border-primary/30 ${leftBorder}`}>
       {/* 1. Pregunta + estado */}
       <div className="flex items-start justify-between gap-3 mb-3">
         <h3 className="text-base font-semibold leading-snug text-foreground">{question}</h3>
@@ -109,6 +115,6 @@ export default function EvidenceCard({
 
       {/* 6. Fuente */}
       {note && <p className="text-[10px] text-muted-foreground mt-3 italic">{note}</p>}
-    </div>
+    </motion.div>
   );
 }

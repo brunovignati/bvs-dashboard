@@ -16,12 +16,14 @@ import Automatizaciones from "../domains/Automatizaciones";
 export default function GrowthMarketing() {
   return (
     <div className="space-y-8">
-      <section className="space-y-6">
+      <section className="space-y-5">
         <DomainHeader title="Revenue" objetivo="De dónde viene cada euro y qué lo mueve." />
-        <MixChannelCard delay={0.03} />
-        <RevenueBridgeCard delay={0.05} />
-        <UnattributedRevenueCard delay={0.07} />
-        <OwnBrandCard delay={0.09} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <MixChannelCard delay={0.03} />
+          <RevenueBridgeCard delay={0.05} />
+          <UnattributedRevenueCard delay={0.07} />
+          <OwnBrandCard delay={0.09} />
+        </div>
       </section>
       <Clientes />
       <Marketing />

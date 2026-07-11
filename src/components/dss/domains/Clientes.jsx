@@ -9,11 +9,13 @@ import OmnichannelCard from "../cards/OmnichannelCard";
 // reactivarla cuando se libere un slot. Ver CLAUDE.md §16.
 export default function Clientes() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <DomainHeader title="Clientes" objetivo="La economía del comprador: si el negocio crece captando o fidelizando." />
-      <AcquisitionRetentionCard delay={0.03} />
-      <CustomerValueCard delay={0.05} />
-      <OmnichannelCard delay={0.07} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <AcquisitionRetentionCard delay={0.03} />
+        <OmnichannelCard delay={0.05} />
+        <div className="lg:col-span-2"><CustomerValueCard delay={0.07} /></div>
+      </div>
     </div>
   );
 }
