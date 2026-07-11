@@ -11,7 +11,7 @@ export default function SaludDelNegocio() {
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
       <RevenueDailyCard {...revenue} delay={0.05} />
       <ChannelDropCard {...channelData} delay={0.1} />
-      <CriticalWorkflowCard {...wf} delay={0.15} />
+      <div className="lg:col-span-2"><CriticalWorkflowCard {...wf} delay={0.15} /></div>
     </div>
   );
 }

@@ -11,7 +11,7 @@ const Tip = ({ active, payload }) => {
   return (
     <div className="bg-card/95 backdrop-blur border border-border rounded-lg p-2.5 shadow-xl max-w-56">
       <p className="text-xs font-semibold mb-1 line-clamp-2">{d.name}</p>
-      <p className="text-[11px] text-muted-foreground">RPMil: <span className="font-mono text-blue-600">€{d.rpm.toFixed(1)}</span></p>
+      <p className="text-[11px] text-muted-foreground">RPMil: <span className="font-mono text-sky-600">€{d.rpm.toFixed(1)}</span></p>
       <p className="text-[11px] text-muted-foreground">Enviados: <span className="font-mono">{fmtNumber(d.sent)}</span></p>
       <p className="text-[11px] text-muted-foreground">Revenue: <span className="font-mono">{fmtCurrency(d.revenue)}</span></p>
     </div>

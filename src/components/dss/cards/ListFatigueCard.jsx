@@ -72,7 +72,7 @@ export default function ListFatigueCard({ delay }) {
               return (
                 <div className="bg-card/95 backdrop-blur border border-border rounded-lg p-2.5 shadow-xl max-w-56">
                   <p className="text-xs font-semibold mb-1 line-clamp-2">{d.name}</p>
-                  <p className="text-[11px] text-muted-foreground">Tasa de baja: <span className="font-mono text-blue-600">{d.rate.toFixed(2)}%</span></p>
+                  <p className="text-[11px] text-muted-foreground">Tasa de baja: <span className="font-mono text-sky-600">{d.rate.toFixed(2)}%</span></p>
                   <p className="text-[11px] text-muted-foreground">Envíos: <span className="font-mono">{fmtNumber(d.sent)}</span></p>
                 </div>
               );

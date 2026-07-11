@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import EvidenceCard from "../EvidenceCard";
 import { useDailyRevenue } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
 import { fmtCurrency } from "@/lib/dashboardData";
 
 const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
@@ -21,28 +22,32 @@ export default function RevenueTargetCard({ delay }) {
     if (typeof window !== "undefined") window.localStorage.setItem(LS(period), String(v));
   };
 
-  const rows = [...data].sort((a, b) => a.year !== b.year ? a.year - b.year : a.month !== b.month ? a.month - b.month : (a.day || 0) - (b.day || 0));
-  const last = rows[rows.length - 1];
-  const hasData = !!last;
+  // El período lo marca el comparador (rangeB.end), no el último día suelto de los datos,
+  // para que esta tarjeta sea coherente con el resto de la sección.
+  const { rangeB } = useComparison();
+  const refY = rangeB.end.year, refM = rangeB.end.month;
+  const rows = [...data];
 
   let acc = 0, daysElapsed = 0, daysInPeriod = 30, periodLabel = "";
-  if (hasData) {
+  if (rows.length) {
     if (period === "month") {
-      acc = rows.filter(r => r.year === last.year && r.month === last.month).reduce((s, r) => s + (r.revenue || 0), 0);
-      daysElapsed = last.day || 0;
-      daysInPeriod = new Date(last.year, last.month, 0).getDate();
-      periodLabel = `${M[last.month]} ${last.year}`;
+      const mr = rows.filter(r => r.year === refY && r.month === refM);
+      acc = mr.reduce((s, r) => s + (r.revenue || 0), 0);
+      daysElapsed = mr.length ? Math.max(...mr.map(r => r.day || 0)) : 0;
+      daysInPeriod = new Date(refY, refM, 0).getDate();
+      periodLabel = `${M[refM]} ${refY}`;
     } else {
-      const q = Math.floor((last.month - 1) / 3); const qMonths = [q * 3 + 1, q * 3 + 2, q * 3 + 3];
-      acc = rows.filter(r => r.year === last.year && qMonths.includes(r.month)).reduce((s, r) => s + (r.revenue || 0), 0);
-      const elapsedMonths = qMonths.filter(m => m < last.month);
-      daysElapsed = elapsedMonths.reduce((s, m) => s + new Date(last.year, m, 0).getDate(), 0) + (last.day || 0);
-      daysInPeriod = qMonths.reduce((s, m) => s + new Date(last.year, m, 0).getDate(), 0);
-      periodLabel = `Q${q + 1} ${last.year}`;
+      const q = Math.floor((refM - 1) / 3); const qMonths = [q * 3 + 1, q * 3 + 2, q * 3 + 3];
+      acc = rows.filter(r => r.year === refY && qMonths.includes(r.month)).reduce((s, r) => s + (r.revenue || 0), 0);
+      const inRef = rows.filter(r => r.year === refY && r.month === refM);
+      const dayInRef = inRef.length ? Math.max(...inRef.map(r => r.day || 0)) : 0;
+      daysElapsed = qMonths.filter(m => m < refM).reduce((s, m) => s + new Date(refY, m, 0).getDate(), 0) + dayInRef;
+      daysInPeriod = qMonths.reduce((s, m) => s + new Date(refY, m, 0).getDate(), 0);
+      periodLabel = `Q${q + 1} ${refY}`;
     }
   }
+  const hasData = daysElapsed > 0;
   const projection = daysElapsed > 0 ? acc / daysElapsed * daysInPeriod : 0;
-  const pctAcc = target > 0 ? Math.min(100, acc / target * 100) : 0;
   const pctProj = target > 0 ? Math.min(120, projection / target * 100) : 0;
   const onTrack = target > 0 && projection >= target;
 
@@ -70,14 +75,14 @@ export default function RevenueTargetCard({ delay }) {
   const kpis = hasData ? [
     { value: fmtCurrency(acc), label: `Acumulado ${periodLabel}` },
     { value: fmtCurrency(projection), label: `Proyección ${periodLabel}` },
-    { value: target > 0 ? `${pctProj.toFixed(0)}%` : "—", label: "Proyección vs objetivo" },
+    ...(target > 0 ? [{ value: `${pctProj.toFixed(0)}%`, label: "Proyección vs objetivo" }] : []),
   ] : undefined;
 
   return (
     <EvidenceCard
       question="¿Voy camino de cumplir el objetivo de revenue?"
       kpis={kpis}
-      answer={!hasData ? "Sin datos de revenue" : undefined}
+      answer={!hasData ? "Sin datos para el período seleccionado" : undefined}
       maturity="green"
       insight={hasData ? (target > 0
         ? (onTrack
@@ -97,7 +102,7 @@ export default function RevenueTargetCard({ delay }) {
             <div className="relative h-6 bg-muted/50 rounded-md overflow-hidden">
               <div className="absolute inset-y-0 left-0 bg-primary/70" style={{ width: `${fillPct}%` }} />
               <div className="absolute inset-y-0 w-0.5 bg-foreground" style={{ left: `${projMarker}%` }} title="Proyección" />
-              {target > 0 && <div className="absolute inset-y-0 right-0 w-0.5 bg-blue-600" title="Objetivo (100%)" />}
+              {target > 0 && <div className="absolute inset-y-0 right-0 w-0.5 bg-sky-600" title="Objetivo (100%)" />}
             </div>
             <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
               <span>Acumulado · día {daysElapsed}/{daysInPeriod}</span>

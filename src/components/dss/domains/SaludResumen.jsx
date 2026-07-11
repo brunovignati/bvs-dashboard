@@ -5,6 +5,7 @@
  * las mismas dos métricas: Revenue (€) y su Aporte a las ventas (% del revenue del negocio).
  * La recurrencia ya no vive aquí: es una métrica de cliente y está en Clientes.
  */
+import EvidenceCard from "../EvidenceCard";
 import { useMonthlyMetrics, useCompradores } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
 import { fmtCurrency } from "@/lib/dashboardData";
@@ -52,19 +53,23 @@ export default function SaludResumen() {
   const combinedA = nutraRevA + vetRevA;
   const nutraShareB = combinedB > 0 ? (nutraRevB / combinedB) * 100 : 0;
   const vetShareB = combinedB > 0 ? (vetRevB / combinedB) * 100 : 0;
-  const nutraShareA = combinedA > 0 ? (nutraRevA / combinedA) * 100 : null;
-  const vetShareA = combinedA > 0 ? (vetRevA / combinedA) * 100 : null;
-  const nutraSharePts = nutraShareA == null ? null : nutraShareB - nutraShareA;
-  const vetSharePts = vetShareA == null ? null : vetShareB - vetShareA;
+  // El aporte (mix) solo es comparable si AMBAS líneas tienen dato en el período de
+  // comparación; si una faltaba (p.ej. Vet Shop no se registraba en 2025), el ±pts sería
+  // un artefacto engañoso → se suprime en las dos.
+  const mixComparable = nutraRevA > 0 && vetRevA > 0;
+  const nutraSharePts = mixComparable ? nutraShareB - nutraShareA : null;
+  const vetSharePts = mixComparable ? vetShareB - vetShareA : null;
 
   const hasData = nutraRevB > 0 || vetRevB > 0;
 
   return (
-    <div className="rounded-2xl bg-card border border-border p-6">
-      <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground font-semibold mb-4">Revenue por línea de negocio</p>
-      {!hasData ? (
-        <p className="text-sm text-muted-foreground">Sin datos para el período seleccionado.</p>
-      ) : (
+    <EvidenceCard
+      question="¿Cómo se reparte el revenue por línea de negocio?"
+      answer={!hasData ? "Sin datos para el período seleccionado" : undefined}
+      maturity="green"
+      note="Revenue por línea (Connectif · monthly_metrics + compradores). Aporte a las ventas = % del revenue total del negocio; el delta en puntos solo se muestra si ambas líneas tienen dato en el período de comparación."
+    >
+      {hasData && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="rounded-xl bg-muted/30 border border-border p-4 space-y-1.5">
             <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Nutracéuticos BVS · revenue</p>
@@ -84,6 +89,6 @@ export default function SaludResumen() {
           </div>
         </div>
       )}
-    </div>
+    </EvidenceCard>
   );
 }
