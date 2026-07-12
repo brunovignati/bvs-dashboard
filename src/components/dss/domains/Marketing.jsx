@@ -6,7 +6,6 @@ import PushChannelTrendCard from "../cards/PushChannelTrendCard";
 import WebStickyCard from "../cards/WebStickyCard";
 import WebContentTrendCard from "../cards/WebContentTrendCard";
 import BestDayCard from "../cards/BestDayCard";
-import ListFatigueCard from "../cards/ListFatigueCard";
 import Ga4TrafficCard from "../cards/Ga4TrafficCard";
 import SocialReachCard from "../cards/SocialReachCard";
 import SocialAudienceCard from "../cards/SocialAudienceCard";
@@ -54,12 +53,10 @@ export default function Marketing() {
         <SocialContentCard delay={0.21} />
       </Grid>
 
-      {/* 5 · Optimización y salud de los envíos */}
+      {/* 5 · Optimización de envíos. La salud/fatiga de la lista se consolida en
+          Ops & CRM › CRM (ListPressureCard), a nivel de base, para no repetirla aquí. */}
       <Sub>Optimización de envíos</Sub>
-      <Grid>
-        <BestDayCard delay={0.23} />
-        <ListFatigueCard delay={0.25} />
-      </Grid>
+      <BestDayCard delay={0.23} />
     </div>
   );
 }

@@ -42,7 +42,7 @@ export default function MixChannelCard({ delay }) {
         { verb: "reasignar", rationale: "Si un canal gana peso de forma sostenida, refuérzalo; si otro se apaga, revísalo." },
       ]}
       delay={delay}
-      note="Compras atribuidas por canal (Connectif · daily_revenue). No atribuido = total − Σ atribuido."
+      note="Atribución de marketing por canal (Email/Push/Web/SMS) — dimensión distinta del canal de venta (online/retail/omnicanal). Compras atribuidas (Connectif · daily_revenue). No atribuido = total − Σ atribuido."
     >
       {hasData && (
         <div className={CHART_H}>

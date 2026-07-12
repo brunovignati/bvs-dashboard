@@ -30,6 +30,6 @@ export const DOMAINS = [
     objetivo: "Dirigir el marketing a la audiencia correcta y mantener la base sana." },
   { id: "producto",        label: "Producto",          icon: Package,
     objetivo: "Crecer la marca propia y entender qué se vende." },
-  { id: "operaciones",     label: "Operaciones",       icon: Wrench,
-    objetivo: "Que la maquinaria de envío funcione sin roturas." },
+  { id: "operaciones",     label: "Salud de envío",    icon: Wrench,
+    objetivo: "Que la maquinaria de envío de email funcione sin roturas." },
 ];

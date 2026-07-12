@@ -7,7 +7,7 @@ import SendVolumeCard from "../cards/SendVolumeCard";
 export default function Operaciones() {
   return (
     <div className="space-y-4">
-      <DomainHeader title="Operaciones" objetivo="Que la maquinaria de envío funcione sin roturas (entregabilidad y volumen)." />
+      <DomainHeader title="Salud de envío" objetivo="Que la maquinaria de envío de email funcione sin roturas (volumen y entregabilidad)." />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <SendVolumeCard delay={0.05} />
         <EmailDeliverabilityCard delay={0.1} />

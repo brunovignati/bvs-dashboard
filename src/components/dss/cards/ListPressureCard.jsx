@@ -72,7 +72,7 @@ export default function ListPressureCard({ delay }) {
       maturity="green"
       severity={strong ? "medium" : undefined}
       actions={strong
-        ? [{ verb: "investigar", rationale: "Baja la frecuencia o segmenta mejor en los meses de más presión; cruza con la fatiga por campaña (Marketing)." }]
+        ? [{ verb: "investigar", rationale: "Baja la frecuencia o segmenta mejor en los meses de más presión. La fatiga por campaña individual se activará cuando el sync traiga las bajas por campaña." }]
         : [{ verb: "mantener", rationale: "La base tolera el ritmo actual; vigila si la línea de baja empieza a seguir a la presión." }]}
       delay={delay}
       note="Barras = envíos por suscriptor · línea = bajas / base activa, por mes (Connectif · email_campaigns + subscribers). Correlación sobre la presión normalizada; correlación ≠ causa. Fatiga a nivel de lista."

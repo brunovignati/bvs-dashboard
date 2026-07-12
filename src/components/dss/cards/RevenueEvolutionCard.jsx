@@ -37,22 +37,21 @@ export default function RevenueEvolutionCard({ delay }) {
 
   return (
     <EvidenceCard
-      question="¿Cómo evoluciona el revenue mes a mes y qué lo impulsa?"
+      question="¿Cómo evoluciona el revenue mes a mes?"
       kpis={hasData ? [
         { value: fmtCurrency(last.revenue), label: `Revenue ${M[last.month]} ${last.year}`, delta: mom == null ? undefined : mom },
-        { value: `€${last.ticket.toFixed(0)}`, label: "Ticket medio" },
         { value: yoyPct == null ? "—" : `${yoyPct >= 0 ? "+" : ""}${yoyPct.toFixed(0)}%`, label: "vs. año anterior" },
       ] : undefined}
       answer={!hasData ? "Sin datos" : undefined}
       maturity="green"
       insight={hasData ? (mom != null && mom < 0
-        ? "El revenue cae respecto al mes anterior: revisa si arrastra el nº de pedidos o el ticket medio."
-        : "Revenue en crecimiento sostenido; observa si lo impulsa el volumen o el ticket para saber qué reforzar.") : undefined}
+        ? "El revenue cae respecto al mes anterior. En Growth › Revenue puedes ver si lo arrastra el nº de pedidos o el ticket medio."
+        : "Revenue en crecimiento sostenido. En Growth › Revenue verás qué palanca lo impulsa (pedidos o ticket).") : undefined}
       actions={[
-        { verb: "reasignar", rationale: mom != null && mom < 0 ? "Revisa qué palanca lo arrastra (canal, ticket o pedidos) y actúa sobre ella." : "Mantén la asignación que funciona y trabaja la palanca más débil." },
+        { verb: "vigilar", rationale: mom != null && mom < 0 ? "Confirma la caída y baja a Growth › Revenue para ver la palanca responsable." : "Tendencia sana; mantén el ritmo y revisa la palanca en Growth › Revenue." },
       ]}
       delay={delay}
-      note="Revenue mensual del negocio (Connectif · daily_revenue) hasta el último mes cerrado — el mes en curso incompleto se excluye para no falsear la comparación. Ticket = revenue / pedidos."
+      note="Tendencia mensual del revenue del negocio (Connectif · daily_revenue) hasta el último mes cerrado — el mes en curso incompleto se excluye. El desglose por pedidos y ticket vive en Growth › Revenue para no duplicarlo aquí."
     >
       {hasData && (
         <div className={CHART_H}>

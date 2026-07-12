@@ -21,7 +21,7 @@ export default function SegmentsCard({ delay }) {
 
   return (
     <EvidenceCard
-      question="CR-1 · ¿Cómo se compone mi base de segmentos (incl. RFM)?"
+      question="¿Cómo se compone mi base de segmentos (incl. RFM)?"
       answer={hasData ? `${fmtNumber(clean.length)} segmentos activos` : "Sin datos"}
       answerTone="neutral"
       context={hasData ? `Base total accionable ≈ ${fmtNumber(total)} contactos (con solapes). Top 10 por tamaño.` : undefined}
