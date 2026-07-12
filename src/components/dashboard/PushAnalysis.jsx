@@ -11,7 +11,7 @@ import { motion } from "framer-motion";
 import MiniTable from "./MiniTable";
 
 const MONTHS_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-const PUSH_COLOR = "hsl(199,80%,64%)";
+const PUSH_COLOR = "hsl(200,85%,54%)";
 
 const ScatterTooltip = ({ active, payload }) => {
   if (!active || !payload?.length) return null;
@@ -75,7 +75,7 @@ export default function PushAnalysis() {
   const avgY = scatterData.length > 0 ? scatterData.reduce((s, d) => s + d.y, 0) / scatterData.length : 0;
   const getColor = (d) =>
     d.revenue >= q75 ? 'hsl(200,90%,38%)' :
-    d.revenue >= q50 ? 'hsl(199,60%,78%)' :
+    d.revenue >= q50 ? 'hsl(200,72%,64%)' :
     'hsl(220,13%,65%)';
 
   // Table columns
@@ -157,7 +157,7 @@ export default function PushAnalysis() {
           <p className="text-[11px] text-muted-foreground mb-1">
             Cada punto = una campaña push · Tamaño = volumen enviado ·
             <span style={{ color: 'hsl(200,90%,38%)' }}> ■</span> Alto revenue ·
-            <span style={{ color: 'hsl(199,60%,78%)' }}> ■</span> Medio ·
+            <span style={{ color: 'hsl(200,72%,64%)' }}> ■</span> Medio ·
             <span className="text-muted-foreground"> ■</span> Bajo
           </p>
           <div className="h-72">
@@ -232,7 +232,7 @@ export default function PushAnalysis() {
                     tickFormatter={v => fmtNumber(v)}/>
                   <Tooltip formatter={(v,n) => [fmtNumber(v), n]} labelStyle={{ fontSize: 11 }}/>
                   <Area type="monotone" dataKey="Enviados"  stroke={PUSH_COLOR} fill="url(#pushSentGrad)" strokeWidth={1.5} dot={false}/>
-                  <Area type="monotone" dataKey="Aperturas" stroke="hsl(199,80%,64%)" fill="none" strokeWidth={1.5} dot={false} strokeDasharray="4 2"/>
+                  <Area type="monotone" dataKey="Aperturas" stroke="hsl(200,85%,54%)" fill="none" strokeWidth={1.5} dot={false} strokeDasharray="4 2"/>
                 </AreaChart>
               </ResponsiveContainer>
             </div>

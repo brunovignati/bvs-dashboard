@@ -75,9 +75,9 @@ export default function Ga4TrafficCard({ delay }) {
             <YAxis tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false} tickFormatter={v => fmtNumber(v)} />
             <Tooltip formatter={(v, n) => [fmtNumber(v), n]} labelStyle={{ fontSize: 11 }} />
             <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
-            <Line type="monotone" dataKey="Sesiones" stroke="hsl(199,89%,48%)" strokeWidth={2} dot={false} />
-            <Line type="monotone" dataKey="Usuarios" stroke="hsl(199,80%,64%)" strokeWidth={1.8} dot={false} />
-            <Line type="monotone" dataKey="Páginas vistas" stroke="hsl(199,60%,78%)" strokeWidth={1.6} dot={false} strokeDasharray="4 2" />
+            <Line type="monotone" dataKey="Sesiones" stroke="hsl(200,95%,40%)" strokeWidth={2} dot={false} />
+            <Line type="monotone" dataKey="Usuarios" stroke="hsl(200,85%,54%)" strokeWidth={1.8} dot={false} />
+            <Line type="monotone" dataKey="Páginas vistas" stroke="hsl(200,72%,64%)" strokeWidth={1.6} dot={false} strokeDasharray="4 2" />
           </LineChart>
         </ResponsiveContainer>
       </div>

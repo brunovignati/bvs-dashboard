@@ -22,9 +22,9 @@ export const TIP = { labelStyle: { fontSize: 11 } };
 // Paleta de series celeste (escala mono): celeste predominante → neutro.
 // Usar SIEMPRE en este orden para que el color signifique lo mismo en todo el panel.
 export const SERIES = [
-  "hsl(199,89%,48%)", // 1 · celeste (predominante)
-  "hsl(199,80%,64%)", // 2
-  "hsl(199,60%,78%)", // 3
+  "hsl(200,95%,40%)", // 1 · celeste (predominante)
+  "hsl(200,85%,54%)", // 2
+  "hsl(200,72%,64%)", // 3
   "hsl(216,20%,78%)", // 4
   "hsl(215,16%,62%)", // neutro (p.ej. "no atribuido")
 ];

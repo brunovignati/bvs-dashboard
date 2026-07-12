@@ -116,7 +116,7 @@ export default function CartRecoveryFunnel() {
             <YAxis tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
               tickFormatter={(v) => `€${(v / 1000).toFixed(0)}K`} />
             <Tooltip content={<CustomTooltip />} />
-            <Bar dataKey="revenue" name="Revenue" fill="hsl(199,80%,64%)" radius={[3, 3, 0, 0]} />
+            <Bar dataKey="revenue" name="Revenue" fill="hsl(200,85%,54%)" radius={[3, 3, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>

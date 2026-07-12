@@ -90,8 +90,8 @@ export default function SubscriberHealth() {
               <AreaChart data={emailChartData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
                 <defs>
                   <linearGradient id="subGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="hsl(199,80%,64%)" stopOpacity={0.35} />
-                    <stop offset="95%" stopColor="hsl(199,80%,64%)" stopOpacity={0.02} />
+                    <stop offset="5%"  stopColor="hsl(200,85%,54%)" stopOpacity={0.35} />
+                    <stop offset="95%" stopColor="hsl(200,85%,54%)" stopOpacity={0.02} />
                   </linearGradient>
                   <linearGradient id="unsubGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%"  stopColor="hsl(200,90%,38%)" stopOpacity={0.35} />
@@ -105,7 +105,7 @@ export default function SubscriberHealth() {
                   tickFormatter={v => `${(v/1000).toFixed(0)}K`} />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend iconType="circle" iconSize={6} wrapperStyle={{ fontSize: 10 }} />
-                <Area type="monotone" dataKey="Suscritos"   stroke="hsl(199,80%,64%)" fill="url(#subGrad)"   strokeWidth={2} />
+                <Area type="monotone" dataKey="Suscritos"   stroke="hsl(200,85%,54%)" fill="url(#subGrad)"   strokeWidth={2} />
                 <Area type="monotone" dataKey="Desuscritos" stroke="hsl(200,90%,38%)"   fill="url(#unsubGrad)" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
@@ -137,8 +137,8 @@ export default function SubscriberHealth() {
                 <AreaChart data={pushChartData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
                   <defs>
                     <linearGradient id="pushSubGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%"  stopColor="hsl(199,80%,64%)" stopOpacity={0.35} />
-                      <stop offset="95%" stopColor="hsl(199,80%,64%)" stopOpacity={0.02} />
+                      <stop offset="5%"  stopColor="hsl(200,85%,54%)" stopOpacity={0.35} />
+                      <stop offset="95%" stopColor="hsl(200,85%,54%)" stopOpacity={0.02} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
@@ -148,7 +148,7 @@ export default function SubscriberHealth() {
                     tickFormatter={v => fmtNumber(v)} />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend iconType="circle" iconSize={6} wrapperStyle={{ fontSize: 10 }} />
-                  <Area type="monotone" dataKey="Suscriptores" stroke="hsl(199,80%,64%)" fill="url(#pushSubGrad)" strokeWidth={2} dot={{ r: 3 }} />
+                  <Area type="monotone" dataKey="Suscriptores" stroke="hsl(200,85%,54%)" fill="url(#pushSubGrad)" strokeWidth={2} dot={{ r: 3 }} />
                 </AreaChart>
               </ResponsiveContainer>
             </div>
@@ -165,7 +165,7 @@ export default function SubscriberHealth() {
                   <Tooltip formatter={(v, n) => [fmtNumber(v), n]} labelStyle={{ fontSize: 11 }} />
                   <Bar dataKey="Cambio" name="Variación" radius={[2, 2, 0, 0]} maxBarSize={24}>
                     {pushChartData.map((d, i) => (
-                      <Cell key={i} fill={d.Cambio >= 0 ? 'hsl(199,80%,64%)' : 'hsl(200,90%,38%)'} />
+                      <Cell key={i} fill={d.Cambio >= 0 ? 'hsl(200,85%,54%)' : 'hsl(200,90%,38%)'} />
                     ))}
                   </Bar>
                 </BarChart>

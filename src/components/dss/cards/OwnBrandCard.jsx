@@ -53,8 +53,8 @@ export default function OwnBrandCard({ delay }) {
                 tickFormatter={v => `${v.toFixed(0)}%`} />
               <Tooltip formatter={(v, n) => [n === "% sobre total" ? `${Number(v).toFixed(1)}%` : fmtCurrency(v), n]} labelStyle={{ fontSize: 11 }} />
               <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
-              <Area yAxisId="l" type="monotone" dataKey="rev" name="Revenue marca" stroke="hsl(199,80%,64%)" fill="hsl(199,89%,48%)" fillOpacity={0.12} strokeWidth={2.2} dot={false} />
-              <Line yAxisId="r" type="monotone" dataKey="pct" name="% sobre total" stroke="hsl(199,80%,64%)" strokeWidth={1.8} dot={false} strokeDasharray="5 3" />
+              <Area yAxisId="l" type="monotone" dataKey="rev" name="Revenue marca" stroke="hsl(200,85%,54%)" fill="hsl(200,95%,40%)" fillOpacity={0.12} strokeWidth={2.2} dot={false} />
+              <Line yAxisId="r" type="monotone" dataKey="pct" name="% sobre total" stroke="hsl(200,85%,54%)" strokeWidth={1.8} dot={false} strokeDasharray="5 3" />
             </ComposedChart>
           </ResponsiveContainer>
         </div>

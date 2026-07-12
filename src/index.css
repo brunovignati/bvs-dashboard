@@ -12,7 +12,7 @@
     --card-foreground: 220 25% 12%;
     --popover: 0 0% 100%;
     --popover-foreground: 220 25% 12%;
-    --primary: 199 89% 48%;
+    --primary: 200 95% 40%;
     --primary-foreground: 0 0% 100%;
     --secondary: 205 25% 95%;
     --secondary-foreground: 220 20% 26%;
@@ -24,7 +24,7 @@
     --destructive-foreground: 0 0% 98%;
     --border: 210 22% 90%;
     --input: 210 22% 90%;
-    --ring: 199 89% 48%;
+    --ring: 200 95% 40%;
     --radius: 1rem;
     --font-heading: 'Poppins', ui-sans-serif, system-ui, sans-serif;
     --font-body: 'Poppins', ui-sans-serif, system-ui, sans-serif;

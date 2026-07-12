@@ -64,7 +64,7 @@ export default function CartSequenceCard({ delay }) {
             <Tooltip labelFormatter={(l, p) => p?.[0]?.payload?.full || l} labelStyle={{ fontSize: 10 }}
               formatter={(v, n, p) => [`${fmtCurrency(v)} · ${p?.payload?.conv?.toFixed(2)}% conv · ${fmtNumber(p?.payload?.sent)} env.`, "Revenue"]} />
             <Bar dataKey="revenue" radius={[0, 4, 4, 0]}>
-              {rows.map((r, i) => <Cell key={i} fill={i === 0 ? "hsl(199,80%,64%)" : "hsl(199,89%,48%)"} />)}
+              {rows.map((r, i) => <Cell key={i} fill={i === 0 ? "hsl(200,85%,54%)" : "hsl(200,95%,40%)"} />)}
             </Bar>
           </BarChart>
         </ResponsiveContainer>

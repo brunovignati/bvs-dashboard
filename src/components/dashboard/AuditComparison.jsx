@@ -58,7 +58,7 @@ function BayesCard({ title, pWin, pA, pB, labelA, labelB, formatRate }) {
         </div>
         <div className="relative h-3 rounded-full bg-muted overflow-hidden">
           <div className="absolute top-0 left-0 h-full rounded-full transition-all"
-            style={{ width: `${barWidth}%`, background: barWidth >= 70 ? 'hsl(199,80%,64%)' : barWidth <= 30 ? 'hsl(200,90%,38%)' : 'hsl(199,60%,78%)' }} />
+            style={{ width: `${barWidth}%`, background: barWidth >= 70 ? 'hsl(200,85%,54%)' : barWidth <= 30 ? 'hsl(200,90%,38%)' : 'hsl(200,72%,64%)' }} />
           <div className="absolute top-0 left-1/2 h-full w-px bg-border/60" />
         </div>
         <div className="flex justify-between items-center">
@@ -167,7 +167,7 @@ export default function AuditComparison() {
   const avgX = scatterData.length > 0 ? scatterData.reduce((s, d) => s + d.x, 0) / scatterData.length : 0;
   const avgY = scatterData.length > 0 ? scatterData.reduce((s, d) => s + d.y, 0) / scatterData.length : 0;
   const getColor = (d) =>
-    d.isAuto ? 'hsl(199,80%,64%)' : 'hsl(199,89%,48%)';
+    d.isAuto ? 'hsl(200,85%,54%)' : 'hsl(200,95%,40%)';
 
   const thClass = "text-[10px] uppercase tracking-widest font-semibold text-muted-foreground py-3 cursor-pointer select-none hover:text-foreground transition-colors";
 
@@ -203,8 +203,8 @@ export default function AuditComparison() {
         <div>
           <p className="text-[11px] text-muted-foreground mb-1">
             Cada punto = un workflow · Tamaño = volumen enviado ·
-            <span style={{ color: 'hsl(199,80%,64%)' }}> ■</span> Automatización ·
-            <span style={{ color: 'hsl(199,89%,48%)' }}> ■</span> Newsletter
+            <span style={{ color: 'hsl(200,85%,54%)' }}> ■</span> Automatización ·
+            <span style={{ color: 'hsl(200,95%,40%)' }}> ■</span> Newsletter
           </p>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">

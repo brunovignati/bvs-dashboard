@@ -74,7 +74,7 @@ export default function SocialContentCard({ delay }) {
                 formatter={(v, n, p) => [`${Number(v).toFixed(1)} · ${fmtNumber(p.payload.reach || p.payload.views)} alcance · ${fmtNumber(p.payload.secondary)} ${cfg.secLabel.toLowerCase()}`, "Engagement"]}
                 labelFormatter={(l, p) => p?.[0]?.payload?.full || l} labelStyle={{ fontSize: 10 }} />
               <Bar dataKey="engagement" radius={[0, 4, 4, 0]}>
-                {top.map((_, i) => <Cell key={i} fill={i === 0 ? "hsl(199,80%,64%)" : "hsl(199,89%,48%)"} />)}
+                {top.map((_, i) => <Cell key={i} fill={i === 0 ? "hsl(200,85%,54%)" : "hsl(200,95%,40%)"} />)}
               </Bar>
             </BarChart>
           </ResponsiveContainer>

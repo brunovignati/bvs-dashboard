@@ -7,10 +7,10 @@ import { motion } from "framer-motion";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, ResponsiveContainer } from "recharts";
 
 const COLORS = [
-  'hsl(199,89%,48%)',
-  'hsl(199,80%,64%)',
-  'hsl(199,80%,64%)',
-  'hsl(199,60%,78%)',
+  'hsl(200,95%,40%)',
+  'hsl(200,85%,54%)',
+  'hsl(200,85%,54%)',
+  'hsl(200,72%,64%)',
   'hsl(200,90%,38%)',
 ];
 

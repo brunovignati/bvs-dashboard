@@ -41,7 +41,7 @@ export default function BestDayCard({ delay }) {
               <YAxis tick={{ fontSize:8, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} tickFormatter={v=>`€${v.toFixed(0)}`} />
               <Tooltip formatter={(v)=>[`€${Number(v).toFixed(1)}`,"Rev/1.000 env."]} labelStyle={{ fontSize:11 }} />
               <Bar dataKey="rpm" radius={[3,3,0,0]}>
-                {rows.map((r,i)=><Cell key={i} fill={best&&r.name===best.name?"hsl(199,80%,64%)":"hsl(199,89%,48%)"} />)}
+                {rows.map((r,i)=><Cell key={i} fill={best&&r.name===best.name?"hsl(200,85%,54%)":"hsl(200,95%,40%)"} />)}
               </Bar>
             </BarChart>
           </ResponsiveContainer>

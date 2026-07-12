@@ -42,8 +42,8 @@ export default function AcquisitionRetentionCard({ delay }) {
                 tickFormatter={v => `${(v * 100).toFixed(0)}%`} />
               <Tooltip formatter={(v, n) => [Math.round(v), n]} labelStyle={{ fontSize: 11 }} />
               <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
-              <Area type="monotone" dataKey="rc" name="Recurrentes" stackId="1" stroke="hsl(199,80%,64%)" fill="hsl(199,80%,64%)" fillOpacity={0.7} />
-              <Area type="monotone" dataKey="ft" name="Primerizos" stackId="1" stroke="hsl(199,89%,48%)" fill="hsl(199,89%,48%)" fillOpacity={0.6} />
+              <Area type="monotone" dataKey="rc" name="Recurrentes" stackId="1" stroke="hsl(200,85%,54%)" fill="hsl(200,85%,54%)" fillOpacity={0.7} />
+              <Area type="monotone" dataKey="ft" name="Primerizos" stackId="1" stroke="hsl(200,95%,40%)" fill="hsl(200,95%,40%)" fillOpacity={0.6} />
             </AreaChart>
           </ResponsiveContainer>
         </div>

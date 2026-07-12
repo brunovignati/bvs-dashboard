@@ -18,7 +18,7 @@ function Spark({ values }) {
   const up = values[values.length - 1] >= values[0];
   return (
     <svg width={w} height={h} className="overflow-visible">
-      <polyline points={pts} fill="none" stroke={up ? "hsl(199,89%,48%)" : "hsl(220,13%,60%)"} strokeWidth="1.5" />
+      <polyline points={pts} fill="none" stroke={up ? "hsl(200,95%,40%)" : "hsl(220,13%,60%)"} strokeWidth="1.5" />
     </svg>
   );
 }

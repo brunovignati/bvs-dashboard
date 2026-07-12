@@ -11,9 +11,9 @@ import { Store } from "lucide-react";
 import { motion } from "framer-motion";
 
 const CHANNELS = [
-  { key: "retail",      label: "Retail",    color: "hsl(199,89%,48%)" },
-  { key: "digital",     label: "Digital",   color: "hsl(199,80%,64%)" },
-  { key: "omnichannel", label: "Omnicanal", color: "hsl(199,80%,64%)" },
+  { key: "retail",      label: "Retail",    color: "hsl(200,95%,40%)" },
+  { key: "digital",     label: "Digital",   color: "hsl(200,85%,54%)" },
+  { key: "omnichannel", label: "Omnicanal", color: "hsl(200,85%,54%)" },
 ];
 
 const MONTH_LABELS = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];

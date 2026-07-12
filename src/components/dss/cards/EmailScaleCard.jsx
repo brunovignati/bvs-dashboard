@@ -50,7 +50,7 @@ export default function EmailScaleCard({ delay }) {
   const top = byRpm.slice(0, 3);
   const bottom = byRpm.filter(p => p.sent > 500).slice(-3).reverse();
 
-  const color = (p) => p.rpm >= q75 ? "hsl(199,80%,64%)" : p.rpm >= q50 ? "hsl(199,89%,48%)" : "hsl(220,13%,65%)";
+  const color = (p) => p.rpm >= q75 ? "hsl(200,85%,54%)" : p.rpm >= q50 ? "hsl(200,95%,40%)" : "hsl(220,13%,65%)";
 
   const hasData = pts.length >= 3;
 

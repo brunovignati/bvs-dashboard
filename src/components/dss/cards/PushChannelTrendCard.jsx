@@ -66,7 +66,7 @@ export default function PushChannelTrendCard({ delay }) {
             <YAxis yAxisId="conv" orientation="right" {...AXIS} tickFormatter={v => `${v.toFixed(1)}%`} />
             <Tooltip {...TIP} formatter={(v, n) => n === "Conversión" ? [`${Number(v).toFixed(2)}%`, n] : [fmtCurrency(v), n]} />
             <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
-            <Bar yAxisId="rev" dataKey="revenue" name="Revenue" fill="hsl(199,89%,48%)" radius={[3, 3, 0, 0]} maxBarSize={26} />
+            <Bar yAxisId="rev" dataKey="revenue" name="Revenue" fill="hsl(200,95%,40%)" radius={[3, 3, 0, 0]} maxBarSize={26} />
             <Line yAxisId="conv" type="monotone" dataKey="conv" name="Conversión" stroke="hsl(220,9%,45%)" strokeWidth={1.8} dot={false} />
           </ComposedChart>
         </ResponsiveContainer>
