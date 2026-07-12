@@ -78,13 +78,13 @@ export default function SocialAudienceCard({ delay }) {
       <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={rows} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
-            <XAxis dataKey="name" tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false} interval={Math.max(0, Math.floor(rows.length / 8))} />
-            <YAxis tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false} tickFormatter={v => fmtNumber(v)} />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
+            <XAxis dataKey="name" tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} interval={Math.max(0, Math.floor(rows.length / 8))} />
+            <YAxis tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} tickFormatter={v => fmtNumber(v)} />
             <Tooltip formatter={(v, n) => [fmtNumber(v), n]} labelStyle={{ fontSize: 11 }} />
             <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
-            <Line type="monotone" dataKey="Instagram" stroke="hsl(200,85%,54%)" strokeWidth={1.8} dot={false} connectNulls />
-            <Line type="monotone" dataKey="Facebook" stroke="hsl(200,95%,40%)" strokeWidth={1.8} dot={false} connectNulls />
+            <Line type="monotone" dataKey="Instagram" stroke="hsl(30,72%,66%)" strokeWidth={1.8} dot={false} connectNulls />
+            <Line type="monotone" dataKey="Facebook" stroke="hsl(16,79%,57%)" strokeWidth={1.8} dot={false} connectNulls />
             <Line type="monotone" dataKey="TikTok" stroke="hsl(220,9%,20%)" strokeWidth={1.8} dot={false} connectNulls />
           </LineChart>
         </ResponsiveContainer>

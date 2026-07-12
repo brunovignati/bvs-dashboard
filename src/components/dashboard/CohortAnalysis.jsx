@@ -33,12 +33,12 @@ const CustomTooltip = ({ active, payload, label }) => {
 
 function retentionColor(rate) {
   if (rate === null || rate === undefined) return null;
-  if (rate >= 0.78) return 'hsl(200,90%,38%)';
-  if (rate >= 0.65) return 'hsl(200,85%,54%)';
-  if (rate >= 0.52) return 'hsl(200,85%,54%)';
-  if (rate >= 0.40) return 'hsl(200,72%,64%)';
-  if (rate >= 0.25) return 'hsl(200,72%,64%)';
-  return 'hsl(200,90%,38%)';
+  if (rate >= 0.78) return 'hsl(186,32%,26%)';
+  if (rate >= 0.65) return 'hsl(30,72%,66%)';
+  if (rate >= 0.52) return 'hsl(30,72%,66%)';
+  if (rate >= 0.40) return 'hsl(37,42%,74%)';
+  if (rate >= 0.25) return 'hsl(37,42%,74%)';
+  return 'hsl(186,32%,26%)';
 }
 
 export default function CohortAnalysis() {
@@ -118,23 +118,23 @@ export default function CohortAnalysis() {
               <AreaChart data={cohortData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
                 <defs>
                   <linearGradient id="priGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="hsl(200,95%,40%)" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="hsl(200,95%,40%)" stopOpacity={0.05} />
+                    <stop offset="5%"  stopColor="hsl(16,79%,57%)" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="hsl(16,79%,57%)" stopOpacity={0.05} />
                   </linearGradient>
                   <linearGradient id="recGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="hsl(200,85%,54%)" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="hsl(200,85%,54%)" stopOpacity={0.05} />
+                    <stop offset="5%"  stopColor="hsl(30,72%,66%)" stopOpacity={0.4} />
+                    <stop offset="95%" stopColor="hsl(30,72%,66%)" stopOpacity={0.05} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 10, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false}
                   interval={Math.max(0, Math.floor(cohortData.length / 8))} />
-                <YAxis tick={{ fontSize: 10, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
+                <YAxis tick={{ fontSize: 10, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false}
                   tickFormatter={(v) => `${(v/1000).toFixed(0)}K`} />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
-                <Area type="monotone" dataKey="Primerizos"  stackId="a" stroke="hsl(200,95%,40%)" fill="url(#priGrad)" strokeWidth={2} />
-                <Area type="monotone" dataKey="Recurrentes" stackId="a" stroke="hsl(200,85%,54%)" fill="url(#recGrad)" strokeWidth={2} />
+                <Area type="monotone" dataKey="Primerizos"  stackId="a" stroke="hsl(16,79%,57%)" fill="url(#priGrad)" strokeWidth={2} />
+                <Area type="monotone" dataKey="Recurrentes" stackId="a" stroke="hsl(30,72%,66%)" fill="url(#recGrad)" strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -183,13 +183,13 @@ export default function CohortAnalysis() {
           <div className="h-44">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={recurrenceData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false}
                   interval={Math.max(0, Math.floor(recurrenceData.length / 8))} />
-                <YAxis tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
+                <YAxis tick={{ fontSize: 9, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false}
                   tickFormatter={v => `${v}%`} domain={[0, 100]} />
                 <Tooltip formatter={(v) => [`${v}%`, 'Recurrencia']} labelStyle={{ fontSize: 11 }} />
-                <Bar dataKey="recurrencia" name="% Recurrentes" fill="hsl(200,85%,54%)"
+                <Bar dataKey="recurrencia" name="% Recurrentes" fill="hsl(30,72%,66%)"
                   radius={[3, 3, 0, 0]} maxBarSize={30} />
               </BarChart>
             </ResponsiveContainer>
@@ -216,13 +216,13 @@ export default function CohortAnalysis() {
           <div className="h-44">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={compChartData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false}
                   interval={Math.max(0, Math.floor(compChartData.length / 8))} />
-                <YAxis tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 9, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false} />
                 <Tooltip formatter={(v, name) => [fmtNumber(v), name]} />
                 <Legend iconType="circle" iconSize={6} wrapperStyle={{ fontSize: 10 }} />
-                <Line type="monotone" dataKey="Compradores" stroke="hsl(200,85%,54%)" strokeWidth={2} dot={{ r: 3 }} />
+                <Line type="monotone" dataKey="Compradores" stroke="hsl(30,72%,66%)" strokeWidth={2} dot={{ r: 3 }} />
               </LineChart>
             </ResponsiveContainer>
           </div>

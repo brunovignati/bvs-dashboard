@@ -8,10 +8,10 @@
 export const CHART_H = "h-56";
 
 // Ejes: mismo tamaño/peso/color en todo el dashboard.
-export const AXIS = { tick: { fontSize: 10, fill: "hsl(220,10%,50%)" }, axisLine: false, tickLine: false };
+export const AXIS = { tick: { fontSize: 10, fill: "hsl(32,7%,48%)" }, axisLine: false, tickLine: false };
 
 // Rejilla horizontal tenue.
-export const GRID = { strokeDasharray: "3 3", stroke: "hsl(220,13%,91%)", vertical: false };
+export const GRID = { strokeDasharray: "3 3", stroke: "hsl(36,16%,89%)", vertical: false };
 
 // Leyenda.
 export const LEGEND = { iconType: "circle", iconSize: 8, wrapperStyle: { fontSize: 11 } };
@@ -19,14 +19,14 @@ export const LEGEND = { iconType: "circle", iconSize: 8, wrapperStyle: { fontSiz
 // Tooltip.
 export const TIP = { labelStyle: { fontSize: 11 } };
 
-// Paleta de series celeste (escala mono): celeste predominante → neutro.
+// Paleta de series cálida (estilo ventriloc): naranja predominante + categóricos.
 // Usar SIEMPRE en este orden para que el color signifique lo mismo en todo el panel.
 export const SERIES = [
-  "hsl(200,95%,40%)", // 1 · celeste (predominante)
-  "hsl(200,85%,54%)", // 2
-  "hsl(200,72%,64%)", // 3
-  "hsl(216,20%,78%)", // 4
-  "hsl(215,16%,62%)", // neutro (p.ej. "no atribuido")
+  "hsl(16,79%,57%)",  // 1 · naranja (predominante)
+  "hsl(45,35%,46%)",  // 2 · oliva / oro
+  "hsl(186,32%,22%)", // 3 · teal oscuro
+  "hsl(4,39%,45%)",   // 4 · granate
+  "hsl(37,26%,72%)",  // neutro · tan (p.ej. "no atribuido")
 ];
 export const PRIMARY = SERIES[0];
 export const NEUTRAL = SERIES[4];

@@ -34,12 +34,12 @@ export default function WebStickyCard({ delay }) {
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={rows} layout="vertical" margin={{ top:4, right:16, left:4, bottom:0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" horizontal={false} />
-              <XAxis type="number" tick={{ fontSize:8, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} tickFormatter={v=>`${v.toFixed(1)}%`} />
-              <YAxis type="category" dataKey="name" width={140} tick={{ fontSize:8, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" horizontal={false} />
+              <XAxis type="number" tick={{ fontSize:8, fill:"hsl(32,7%,48%)" }} axisLine={false} tickLine={false} tickFormatter={v=>`${v.toFixed(1)}%`} />
+              <YAxis type="category" dataKey="name" width={140} tick={{ fontSize:8, fill:"hsl(32,7%,48%)" }} axisLine={false} tickLine={false} />
               <Tooltip formatter={(v,n,p)=>[`${Number(v).toFixed(2)}% · ${fmtCurrency(p?.payload?.revenue||0)}`,"Conversión · Revenue"]} labelFormatter={(l,p)=>p?.[0]?.payload?.full||l} labelStyle={{ fontSize:10 }} />
               <Bar dataKey="conv" radius={[0,4,4,0]}>
-                {rows.map((r,i)=><Cell key={i} fill={r.inactive?"hsl(220,13%,70%)":i===0?"hsl(200,85%,54%)":"hsl(200,95%,40%)"} />)}
+                {rows.map((r,i)=><Cell key={i} fill={r.inactive?"hsl(220,13%,70%)":i===0?"hsl(30,72%,66%)":"hsl(16,79%,57%)"} />)}
               </Bar>
             </BarChart>
           </ResponsiveContainer>

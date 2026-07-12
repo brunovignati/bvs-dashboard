@@ -68,8 +68,8 @@ export default function WebContentTrendCard({ delay }) {
             <YAxis yAxisId="rev" orientation="right" {...AXIS} tickFormatter={v => `€${(v / 1000).toFixed(0)}K`} />
             <Tooltip {...TIP} formatter={(v, n) => n === "Revenue" ? [fmtCurrency(v), n] : [fmtNumber(v), n]} />
             <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
-            <Bar yAxisId="clicks" dataKey="clicks" name="Clics captación" fill="hsl(200,72%,64%)" radius={[2, 2, 0, 0]} maxBarSize={14} />
-            <Line yAxisId="rev" type="monotone" dataKey="revenue" name="Revenue" stroke="hsl(200,95%,40%)" strokeWidth={2} dot={false} />
+            <Bar yAxisId="clicks" dataKey="clicks" name="Clics captación" fill="hsl(37,42%,74%)" radius={[2, 2, 0, 0]} maxBarSize={14} />
+            <Line yAxisId="rev" type="monotone" dataKey="revenue" name="Revenue" stroke="hsl(16,79%,57%)" strokeWidth={2} dot={false} />
           </ComposedChart>
         </ResponsiveContainer>
       </div>

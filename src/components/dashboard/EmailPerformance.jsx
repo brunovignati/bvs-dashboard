@@ -67,9 +67,9 @@ export default function EmailPerformance() {
   const avgY = scatterData.length > 0 ? scatterData.reduce((s, d) => s + d.y, 0) / scatterData.length : 0;
 
   const getColor = (d) =>
-    d.isCart   ? 'hsl(200,72%,64%)' :
-    d.revenue >= q75 ? 'hsl(200,85%,54%)' :
-    d.revenue >= q50 ? 'hsl(200,95%,40%)' :
+    d.isCart   ? 'hsl(37,42%,74%)' :
+    d.revenue >= q75 ? 'hsl(30,72%,66%)' :
+    d.revenue >= q50 ? 'hsl(16,79%,57%)' :
     'hsl(220,13%,65%)';
 
   const columns = [
@@ -126,25 +126,25 @@ export default function EmailPerformance() {
       {view === 'scatter' && (
         <div>
           <p className="text-[11px] text-muted-foreground mb-1">
-            Cada punto = una campaña · Tamaño = volumen enviado · <span style={{ color: 'hsl(200,72%,64%)' }}>■</span> Carrito abandonado
-            · <span style={{ color: 'hsl(200,85%,54%)' }}>■</span> Alto revenue · <span style={{ color: 'hsl(200,95%,40%)' }}>■</span> Medio
+            Cada punto = una campaña · Tamaño = volumen enviado · <span style={{ color: 'hsl(37,42%,74%)' }}>■</span> Carrito abandonado
+            · <span style={{ color: 'hsl(30,72%,66%)' }}>■</span> Alto revenue · <span style={{ color: 'hsl(16,79%,57%)' }}>■</span> Medio
             · <span className="text-muted-foreground">■</span> Bajo
           </p>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <ScatterChart margin={{ top: 15, right: 20, bottom: 35, left: 30 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" />
                 <XAxis type="number" dataKey="x" name="Open Rate" unit="%"
-                  tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} domain={[0, 100]} allowDataOverflow
-                  label={{ value: 'Tasa de Apertura (%)', position: 'insideBottom', offset: -20, fontSize: 10, fill: 'hsl(220,10%,50%)' }} />
+                  tick={{ fontSize: 9, fill: 'hsl(32,7%,48%)' }} domain={[0, 100]} allowDataOverflow
+                  label={{ value: 'Tasa de Apertura (%)', position: 'insideBottom', offset: -20, fontSize: 10, fill: 'hsl(32,7%,48%)' }} />
                 <YAxis type="number" dataKey="y" name="Revenue"
-                  tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }}
+                  tick={{ fontSize: 9, fill: 'hsl(32,7%,48%)' }}
                   tickFormatter={v => `€${(v/1000).toFixed(0)}K`}
-                  label={{ value: 'Revenue (€)', angle: -90, position: 'insideLeft', offset: 15, fontSize: 10, fill: 'hsl(220,10%,50%)' }} />
+                  label={{ value: 'Revenue (€)', angle: -90, position: 'insideLeft', offset: 15, fontSize: 10, fill: 'hsl(32,7%,48%)' }} />
                 <ZAxis type="number" dataKey="z" range={[30, 500]} />
                 <Tooltip content={<ScatterTooltip />} />
                 {avgX > 0 && <ReferenceLine x={avgX} stroke="hsl(220,13%,75%)" strokeDasharray="4 4"
-                  label={{ value: `Media ${avgX.toFixed(0)}%`, position: 'top', fontSize: 9, fill: 'hsl(220,10%,50%)' }} />}
+                  label={{ value: `Media ${avgX.toFixed(0)}%`, position: 'top', fontSize: 9, fill: 'hsl(32,7%,48%)' }} />}
                 {avgY > 0 && <ReferenceLine y={avgY} stroke="hsl(220,13%,75%)" strokeDasharray="4 4" />}
                 <Scatter data={scatterData}>
                   {scatterData.map((d, i) => <Cell key={i} fill={getColor(d)} fillOpacity={0.8} />)}

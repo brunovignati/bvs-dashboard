@@ -11,7 +11,7 @@ const KEYS = [
   { k: "retail", label: "Retail" },
   { k: "omnichannel", label: "Omnicanal" },
 ];
-const COLORS = ["hsl(200,95%,40%)", "hsl(200,85%,54%)", "hsl(200,72%,64%)"];
+const COLORS = ["hsl(16,79%,57%)", "hsl(30,72%,66%)", "hsl(37,42%,74%)"];
 
 export default function OmnichannelCard({ delay }) {
   const { data = [] } = useChannelSegmentation();
@@ -49,9 +49,9 @@ export default function OmnichannelCard({ delay }) {
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={rows} margin={{ top:5, right:8, left:4, bottom:0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
-              <XAxis dataKey="name" tick={{ fontSize:9, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} interval={Math.max(1,Math.floor(rows.length/8))} />
-              <YAxis tick={{ fontSize:8, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} domain={[0,100]} tickFormatter={v=>`${v.toFixed(0)}%`} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
+              <XAxis dataKey="name" tick={{ fontSize:9, fill:"hsl(32,7%,48%)" }} axisLine={false} tickLine={false} interval={Math.max(1,Math.floor(rows.length/8))} />
+              <YAxis tick={{ fontSize:8, fill:"hsl(32,7%,48%)" }} axisLine={false} tickLine={false} domain={[0,100]} tickFormatter={v=>`${v.toFixed(0)}%`} />
               <Tooltip formatter={(v,n,p)=>[`${Number(v).toFixed(1)}% · ${(p?.payload?.[`${n}__n`]||0).toLocaleString("es-ES")} compradores`, n]} labelStyle={{ fontSize:11 }} />
               <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize:10 }} />
               {present.map((p,i)=>(

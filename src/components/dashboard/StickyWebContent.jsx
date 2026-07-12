@@ -7,11 +7,11 @@ import { motion } from "framer-motion";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell, ResponsiveContainer } from "recharts";
 
 const COLORS = [
-  'hsl(200,95%,40%)',
-  'hsl(200,85%,54%)',
-  'hsl(200,85%,54%)',
-  'hsl(200,72%,64%)',
-  'hsl(200,90%,38%)',
+  'hsl(16,79%,57%)',
+  'hsl(30,72%,66%)',
+  'hsl(30,72%,66%)',
+  'hsl(37,42%,74%)',
+  'hsl(186,32%,26%)',
 ];
 
 export default function StickyWebContent() {
@@ -94,10 +94,10 @@ export default function StickyWebContent() {
               <div className="h-44">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={barData} layout="vertical" margin={{ top: 0, right: 60, left: 100, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" horizontal={false} />
-                    <XAxis type="number" tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
+                    <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" horizontal={false} />
+                    <XAxis type="number" tick={{ fontSize: 9, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false}
                       tickFormatter={v => fmtNumber(v)} />
-                    <YAxis type="category" dataKey="name" tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false} width={95} />
+                    <YAxis type="category" dataKey="name" tick={{ fontSize: 9, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false} width={95} />
                     <Tooltip
                       content={({ active, payload }) => {
                         if (!active || !payload?.length) return null;

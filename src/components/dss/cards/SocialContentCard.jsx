@@ -67,14 +67,14 @@ export default function SocialContentCard({ delay }) {
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={top} layout="vertical" margin={{ top: 4, right: 16, left: 4, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" horizontal={false} />
-              <XAxis type="number" tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false} />
-              <YAxis type="category" dataKey="name" width={150} tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" horizontal={false} />
+              <XAxis type="number" tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="name" width={150} tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} />
               <Tooltip
                 formatter={(v, n, p) => [`${Number(v).toFixed(1)} · ${fmtNumber(p.payload.reach || p.payload.views)} alcance · ${fmtNumber(p.payload.secondary)} ${cfg.secLabel.toLowerCase()}`, "Engagement"]}
                 labelFormatter={(l, p) => p?.[0]?.payload?.full || l} labelStyle={{ fontSize: 10 }} />
               <Bar dataKey="engagement" radius={[0, 4, 4, 0]}>
-                {top.map((_, i) => <Cell key={i} fill={i === 0 ? "hsl(200,85%,54%)" : "hsl(200,95%,40%)"} />)}
+                {top.map((_, i) => <Cell key={i} fill={i === 0 ? "hsl(30,72%,66%)" : "hsl(16,79%,57%)"} />)}
               </Bar>
             </BarChart>
           </ResponsiveContainer>

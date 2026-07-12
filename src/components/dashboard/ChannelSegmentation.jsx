@@ -11,9 +11,9 @@ import { Store } from "lucide-react";
 import { motion } from "framer-motion";
 
 const CHANNELS = [
-  { key: "retail",      label: "Retail",    color: "hsl(200,95%,40%)" },
-  { key: "digital",     label: "Digital",   color: "hsl(200,85%,54%)" },
-  { key: "omnichannel", label: "Omnicanal", color: "hsl(200,85%,54%)" },
+  { key: "retail",      label: "Retail",    color: "hsl(16,79%,57%)" },
+  { key: "digital",     label: "Digital",   color: "hsl(30,72%,66%)" },
+  { key: "omnichannel", label: "Omnicanal", color: "hsl(30,72%,66%)" },
 ];
 
 const MONTH_LABELS = ["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
@@ -142,7 +142,7 @@ export default function ChannelSegmentation() {
               <Legend
                 wrapperStyle={{ fontSize: 10 }}
                 formatter={(v) => (
-                  <span style={{ color: "hsl(220,10%,50%)" }}>{v}</span>
+                  <span style={{ color: "hsl(32,7%,48%)" }}>{v}</span>
                 )}
               />
             </PieChart>
@@ -168,10 +168,10 @@ export default function ChannelSegmentation() {
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,10%,20%)" />
                 <XAxis
                   dataKey="label"
-                  tick={{ fontSize: 9, fill: "hsl(220,10%,50%)" }}
+                  tick={{ fontSize: 9, fill: "hsl(32,7%,48%)" }}
                   interval="preserveStartEnd"
                 />
-                <YAxis tick={{ fontSize: 9, fill: "hsl(220,10%,50%)" }} />
+                <YAxis tick={{ fontSize: 9, fill: "hsl(32,7%,48%)" }} />
                 <Tooltip
                   contentStyle={{
                     background: "hsl(220,10%,10%)",
