@@ -16,13 +16,13 @@ export default function DailyHealth() {
   return (
     <div className="space-y-8">
       <section className="space-y-6">
-        <DomainHeader title="Objetivo y evolución de revenue" objetivo="¿Voy camino del objetivo, cómo evoluciona y de qué línea viene el revenue?" />
+        <DomainHeader title="Rumbo del mes" objetivo="¿Voy camino del objetivo del mes, cómo evoluciona el revenue y de qué línea viene? (acumulado mensual)" />
         <RevenueTargetCard delay={0.03} />
         <RevenueEvolutionCard delay={0.05} />
         <SaludResumen />
       </section>
       <section className="space-y-6">
-        <DomainHeader title="Desviaciones recientes" objetivo="¿Qué se ha desviado de lo normal en los últimos días?" />
+        <DomainHeader title="Alertas de los últimos días" objetivo="¿Qué se ha desviado de lo normal en los últimos días? (seguimiento diario)" />
         <SaludDelNegocio />
       </section>
     </div>

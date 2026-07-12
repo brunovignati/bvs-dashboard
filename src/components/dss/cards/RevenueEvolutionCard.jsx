@@ -37,7 +37,7 @@ export default function RevenueEvolutionCard({ delay }) {
 
   return (
     <EvidenceCard
-      question="¿Cómo evoluciona el revenue y qué lo impulsa?"
+      question="¿Cómo evoluciona el revenue mes a mes y qué lo impulsa?"
       kpis={hasData ? [
         { value: fmtCurrency(last.revenue), label: `Revenue ${M[last.month]} ${last.year}`, delta: mom == null ? undefined : mom },
         { value: `€${last.ticket.toFixed(0)}`, label: "Ticket medio" },
