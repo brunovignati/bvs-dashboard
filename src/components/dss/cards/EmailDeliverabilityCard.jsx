@@ -91,8 +91,10 @@ export default function EmailDeliverabilityCard({ delay }) {
           <ComposedChart data={months} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
             <CartesianGrid {...GRID} />
             <XAxis dataKey="name" {...AXIS} interval={Math.max(0, Math.floor(months.length / 8))} />
-            <YAxis yAxisId="o" {...AXIS} tickFormatter={(v) => `${v.toFixed(0)}%`} domain={[0, "auto"]} />
-            <YAxis yAxisId="c" orientation="right" {...AXIS} tickFormatter={(v) => `${v.toFixed(0)}%`} domain={[0, "auto"]} />
+            <YAxis yAxisId="o" {...AXIS} tickFormatter={(v) => `${v.toFixed(0)}%`} domain={[0, "auto"]}
+              label={{ value: "apertura %", angle: -90, position: "insideLeft", fontSize: 9, fill: "hsl(16,79%,55%)", style: { textAnchor: "middle" } }} />
+            <YAxis yAxisId="c" orientation="right" {...AXIS} tickFormatter={(v) => `${v.toFixed(0)}%`} domain={[0, "auto"]}
+              label={{ value: "clic %", angle: 90, position: "insideRight", fontSize: 9, fill: "hsl(186,32%,30%)", style: { textAnchor: "middle" } }} />
             <Tooltip formatter={(v, n) => n === "band"
               ? [`${v[0].toFixed(1)}–${v[1].toFixed(1)}%`, "Apertura IC 95%"]
               : n === "Clic/envío" ? [`${Number(v).toFixed(2)}%`, n]

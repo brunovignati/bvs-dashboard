@@ -82,8 +82,10 @@ export default function ListPressureCard({ delay }) {
           <ComposedChart data={rows} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
             <CartesianGrid {...GRID} />
             <XAxis dataKey="name" {...AXIS} interval={Math.max(0, Math.floor(rows.length / 8))} />
-            <YAxis yAxisId="p" {...AXIS} tickFormatter={v => v.toFixed(1)} />
-            <YAxis yAxisId="r" orientation="right" {...AXIS} tickFormatter={v => `${v.toFixed(1)}%`} />
+            <YAxis yAxisId="p" {...AXIS} tickFormatter={v => v.toFixed(1)}
+              label={{ value: "env./suscriptor", angle: -90, position: "insideLeft", fontSize: 9, fill: "hsl(37,44%,55%)", style: { textAnchor: "middle" } }} />
+            <YAxis yAxisId="r" orientation="right" {...AXIS} tickFormatter={v => `${v.toFixed(1)}%`}
+              label={{ value: "% baja", angle: 90, position: "insideRight", fontSize: 9, fill: "hsl(16,79%,50%)", style: { textAnchor: "middle" } }} />
             <Tooltip {...TIP} formatter={(v, n) => n === "Tasa de baja" ? [`${Number(v).toFixed(2)}%`, n] : [`${Number(v).toFixed(1)} env./suscriptor`, "Presión"]} />
             <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
             <Bar yAxisId="p" dataKey="presion" name="Presión (env./suscriptor)" fill="hsl(37,44%,76%)" radius={[2, 2, 0, 0]} maxBarSize={22} />

@@ -18,8 +18,10 @@ import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 function MaturityChip({ state = "green" }) {
   const m = MATURITY[state] || MATURITY.green;
+  if (!m.label) return null; // "al día" no lleva chip: elimina el badge repetido
   return (
-    <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${m.cls} whitespace-nowrap`}>
+    <span title={m.tip}
+      className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${m.cls} whitespace-nowrap cursor-help`}>
       <span>{m.symbol}</span> {m.label}
     </span>
   );
@@ -101,22 +103,33 @@ export default function EvidenceCard({
       {/* 3. Visualización (elemento dominante) */}
       {children && <div className="mt-4">{children}</div>}
 
-      {/* 4. Insight + 5. Acción */}
-      {hasFooter && (
-        <div className="mt-4 pt-3 border-t border-border space-y-1.5">
-          {insight && <p className="text-sm text-foreground/90 leading-snug">{insight}</p>}
-          {rec && (
-            <p className="text-sm text-muted-foreground leading-snug">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-primary mr-1.5">Acción</span>
-              {rec.verb && <span className="font-semibold text-foreground capitalize">{rec.verb} · </span>}
-              {rec.rationale}
-            </p>
-          )}
+      {/* 4. Insight */}
+      {insight && (
+        <div className="mt-4 pt-3 border-t border-border">
+          <p className="text-sm text-foreground/90 leading-snug">{insight}</p>
         </div>
       )}
 
-      {/* 6. Fuente */}
-      {note && <p className="text-[10px] text-muted-foreground mt-3 italic">{note}</p>}
+      {/* 5. Acción — barra destacada y consistente en todas las tarjetas */}
+      {rec && (
+        <div className="mt-3 flex items-start gap-2 rounded-xl bg-primary/[0.06] border border-primary/15 px-3 py-2">
+          <span className="text-[10px] font-bold uppercase tracking-wide text-primary mt-0.5 shrink-0">Acción</span>
+          <p className="text-sm text-foreground/90 leading-snug">
+            {rec.verb && <span className="font-semibold capitalize">{rec.verb} · </span>}
+            {rec.rationale}
+          </p>
+        </div>
+      )}
+
+      {/* 6. Fuente y método — colapsada por defecto para no competir con el dato */}
+      {note && (
+        <details className="mt-3 group">
+          <summary className="text-[10px] text-muted-foreground/80 cursor-pointer select-none list-none hover:text-foreground transition-colors">
+            <span className="underline decoration-dotted underline-offset-2">Fuente y método</span>
+          </summary>
+          <p className="text-[10px] text-muted-foreground mt-1.5 italic leading-relaxed">{note}</p>
+        </details>
+      )}
     </motion.div>
   );
 }

@@ -1,4 +1,5 @@
 import DomainHeader from "../DomainHeader";
+import SectionNav from "../SectionNav";
 import MarketingFunnelCard from "../cards/MarketingFunnelCard";
 import EmailScaleCard from "../cards/EmailScaleCard";
 import PushPerformanceCard from "../cards/PushPerformanceCard";
@@ -11,8 +12,8 @@ import SocialReachCard from "../cards/SocialReachCard";
 import SocialAudienceCard from "../cards/SocialAudienceCard";
 import SocialContentCard from "../cards/SocialContentCard";
 
-const Sub = ({ children }) => (
-  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground pt-1">{children}</p>
+const Sub = ({ children, id }) => (
+  <p id={id} className="scroll-mt-28 text-xs font-semibold uppercase tracking-wider text-muted-foreground pt-1">{children}</p>
 );
 const Grid = ({ children }) => (
   <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">{children}</div>
@@ -26,11 +27,18 @@ export default function Marketing() {
     <div className="space-y-5">
       <DomainHeader title="Marketing" objetivo="Que cada canal y campaña rinda al máximo sin dañar el activo (la lista)." />
 
+      <SectionNav sections={[
+        { id: "mk-canales", label: "Canales de venta" },
+        { id: "mk-web", label: "Captación web" },
+        { id: "mk-notoriedad", label: "Notoriedad y tráfico" },
+        { id: "mk-envios", label: "Optimización de envíos" },
+      ]} />
+
       {/* 1 · Síntesis */}
       <MarketingFunnelCard delay={0.03} />
 
       {/* 2 · Canales que generan venta */}
-      <Sub>Canales que generan venta</Sub>
+      <Sub id="mk-canales">Canales que generan venta</Sub>
       <Grid>
         <EmailScaleCard delay={0.05} />
         <PushChannelTrendCard delay={0.07} />
@@ -38,14 +46,14 @@ export default function Marketing() {
       </Grid>
 
       {/* 3 · Captación en la web */}
-      <Sub>Captación en la web</Sub>
+      <Sub id="mk-web">Captación en la web</Sub>
       <Grid>
         <WebStickyCard delay={0.11} />
         <WebContentTrendCard delay={0.13} />
       </Grid>
 
       {/* 4 · Notoriedad y tráfico (parte alta del embudo) */}
-      <Sub>Notoriedad y tráfico</Sub>
+      <Sub id="mk-notoriedad">Notoriedad y tráfico</Sub>
       <p className="text-xs text-muted-foreground -mt-2">Métricas de alcance y audiencia: parte alta del embudo. Miden notoriedad, no ingresos directos.</p>
       <Grid>
         <Ga4TrafficCard delay={0.15} />
@@ -56,7 +64,7 @@ export default function Marketing() {
 
       {/* 5 · Optimización de envíos. La salud/fatiga de la lista se consolida en
           Ops & CRM › CRM (ListPressureCard), a nivel de base, para no repetirla aquí. */}
-      <Sub>Optimización de envíos</Sub>
+      <Sub id="mk-envios">Optimización de envíos</Sub>
       <BestDayCard delay={0.23} />
     </div>
   );

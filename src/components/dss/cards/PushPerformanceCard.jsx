@@ -82,7 +82,7 @@ export default function PushPerformanceCard({ delay }) {
     >
       {hasData && (
         <div className="overflow-x-auto -mx-1">
-          <table className="w-full text-xs">
+          <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border">
                 {th("name", "Workflow", "text-left")}

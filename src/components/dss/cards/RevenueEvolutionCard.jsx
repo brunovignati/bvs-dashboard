@@ -1,4 +1,4 @@
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useDailyRevenue } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
@@ -34,6 +34,7 @@ export default function RevenueEvolutionCard({ delay }) {
   const yoyPct = last && yoy && yoy.revenue ? ((last.revenue - yoy.revenue) / yoy.revenue) * 100 : null;
 
   const chart = months.slice(-18);
+  const avgRev = chart.length ? chart.reduce((s, m) => s + m.revenue, 0) / chart.length : 0;
 
   return (
     <EvidenceCard
@@ -61,6 +62,8 @@ export default function RevenueEvolutionCard({ delay }) {
               <XAxis dataKey="name" {...AXIS} interval={Math.max(1, Math.floor(chart.length / 9))} />
               <YAxis {...AXIS} tickFormatter={v => `€${(v / 1000).toFixed(0)}K`} />
               <Tooltip formatter={(v) => [fmtCurrency(v), "Revenue"]} {...TIP} cursor={{ fill: "hsl(36,16%,89%)", fillOpacity: 0.4 }} />
+              {avgRev > 0 && <ReferenceLine y={avgRev} stroke="hsl(215,16%,55%)" strokeDasharray="4 3"
+                label={{ value: `media €${(avgRev / 1000).toFixed(0)}K`, position: "right", fontSize: 9, fill: "hsl(215,16%,45%)" }} />}
               <Bar dataKey="revenue" name="Revenue" radius={[3, 3, 0, 0]} maxBarSize={34}>
                 {chart.map((m, i) => <Cell key={i} fill={i === chart.length - 1 ? "hsl(30,72%,66%)" : PRIMARY} />)}
               </Bar>

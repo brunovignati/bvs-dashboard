@@ -37,7 +37,7 @@ export default function CriticalWorkflowCard({ workflows, anyStalled, hasData, d
       <p className="text-[10px] text-muted-foreground/70 mb-1.5">Regla: <span className="font-semibold text-foreground">parado</span> = ≥8 días de envío en su historial y sin ningún envío en los últimos 3 días.</p>
       <div className="space-y-1.5 mt-1">
         {workflows.slice(0, 5).map((w, i) => (
-          <div key={i} className="flex items-center justify-between gap-2 text-xs">
+          <div key={i} className="flex items-center justify-between gap-2 text-sm">
             <span className="truncate text-foreground max-w-[65%]" title={w.name}>{w.name}</span>
             <span className={`font-mono ${w.stalled ? "text-foreground font-semibold" : "text-muted-foreground"}`}>
               {w.stalled ? "parado" : `${fmtNumber(w.recentSent)} env. 7d`}

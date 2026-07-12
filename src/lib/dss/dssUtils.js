@@ -32,10 +32,14 @@ export const VERBS = {
 };
 
 // ── Puerta del dato / semáforo de madurez ───────────────────────────
+// Solo se muestra chip cuando la tarjeta NECESITA atención (madura o sin dato).
+// El estado "al día" no lleva chip: así se elimina el badge repetido en cada tarjeta.
 export const MATURITY = {
-  green: { symbol: "●", label: "Responde hoy",   cls: "bg-blue-500/10 text-blue-600 border-blue-500/20" },
-  amber: { symbol: "◐", label: "Madura",          cls: "bg-blue-400/10 text-blue-500 border-blue-400/20" },
-  red:   { symbol: "○", label: "Falta dato",      cls: "bg-slate-400/10 text-slate-500 border-slate-400/20" },
+  green: { symbol: "", label: "", tip: "", cls: "" },
+  amber: { symbol: "◐", label: "Madura", tip: "Este dato mejora a medida que se acumula histórico.",
+    cls: "bg-amber-500/10 text-amber-600 border-amber-500/20" },
+  red:   { symbol: "○", label: "Falta dato", tip: "Aún no hay dato suficiente para responder con fiabilidad.",
+    cls: "bg-muted text-muted-foreground border-border" },
 };
 
 // ── Severidad de señales (para la cinta de alertas) ─────────────────
