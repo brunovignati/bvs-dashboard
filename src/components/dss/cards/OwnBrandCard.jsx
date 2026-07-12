@@ -45,16 +45,16 @@ export default function OwnBrandCard({ delay }) {
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={rows} margin={{ top: 5, right: 40, left: 4, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
-              <XAxis dataKey="name" tick={{ fontSize: 9, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} />
-              <YAxis yAxisId="l" tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false}
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
+              <XAxis dataKey="name" tick={{ fontSize: 9, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false} />
+              <YAxis yAxisId="l" tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false}
                 tickFormatter={v => `€${(v/1000).toFixed(0)}K`} />
-              <YAxis yAxisId="r" orientation="right" tick={{ fontSize: 8, fill: "hsl(186,32%,26%)" }} axisLine={false} tickLine={false}
+              <YAxis yAxisId="r" orientation="right" tick={{ fontSize: 8, fill: "hsl(200,90%,38%)" }} axisLine={false} tickLine={false}
                 tickFormatter={v => `${v.toFixed(0)}%`} />
               <Tooltip formatter={(v, n) => [n === "% sobre total" ? `${Number(v).toFixed(1)}%` : fmtCurrency(v), n]} labelStyle={{ fontSize: 11 }} />
               <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
-              <Area yAxisId="l" type="monotone" dataKey="rev" name="Revenue marca" stroke="hsl(30,72%,66%)" fill="hsl(16,79%,57%)" fillOpacity={0.12} strokeWidth={2.2} dot={false} />
-              <Line yAxisId="r" type="monotone" dataKey="pct" name="% sobre total" stroke="hsl(30,72%,66%)" strokeWidth={1.8} dot={false} strokeDasharray="5 3" />
+              <Area yAxisId="l" type="monotone" dataKey="rev" name="Revenue marca" stroke="hsl(199,80%,64%)" fill="hsl(199,89%,48%)" fillOpacity={0.12} strokeWidth={2.2} dot={false} />
+              <Line yAxisId="r" type="monotone" dataKey="pct" name="% sobre total" stroke="hsl(199,80%,64%)" strokeWidth={1.8} dot={false} strokeDasharray="5 3" />
             </ComposedChart>
           </ResponsiveContainer>
         </div>

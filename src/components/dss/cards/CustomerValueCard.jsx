@@ -71,11 +71,11 @@ export default function CustomerValueCard({ delay }) {
       <div className="h-52">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={recent} margin={{ top:5, right:8, left:4, bottom:0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
-            <XAxis dataKey="name" tick={{ fontSize:8, fill:"hsl(32,7%,48%)" }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fontSize:8, fill:"hsl(32,7%,48%)" }} axisLine={false} tickLine={false} tickFormatter={v=>`€${v.toFixed(0)}`} />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
+            <XAxis dataKey="name" tick={{ fontSize:8, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize:8, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} tickFormatter={v=>`€${v.toFixed(0)}`} />
             <Tooltip formatter={(v)=>[fmtCurrency(v),"Gasto/comprador·mes"]} labelStyle={{ fontSize:11 }} />
-            <Line type="monotone" dataKey="revPerBuyer" stroke="hsl(16,79%,57%)" strokeWidth={1.8} dot={false} />
+            <Line type="monotone" dataKey="revPerBuyer" stroke="hsl(199,89%,48%)" strokeWidth={1.8} dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>

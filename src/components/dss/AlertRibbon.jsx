@@ -11,10 +11,10 @@ export default function AlertRibbon({ signals = [] }) {
 
   if (active.length === 0) {
     return (
-      <div className="bg-orange-500/5 border border-orange-500/20 rounded-2xl p-4 flex items-center gap-3">
-        <CheckCircle2 className="w-5 h-5 text-orange-600 shrink-0" />
+      <div className="bg-sky-500/5 border border-sky-500/20 rounded-2xl p-4 flex items-center gap-3">
+        <CheckCircle2 className="w-5 h-5 text-sky-600 shrink-0" />
         <div>
-          <p className="text-sm font-semibold text-orange-700">Sin señales críticas hoy</p>
+          <p className="text-sm font-semibold text-sky-700">Sin señales críticas hoy</p>
           <p className="text-xs text-muted-foreground">Ninguna regla ha cruzado su umbral. Puedes cerrar tranquilo.</p>
         </div>
       </div>

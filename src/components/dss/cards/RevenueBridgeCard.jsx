@@ -14,7 +14,7 @@ import { fmtCurrency, fmtNumber } from "@/lib/dashboardData";
 import { SERIES, PRIMARY } from "@/lib/dss/chartTheme";
 
 const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-const REV_COLOR = "hsl(186,32%,22%)";
+const REV_COLOR = "hsl(200,55%,30%)";
 const pct = (v) => (v == null ? "—" : `${v >= 0 ? "+" : ""}${v.toFixed(1)}%`);
 
 function SmallMultiples({ labels, series }) {
@@ -55,7 +55,7 @@ function SmallMultiples({ labels, series }) {
 
       {/* eje de tiempo */}
       {[0, Math.floor((n - 1) / 2), n - 1].map((i, k) => (
-        <text key={k} x={x(i)} y={H - 2} fontSize="11" fill="hsl(32,7%,48%)"
+        <text key={k} x={x(i)} y={H - 2} fontSize="11" fill="hsl(220,10%,50%)"
           textAnchor={k === 0 ? "start" : k === 2 ? "end" : "middle"}>{labels[i]}</text>
       ))}
 

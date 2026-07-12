@@ -86,8 +86,8 @@ export default function ListPressureCard({ delay }) {
             <YAxis yAxisId="r" orientation="right" {...AXIS} tickFormatter={v => `${v.toFixed(1)}%`} />
             <Tooltip {...TIP} formatter={(v, n) => n === "Tasa de baja" ? [`${Number(v).toFixed(2)}%`, n] : [`${Number(v).toFixed(1)} env./suscriptor`, "Presión"]} />
             <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
-            <Bar yAxisId="p" dataKey="presion" name="Presión (env./suscriptor)" fill="hsl(37,44%,76%)" radius={[2, 2, 0, 0]} maxBarSize={22} />
-            <Line yAxisId="r" dataKey="rate" name="Tasa de baja" type="monotone" stroke="hsl(16,79%,57%)" strokeWidth={2.2} dot={false} />
+            <Bar yAxisId="p" dataKey="presion" name="Presión (env./suscriptor)" fill="hsl(199,60%,80%)" radius={[2, 2, 0, 0]} maxBarSize={22} />
+            <Line yAxisId="r" dataKey="rate" name="Tasa de baja" type="monotone" stroke="hsl(199,89%,48%)" strokeWidth={2.2} dot={false} />
           </ComposedChart>
         </ResponsiveContainer>
       </div>

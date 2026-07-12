@@ -102,7 +102,7 @@ export default function RevenueTargetCard({ delay }) {
             <div className="relative h-6 bg-muted/50 rounded-md overflow-hidden">
               <div className="absolute inset-y-0 left-0 bg-primary/70" style={{ width: `${fillPct}%` }} />
               <div className="absolute inset-y-0 w-0.5 bg-foreground" style={{ left: `${projMarker}%` }} title="Proyección" />
-              {target > 0 && <div className="absolute inset-y-0 right-0 w-0.5 bg-orange-600" title="Objetivo (100%)" />}
+              {target > 0 && <div className="absolute inset-y-0 right-0 w-0.5 bg-sky-600" title="Objetivo (100%)" />}
             </div>
             <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
               <span>Acumulado · día {daysElapsed}/{daysInPeriod}</span>

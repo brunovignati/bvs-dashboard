@@ -96,7 +96,7 @@ export default function OverviewKPIs() {
        value={fmtCurrency(cartTotal)}
        subtitle={`${cartPurchases} compras`}
        icon={ShoppingCart}
-       accentClass="text-orange-500"
+       accentClass="text-sky-500"
      />
    </div>
  );

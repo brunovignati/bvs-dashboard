@@ -62,14 +62,14 @@ export default function DayOfWeekAnalysis() {
           <div className="h-56">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={data} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false} />
-                <YAxis yAxisId="left"  tick={{ fontSize: 10, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v/1000).toFixed(0)}K`} />
-                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false} />
+                <YAxis yAxisId="left"  tick={{ fontSize: 10, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v/1000).toFixed(0)}K`} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 10, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false} />
                 <Tooltip content={<CustomTooltip />} />
-                <Bar yAxisId="left"  dataKey="sent"      name="Enviados" fill="hsl(38,16%,86%)" radius={[4,4,0,0]} />
-                <Bar yAxisId="right" dataKey="purchases" name="Compras"  fill="hsl(16,79%,57%)" radius={[4,4,0,0]} />
-                <Line yAxisId="right" type="monotone" dataKey="revenue" name="Revenue" stroke="hsl(30,72%,66%)" strokeWidth={2} dot={{ r: 3 }} />
+                <Bar yAxisId="left"  dataKey="sent"      name="Enviados" fill="hsl(220,13%,85%)" radius={[4,4,0,0]} />
+                <Bar yAxisId="right" dataKey="purchases" name="Compras"  fill="hsl(199,89%,48%)" radius={[4,4,0,0]} />
+                <Line yAxisId="right" type="monotone" dataKey="revenue" name="Revenue" stroke="hsl(199,80%,64%)" strokeWidth={2} dot={{ r: 3 }} />
               </ComposedChart>
             </ResponsiveContainer>
           </div>

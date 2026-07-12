@@ -2,7 +2,7 @@ import { useDailyRevenue, useBuyerCohorts, useCompradores, useSubscribers } from
 import { fmtCurrency, fmtNumber } from "@/lib/dashboardData";
 
 function Tile({ label, value, delta, tone = "neutral" }) {
-  const c = tone === "good" ? "text-orange-600" : tone === "bad" ? "text-slate-600" : "text-foreground";
+  const c = tone === "good" ? "text-sky-600" : tone === "bad" ? "text-slate-600" : "text-foreground";
   return (
     <div className="bg-muted/30 rounded-xl p-3 border border-border/50">
       <p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p>
@@ -44,7 +44,7 @@ export default function KpiGridCard({ delay }) {
     <div className="bg-card border border-border rounded-2xl p-5">
       <div className="flex items-start justify-between gap-3 mb-3">
         <h3 className="text-sm font-semibold text-foreground">¿Cómo va el negocio este periodo?</h3>
-        <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-orange-500/10 text-orange-600 border-orange-500/20">● Responde hoy</span>
+        <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border bg-sky-500/10 text-sky-600 border-sky-500/20">● Responde hoy</span>
       </div>
       <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5">
         <Tile label="Revenue mes" value={last?fmtCurrency(last.rev):"—"} />

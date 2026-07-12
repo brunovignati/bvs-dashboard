@@ -13,7 +13,7 @@ import { wilson } from "@/lib/dss/dssUtils";
 import { CHART_H, GRID, AXIS, TIP, PRIMARY } from "@/lib/dss/chartTheme";
 
 const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-const CTR_COLOR = "hsl(186,32%,22%)";
+const CTR_COLOR = "hsl(200,55%,30%)";
 
 export default function EmailDeliverabilityCard({ delay }) {
   const { data = [] } = useEmailCampaigns();

@@ -58,7 +58,7 @@ function BayesCard({ title, pWin, pA, pB, labelA, labelB, formatRate }) {
         </div>
         <div className="relative h-3 rounded-full bg-muted overflow-hidden">
           <div className="absolute top-0 left-0 h-full rounded-full transition-all"
-            style={{ width: `${barWidth}%`, background: barWidth >= 70 ? 'hsl(30,72%,66%)' : barWidth <= 30 ? 'hsl(186,32%,26%)' : 'hsl(37,42%,74%)' }} />
+            style={{ width: `${barWidth}%`, background: barWidth >= 70 ? 'hsl(199,80%,64%)' : barWidth <= 30 ? 'hsl(200,90%,38%)' : 'hsl(199,60%,78%)' }} />
           <div className="absolute top-0 left-1/2 h-full w-px bg-border/60" />
         </div>
         <div className="flex justify-between items-center">
@@ -167,7 +167,7 @@ export default function AuditComparison() {
   const avgX = scatterData.length > 0 ? scatterData.reduce((s, d) => s + d.x, 0) / scatterData.length : 0;
   const avgY = scatterData.length > 0 ? scatterData.reduce((s, d) => s + d.y, 0) / scatterData.length : 0;
   const getColor = (d) =>
-    d.isAuto ? 'hsl(30,72%,66%)' : 'hsl(16,79%,57%)';
+    d.isAuto ? 'hsl(199,80%,64%)' : 'hsl(199,89%,48%)';
 
   const thClass = "text-[10px] uppercase tracking-widest font-semibold text-muted-foreground py-3 cursor-pointer select-none hover:text-foreground transition-colors";
 
@@ -203,24 +203,24 @@ export default function AuditComparison() {
         <div>
           <p className="text-[11px] text-muted-foreground mb-1">
             Cada punto = un workflow · Tamaño = volumen enviado ·
-            <span style={{ color: 'hsl(30,72%,66%)' }}> ■</span> Automatización ·
-            <span style={{ color: 'hsl(16,79%,57%)' }}> ■</span> Newsletter
+            <span style={{ color: 'hsl(199,80%,64%)' }}> ■</span> Automatización ·
+            <span style={{ color: 'hsl(199,89%,48%)' }}> ■</span> Newsletter
           </p>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <ScatterChart margin={{ top: 15, right: 20, bottom: 35, left: 30 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" />
                 <XAxis type="number" dataKey="x" name="Open Rate" unit="%"
-                  tick={{ fontSize: 9, fill: 'hsl(32,7%,48%)' }} domain={[0, 'auto']}
-                  label={{ value: 'Tasa de Apertura (%)', position: 'insideBottom', offset: -20, fontSize: 10, fill: 'hsl(32,7%,48%)' }} />
+                  tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} domain={[0, 'auto']}
+                  label={{ value: 'Tasa de Apertura (%)', position: 'insideBottom', offset: -20, fontSize: 10, fill: 'hsl(220,10%,50%)' }} />
                 <YAxis type="number" dataKey="y" name="Revenue"
-                  tick={{ fontSize: 9, fill: 'hsl(32,7%,48%)' }}
+                  tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }}
                   tickFormatter={v => `€${(v/1000).toFixed(0)}K`}
-                  label={{ value: 'Revenue (€)', angle: -90, position: 'insideLeft', offset: 15, fontSize: 10, fill: 'hsl(32,7%,48%)' }} />
+                  label={{ value: 'Revenue (€)', angle: -90, position: 'insideLeft', offset: 15, fontSize: 10, fill: 'hsl(220,10%,50%)' }} />
                 <ZAxis type="number" dataKey="z" range={[30, 500]} />
                 <Tooltip content={<ScatterTooltip />} />
                 {avgX > 0 && <ReferenceLine x={avgX} stroke="hsl(220,13%,75%)" strokeDasharray="4 4"
-                  label={{ value: `Media ${avgX.toFixed(0)}%`, position: 'top', fontSize: 9, fill: 'hsl(32,7%,48%)' }} />}
+                  label={{ value: `Media ${avgX.toFixed(0)}%`, position: 'top', fontSize: 9, fill: 'hsl(220,10%,50%)' }} />}
                 {avgY > 0 && <ReferenceLine y={avgY} stroke="hsl(220,13%,75%)" strokeDasharray="4 4" />}
                 <Scatter data={scatterData}>
                   {scatterData.map((d, i) => <Cell key={i} fill={getColor(d)} fillOpacity={0.82} />)}

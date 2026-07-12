@@ -6,25 +6,25 @@
 
 @layer base {
   :root {
-    --background: 40 14% 95%;
-    --foreground: 28 12% 14%;
+    --background: 205 30% 97%;
+    --foreground: 220 25% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 28 12% 14%;
+    --card-foreground: 220 25% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 28 12% 14%;
-    --primary: 16 79% 57%;
+    --popover-foreground: 220 25% 12%;
+    --primary: 199 89% 48%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 40 14% 93%;
-    --secondary-foreground: 28 10% 26%;
-    --muted: 40 14% 93%;
-    --muted-foreground: 32 7% 46%;
-    --accent: 40 14% 93%;
-    --accent-foreground: 28 10% 26%;
-    --destructive: 4 42% 46%;
+    --secondary: 205 25% 95%;
+    --secondary-foreground: 220 20% 26%;
+    --muted: 205 25% 95%;
+    --muted-foreground: 215 14% 46%;
+    --accent: 205 25% 95%;
+    --accent-foreground: 220 20% 26%;
+    --destructive: 224 76% 42%;
     --destructive-foreground: 0 0% 98%;
-    --border: 36 16% 89%;
-    --input: 36 16% 89%;
-    --ring: 16 79% 57%;
+    --border: 210 22% 90%;
+    --input: 210 22% 90%;
+    --ring: 199 89% 48%;
     --radius: 1rem;
     --font-heading: 'Poppins', ui-sans-serif, system-ui, sans-serif;
     --font-body: 'Poppins', ui-sans-serif, system-ui, sans-serif;
@@ -78,8 +78,11 @@
 ::-webkit-scrollbar-thumb { background: hsl(var(--muted-foreground) / 0.3); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.5); }
 
-/* Look & feel: fondo gris cálido plano, tarjetas blancas (estilo ventriloc). */
+/* Look & feel: fondo frío con lavado celeste suave arriba, tarjetas blancas. */
 body {
-  background: hsl(var(--background));
+  background:
+    radial-gradient(1100px 320px at 50% -100px, hsl(199 89% 88% / 0.55), transparent 72%),
+    hsl(var(--background));
+  background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
 }

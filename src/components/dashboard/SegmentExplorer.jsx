@@ -15,11 +15,11 @@ function TrendIcon({ delta }) {
 }
 
 const SEGMENT_COLORS = [
-  'hsl(16,79%,57%)',
-  'hsl(30,72%,66%)',
-  'hsl(30,72%,66%)',
-  'hsl(37,42%,74%)',
-  'hsl(186,32%,26%)',
+  'hsl(199,89%,48%)',
+  'hsl(199,80%,64%)',
+  'hsl(199,80%,64%)',
+  'hsl(199,60%,78%)',
+  'hsl(200,90%,38%)',
 ];
 
 export default function SegmentExplorer() {
@@ -141,10 +141,10 @@ export default function SegmentExplorer() {
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={evolutionData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false}
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
                   interval={Math.max(0, Math.floor(evolutionData.length / 8))} />
-                <YAxis tick={{ fontSize: 9, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false}
+                <YAxis tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
                   tickFormatter={v => `${(v/1000).toFixed(0)}K`} />
                 <Tooltip
                   content={({ active, payload, label }) => {

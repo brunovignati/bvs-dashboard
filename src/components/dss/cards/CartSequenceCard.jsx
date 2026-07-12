@@ -58,13 +58,13 @@ export default function CartSequenceCard({ delay }) {
       <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={rows} layout="vertical" margin={{ top: 4, right: 16, left: 4, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" horizontal={false} />
-            <XAxis type="number" tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} tickFormatter={v => `€${(v / 1000).toFixed(0)}K`} />
-            <YAxis type="category" dataKey="name" width={150} tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" horizontal={false} />
+            <XAxis type="number" tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false} tickFormatter={v => `€${(v / 1000).toFixed(0)}K`} />
+            <YAxis type="category" dataKey="name" width={150} tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false} />
             <Tooltip labelFormatter={(l, p) => p?.[0]?.payload?.full || l} labelStyle={{ fontSize: 10 }}
               formatter={(v, n, p) => [`${fmtCurrency(v)} · ${p?.payload?.conv?.toFixed(2)}% conv · ${fmtNumber(p?.payload?.sent)} env.`, "Revenue"]} />
             <Bar dataKey="revenue" radius={[0, 4, 4, 0]}>
-              {rows.map((r, i) => <Cell key={i} fill={i === 0 ? "hsl(30,72%,66%)" : "hsl(16,79%,57%)"} />)}
+              {rows.map((r, i) => <Cell key={i} fill={i === 0 ? "hsl(199,80%,64%)" : "hsl(199,89%,48%)"} />)}
             </Bar>
           </BarChart>
         </ResponsiveContainer>

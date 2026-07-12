@@ -110,13 +110,13 @@ export default function CartRecoveryFunnel() {
       <div className="h-48 mb-5">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={monthlyData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
-            <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false}
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
+            <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
               interval={Math.max(0, Math.floor(monthlyData.length / 8))} />
-            <YAxis tick={{ fontSize: 9, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false}
+            <YAxis tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
               tickFormatter={(v) => `€${(v / 1000).toFixed(0)}K`} />
             <Tooltip content={<CustomTooltip />} />
-            <Bar dataKey="revenue" name="Revenue" fill="hsl(30,72%,66%)" radius={[3, 3, 0, 0]} />
+            <Bar dataKey="revenue" name="Revenue" fill="hsl(199,80%,64%)" radius={[3, 3, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
       </div>

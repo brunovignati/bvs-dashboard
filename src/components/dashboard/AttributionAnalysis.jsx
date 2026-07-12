@@ -7,7 +7,7 @@ import InsightCard from "./InsightCard";
 import { GitBranch, Info } from "lucide-react";
 import { motion } from "framer-motion";
 
-const COLORS = ["hsl(16,79%,57%)", "hsl(30,72%,66%)", "hsl(30,72%,66%)"];
+const COLORS = ["hsl(199,89%,48%)", "hsl(199,80%,64%)", "hsl(199,80%,64%)"];
 
 const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
@@ -91,10 +91,10 @@ export default function AttributionAnalysis() {
           <div className="h-52">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData} margin={{ top: 5, right: 10, left: 10, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false}
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
                   interval={Math.max(0, Math.floor(chartData.length / 8))} />
-                <YAxis tick={{ fontSize: 10, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 10, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false} />
                 <Tooltip content={<CustomTooltip />} />
                 <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
                 <Line type="monotone" dataKey="Email" stroke={COLORS[0]} strokeWidth={2} dot={{ r: 2 }} />
@@ -116,7 +116,7 @@ export default function AttributionAnalysis() {
           {/* Barra horizontal por canal */}
           <div className="space-y-3 mb-4">
             {[
-              { name: "Total atribuido", value: totAll,   color: "hsl(32,7%,48%)", pct: 100 },
+              { name: "Total atribuido", value: totAll,   color: "hsl(220,10%,50%)", pct: 100 },
               ...barData.map(b => ({ name: b.canal, value: b.compras, color: b.color, pct: totAll > 0 ? (b.compras / totAll) * 100 : 0 })),
             ].map((item, i) => (
               <div key={i} className="flex items-center gap-3">
@@ -147,10 +147,10 @@ export default function AttributionAnalysis() {
               <p className="text-[10px] text-muted-foreground mb-1">Compras por canal · por mes</p>
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 0, right: 10, left: 10, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
-                  <XAxis dataKey="name" tick={{ fontSize: 8, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false}
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
+                  <XAxis dataKey="name" tick={{ fontSize: 8, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
                     interval={Math.max(0, Math.floor(chartData.length / 8))} />
-                  <YAxis tick={{ fontSize: 9, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false} />
+                  <YAxis tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false} />
                   <Tooltip content={<CustomTooltip />} />
                   <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
                   <Bar dataKey="Email" fill={COLORS[0]} radius={[2, 2, 0, 0]} maxBarSize={20} />

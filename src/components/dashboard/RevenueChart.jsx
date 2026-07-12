@@ -7,10 +7,10 @@ import SectionHeader from "./SectionHeader";
 import { TrendingUp, Sparkles, CalendarDays } from "lucide-react";
 import { motion } from "framer-motion";
 
-const NUTRA_COLOR    = "hsl(16,79%,57%)";
-const VET_COLOR      = "hsl(30,72%,66%)";
-const TICKET_COLOR   = "hsl(37,42%,74%)";
-const FORECAST_COLOR = "hsl(37,42%,74%)";
+const NUTRA_COLOR    = "hsl(199,89%,48%)";
+const VET_COLOR      = "hsl(199,80%,64%)";
+const TICKET_COLOR   = "hsl(199,60%,78%)";
+const FORECAST_COLOR = "hsl(199,60%,78%)";
 
 // ─── Tooltips ───────────────────────────────────────────────
 const CustomTooltip = ({ active, payload, label }) => {
@@ -145,10 +145,10 @@ function DailyRevenueChart({ data }) {
                   <stop offset="95%" stopColor={NUTRA_COLOR} stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false}/>
-              <XAxis dataKey="name" tick={{ fontSize: 8, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false}
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false}/>
+              <XAxis dataKey="name" tick={{ fontSize: 8, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
                 interval={Math.max(1, Math.floor(chartData.length/10))}/>
-              <YAxis tick={{ fontSize: 9, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false}
+              <YAxis tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
                 tickFormatter={v => `€${(v/1000).toFixed(0)}K`}/>
               <Tooltip formatter={(v,n) => [fmtCurrency(v), n]} labelStyle={{ fontSize: 11 }}/>
               <Area type="monotone" dataKey="Revenue" stroke={NUTRA_COLOR} fill="url(#dailyRevGrad)"
@@ -309,10 +309,10 @@ export default function RevenueChart() {
                 <stop offset="95%" stopColor={NUTRA_COLOR} stopOpacity={0} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
-            <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false}
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
+            <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
               interval={Math.max(1, Math.floor(chartData.length / 8))} />
-            <YAxis domain={[0, 'auto']} tick={{ fontSize: 9, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false}
+            <YAxis domain={[0, 'auto']} tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
               tickFormatter={(v) => `€${(v/1000).toFixed(0)}K`} />
             <Tooltip content={<CustomTooltip />} />
             <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 11 }} />
@@ -334,15 +334,15 @@ export default function RevenueChart() {
         <div className="h-32">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={chartData} margin={{ top: 0, right: 40, left: 10, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
-              <XAxis dataKey="name" tick={{ fontSize: 8, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false}
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
+              <XAxis dataKey="name" tick={{ fontSize: 8, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
                 interval={Math.max(2, Math.floor(chartData.length / 6))} />
-              <YAxis tick={{ fontSize: 8, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false}
+              <YAxis tick={{ fontSize: 8, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
                 tickFormatter={(v) => `€${(v/1000).toFixed(0)}K`} />
               <Tooltip formatter={(v, name) => [`€${Number(v).toLocaleString('es-ES')}`, name]} />
               <Legend iconType="circle" iconSize={6} wrapperStyle={{ fontSize: 10 }} />
               <Bar dataKey="EmailAttr" name="Email"       stackId="a" fill={NUTRA_COLOR} radius={[0,0,0,0]} />
-              <Bar dataKey="PushAttr"  name="Push"        stackId="a" fill="hsl(30,72%,66%)" radius={[0,0,0,0]} />
+              <Bar dataKey="PushAttr"  name="Push"        stackId="a" fill="hsl(199,80%,64%)" radius={[0,0,0,0]} />
               <Bar dataKey="WebAttr"   name="Web Content" stackId="a" fill={VET_COLOR} radius={[4,4,0,0]} />
             </ComposedChart>
           </ResponsiveContainer>
@@ -391,9 +391,9 @@ export default function RevenueChart() {
                     <stop offset="100%" stopColor={FORECAST_COLOR} stopOpacity={0.04} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
-                <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fontSize: 9, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false}
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
+                <XAxis dataKey="name" tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
                   tickFormatter={(v) => `€${(v/1000).toFixed(0)}K`} />
                 <Tooltip content={<ForecastTooltip />} />
                 {/* Banda de confianza (truco stackId: base transparente + banda coloreada) */}

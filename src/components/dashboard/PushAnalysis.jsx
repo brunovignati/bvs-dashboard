@@ -11,7 +11,7 @@ import { motion } from "framer-motion";
 import MiniTable from "./MiniTable";
 
 const MONTHS_ES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-const PUSH_COLOR = "hsl(30,72%,66%)";
+const PUSH_COLOR = "hsl(199,80%,64%)";
 
 const ScatterTooltip = ({ active, payload }) => {
   if (!active || !payload?.length) return null;
@@ -74,8 +74,8 @@ export default function PushAnalysis() {
   const avgX = scatterData.length > 0 ? scatterData.reduce((s, d) => s + d.x, 0) / scatterData.length : 0;
   const avgY = scatterData.length > 0 ? scatterData.reduce((s, d) => s + d.y, 0) / scatterData.length : 0;
   const getColor = (d) =>
-    d.revenue >= q75 ? 'hsl(186,32%,26%)' :
-    d.revenue >= q50 ? 'hsl(37,42%,74%)' :
+    d.revenue >= q75 ? 'hsl(200,90%,38%)' :
+    d.revenue >= q50 ? 'hsl(199,60%,78%)' :
     'hsl(220,13%,65%)';
 
   // Table columns
@@ -156,25 +156,25 @@ export default function PushAnalysis() {
         <div>
           <p className="text-[11px] text-muted-foreground mb-1">
             Cada punto = una campaña push · Tamaño = volumen enviado ·
-            <span style={{ color: 'hsl(186,32%,26%)' }}> ■</span> Alto revenue ·
-            <span style={{ color: 'hsl(37,42%,74%)' }}> ■</span> Medio ·
+            <span style={{ color: 'hsl(200,90%,38%)' }}> ■</span> Alto revenue ·
+            <span style={{ color: 'hsl(199,60%,78%)' }}> ■</span> Medio ·
             <span className="text-muted-foreground"> ■</span> Bajo
           </p>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <ScatterChart margin={{ top: 15, right: 20, bottom: 35, left: 30 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" />
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" />
                 <XAxis type="number" dataKey="x" name="Open Rate" unit="%"
-                  tick={{ fontSize: 9, fill: 'hsl(32,7%,48%)' }} domain={[0, 'auto']}
-                  label={{ value: 'Tasa de Apertura (%)', position: 'insideBottom', offset: -20, fontSize: 10, fill: 'hsl(32,7%,48%)' }} />
+                  tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} domain={[0, 'auto']}
+                  label={{ value: 'Tasa de Apertura (%)', position: 'insideBottom', offset: -20, fontSize: 10, fill: 'hsl(220,10%,50%)' }} />
                 <YAxis type="number" dataKey="y" name="Revenue"
-                  tick={{ fontSize: 9, fill: 'hsl(32,7%,48%)' }}
+                  tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }}
                   tickFormatter={v => `€${(v/1000).toFixed(0)}K`}
-                  label={{ value: 'Revenue (€)', angle: -90, position: 'insideLeft', offset: 15, fontSize: 10, fill: 'hsl(32,7%,48%)' }} />
+                  label={{ value: 'Revenue (€)', angle: -90, position: 'insideLeft', offset: 15, fontSize: 10, fill: 'hsl(220,10%,50%)' }} />
                 <ZAxis type="number" dataKey="z" range={[30, 500]} />
                 <Tooltip content={<ScatterTooltip />} />
                 {avgX > 0 && <ReferenceLine x={avgX} stroke="hsl(220,13%,75%)" strokeDasharray="4 4"
-                  label={{ value: `Media ${avgX.toFixed(0)}%`, position: 'top', fontSize: 9, fill: 'hsl(32,7%,48%)' }} />}
+                  label={{ value: `Media ${avgX.toFixed(0)}%`, position: 'top', fontSize: 9, fill: 'hsl(220,10%,50%)' }} />}
                 {avgY > 0 && <ReferenceLine y={avgY} stroke="hsl(220,13%,75%)" strokeDasharray="4 4" />}
                 <Scatter data={scatterData}>
                   {scatterData.map((d, i) => <Cell key={i} fill={getColor(d)} fillOpacity={0.8} />)}
@@ -225,14 +225,14 @@ export default function PushAnalysis() {
                       <stop offset="95%" stopColor={PUSH_COLOR} stopOpacity={0}/>
                     </linearGradient>
                   </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false}/>
-                  <XAxis dataKey="name" tick={{ fontSize: 8, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false}
+                  <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false}/>
+                  <XAxis dataKey="name" tick={{ fontSize: 8, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
                     interval={Math.max(1, Math.floor(dailyChartData.length/10))}/>
-                  <YAxis tick={{ fontSize: 9, fill: 'hsl(32,7%,48%)' }} axisLine={false} tickLine={false}
+                  <YAxis tick={{ fontSize: 9, fill: 'hsl(220,10%,50%)' }} axisLine={false} tickLine={false}
                     tickFormatter={v => fmtNumber(v)}/>
                   <Tooltip formatter={(v,n) => [fmtNumber(v), n]} labelStyle={{ fontSize: 11 }}/>
                   <Area type="monotone" dataKey="Enviados"  stroke={PUSH_COLOR} fill="url(#pushSentGrad)" strokeWidth={1.5} dot={false}/>
-                  <Area type="monotone" dataKey="Aperturas" stroke="hsl(30,72%,66%)" fill="none" strokeWidth={1.5} dot={false} strokeDasharray="4 2"/>
+                  <Area type="monotone" dataKey="Aperturas" stroke="hsl(199,80%,64%)" fill="none" strokeWidth={1.5} dot={false} strokeDasharray="4 2"/>
                 </AreaChart>
               </ResponsiveContainer>
             </div>
