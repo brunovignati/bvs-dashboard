@@ -25,14 +25,14 @@ const Grid = ({ children }) => (
 export default function Marketing() {
   return (
     <div className="space-y-5">
-      <DomainHeader title="Marketing" objetivo="Que cada canal y campaña rinda al máximo sin dañar el activo (la lista)." />
-
       <SectionNav sections={[
         { id: "mk-canales", label: "Canales de venta" },
         { id: "mk-web", label: "Captación web" },
         { id: "mk-notoriedad", label: "Notoriedad y tráfico" },
         { id: "mk-envios", label: "Optimización de envíos" },
       ]} />
+
+      <DomainHeader title="Marketing" objetivo="Que cada canal y campaña rinda al máximo sin dañar el activo (la lista)." />
 
       {/* 1 · Síntesis */}
       <MarketingFunnelCard delay={0.03} />
