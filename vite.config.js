@@ -11,5 +11,19 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: { '@': path.resolve(__dirname, './src') }
-  }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        // Separar librerías pesadas en chunks cacheables: el navegador solo
+        // vuelve a descargar el código de la app cuando cambia, no las libs.
+        manualChunks: {
+          react: ['react', 'react-dom', 'react-router-dom'],
+          charts: ['recharts'],
+          motion: ['framer-motion'],
+          query: ['@tanstack/react-query'],
+        },
+      },
+    },
+  },
 })

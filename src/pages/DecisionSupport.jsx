@@ -6,10 +6,12 @@ import { VIEWS } from "@/lib/dss/domains";
 import DailyHealth from "@/components/dss/views/DailyHealth";
 import GrowthMarketing from "@/components/dss/views/GrowthMarketing";
 import OpsCRM from "@/components/dss/views/OpsCRM";
+import Marketing from "@/components/dss/domains/Marketing";
 
 const VIEW_MAP = {
   daily: DailyHealth,
   growth: GrowthMarketing,
+  marketing: Marketing,
   ops: OpsCRM,
 };
 
