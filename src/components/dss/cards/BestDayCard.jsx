@@ -36,12 +36,12 @@ export default function BestDayCard({ delay }) {
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={rows} margin={{ top:5, right:8, left:4, bottom:0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
-              <XAxis dataKey="name" tick={{ fontSize:9, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize:8, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} tickFormatter={v=>`€${v.toFixed(0)}`} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
+              <XAxis dataKey="name" tick={{ fontSize:9, fill:"hsl(32,7%,48%)" }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize:8, fill:"hsl(32,7%,48%)" }} axisLine={false} tickLine={false} tickFormatter={v=>`€${v.toFixed(0)}`} />
               <Tooltip formatter={(v)=>[`€${Number(v).toFixed(1)}`,"Rev/1.000 env."]} labelStyle={{ fontSize:11 }} />
               <Bar dataKey="rpm" radius={[3,3,0,0]}>
-                {rows.map((r,i)=><Cell key={i} fill={best&&r.name===best.name?"hsl(199,80%,64%)":"hsl(199,89%,48%)"} />)}
+                {rows.map((r,i)=><Cell key={i} fill={best&&r.name===best.name?"hsl(30,72%,66%)":"hsl(16,79%,57%)"} />)}
               </Bar>
             </BarChart>
           </ResponsiveContainer>

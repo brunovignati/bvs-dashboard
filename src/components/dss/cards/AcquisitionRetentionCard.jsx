@@ -35,15 +35,15 @@ export default function AcquisitionRetentionCard({ delay }) {
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={rows.slice(-18)} stackOffset="expand" margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
-              <XAxis dataKey="name" tick={{ fontSize: 9, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false}
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
+              <XAxis dataKey="name" tick={{ fontSize: 9, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false}
                 interval={Math.max(1, Math.floor(Math.min(rows.length, 18) / 8))} />
-              <YAxis tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false}
+              <YAxis tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false}
                 tickFormatter={v => `${(v * 100).toFixed(0)}%`} />
               <Tooltip formatter={(v, n) => [Math.round(v), n]} labelStyle={{ fontSize: 11 }} />
               <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
-              <Area type="monotone" dataKey="rc" name="Recurrentes" stackId="1" stroke="hsl(199,80%,64%)" fill="hsl(199,80%,64%)" fillOpacity={0.7} />
-              <Area type="monotone" dataKey="ft" name="Primerizos" stackId="1" stroke="hsl(199,89%,48%)" fill="hsl(199,89%,48%)" fillOpacity={0.6} />
+              <Area type="monotone" dataKey="rc" name="Recurrentes" stackId="1" stroke="hsl(30,72%,66%)" fill="hsl(30,72%,66%)" fillOpacity={0.7} />
+              <Area type="monotone" dataKey="ft" name="Primerizos" stackId="1" stroke="hsl(16,79%,57%)" fill="hsl(16,79%,57%)" fillOpacity={0.6} />
             </AreaChart>
           </ResponsiveContainer>
         </div>

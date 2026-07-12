@@ -58,7 +58,7 @@ export default function CohortHeatmapCard({ delay }) {
   const avg = (a) => a.length ? a.reduce((s, v) => s + v, 0) / a.length : null;
   const r1 = avg(m1), r3 = avg(m3);
 
-  const bg = (v) => v == null ? "transparent" : `hsl(199,89%,48%,${Math.max(0.06, Math.min(1, v / 100)).toFixed(2)})`;
+  const bg = (v) => v == null ? "transparent" : `hsl(16,79%,57%,${Math.max(0.06, Math.min(1, v / 100)).toFixed(2)})`;
   const fg = (v) => v != null && v >= 55 ? "#fff" : "hsl(220,10%,30%)";
 
   return (

@@ -38,18 +38,18 @@ export default function BaseHealthCard({ delay }) {
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={rows} margin={{ top: 5, right: 40, left: 4, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
-              <XAxis dataKey="name" tick={{ fontSize: 9, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false}
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
+              <XAxis dataKey="name" tick={{ fontSize: 9, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false}
                 interval={Math.max(1, Math.floor(rows.length / 8))} />
-              <YAxis yAxisId="l" tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false}
+              <YAxis yAxisId="l" tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false}
                 tickFormatter={v => `${(v/1000).toFixed(0)}K`} />
-              <YAxis yAxisId="r" orientation="right" tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false} />
+              <YAxis yAxisId="r" orientation="right" tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} />
               <Tooltip formatter={(v, n) => [fmtNumber(v), n]} labelStyle={{ fontSize: 11 }} />
               <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
               <ReferenceLine yAxisId="r" y={0} stroke="hsl(220,13%,80%)" />
-              <Bar yAxisId="r" dataKey="neto" name="Neto mensual" radius={[3, 3, 0, 0]} fill="hsl(199,80%,64%)" fillOpacity={0.5} />
-              <Line yAxisId="l" type="monotone" dataKey="base" name="Base email" stroke="hsl(199,89%,48%)" strokeWidth={2.2} dot={false} />
-              <Line yAxisId="l" type="monotone" dataKey="push" name="Base push" stroke="hsl(199,80%,64%)" strokeWidth={1.8} dot={false} strokeDasharray="5 3" />
+              <Bar yAxisId="r" dataKey="neto" name="Neto mensual" radius={[3, 3, 0, 0]} fill="hsl(30,72%,66%)" fillOpacity={0.5} />
+              <Line yAxisId="l" type="monotone" dataKey="base" name="Base email" stroke="hsl(16,79%,57%)" strokeWidth={2.2} dot={false} />
+              <Line yAxisId="l" type="monotone" dataKey="push" name="Base push" stroke="hsl(30,72%,66%)" strokeWidth={1.8} dot={false} strokeDasharray="5 3" />
             </ComposedChart>
           </ResponsiveContainer>
         </div>

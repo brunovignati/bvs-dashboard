@@ -46,13 +46,13 @@ export default function CartWinnerCard({ delay }) {
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={top} layout="vertical" margin={{ top: 4, right: 12, left: 4, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" horizontal={false} />
-              <XAxis type="number" tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false}
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" horizontal={false} />
+              <XAxis type="number" tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false}
                 tickFormatter={v => `€${(v/1000).toFixed(0)}K`} />
-              <YAxis type="category" dataKey="short" width={130} tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false} />
+              <YAxis type="category" dataKey="short" width={130} tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} />
               <Tooltip formatter={(v, n, o) => [fmtCurrency(v), "Revenue"]} labelFormatter={(l, p) => p?.[0]?.payload?.name || l} labelStyle={{ fontSize: 10, maxWidth: 220 }} />
               <Bar dataKey="revenue" radius={[0, 4, 4, 0]}>
-                {top.map((w, i) => <Cell key={i} fill={w.isAB ? "hsl(199,60%,78%)" : i === 0 ? "hsl(199,80%,64%)" : "hsl(199,89%,48%)"} />)}
+                {top.map((w, i) => <Cell key={i} fill={w.isAB ? "hsl(37,42%,74%)" : i === 0 ? "hsl(30,72%,66%)" : "hsl(16,79%,57%)"} />)}
               </Bar>
             </BarChart>
           </ResponsiveContainer>

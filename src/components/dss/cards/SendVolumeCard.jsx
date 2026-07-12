@@ -42,13 +42,13 @@ export default function SendVolumeCard({ delay }) {
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart data={rows} margin={{ top:5, right:8, left:4, bottom:0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
-              <XAxis dataKey="name" tick={{ fontSize:8, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} interval={Math.max(1,Math.floor(rows.length/8))} />
-              <YAxis tick={{ fontSize:8, fill:"hsl(220,10%,50%)" }} axisLine={false} tickLine={false} tickFormatter={v=>`${(v/1000).toFixed(0)}K`} />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
+              <XAxis dataKey="name" tick={{ fontSize:8, fill:"hsl(32,7%,48%)" }} axisLine={false} tickLine={false} interval={Math.max(1,Math.floor(rows.length/8))} />
+              <YAxis tick={{ fontSize:8, fill:"hsl(32,7%,48%)" }} axisLine={false} tickLine={false} tickFormatter={v=>`${(v/1000).toFixed(0)}K`} />
               <Tooltip formatter={(v,n)=>[fmtNumber(v),n]} labelStyle={{ fontSize:11 }} />
               <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize:10 }} />
-              <Area type="monotone" dataKey="Email" stackId="1" stroke="hsl(199,89%,48%)" fill="hsl(199,89%,48%)" fillOpacity={0.5} />
-              <Area type="monotone" dataKey="Push" stackId="1" stroke="hsl(199,80%,64%)" fill="hsl(199,80%,64%)" fillOpacity={0.5} />
+              <Area type="monotone" dataKey="Email" stackId="1" stroke="hsl(16,79%,57%)" fill="hsl(16,79%,57%)" fillOpacity={0.5} />
+              <Area type="monotone" dataKey="Push" stackId="1" stroke="hsl(30,72%,66%)" fill="hsl(30,72%,66%)" fillOpacity={0.5} />
             </ComposedChart>
           </ResponsiveContainer>
         </div>

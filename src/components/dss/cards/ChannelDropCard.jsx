@@ -39,15 +39,15 @@ export default function ChannelDropCard({ channels, worst, hasAttribution, delay
       <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={channels} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" vertical={false} />
-            <XAxis dataKey="name" tick={{ fontSize: 9, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false} />
-            <YAxis tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }} axisLine={false} tickLine={false}
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
+            <XAxis dataKey="name" tick={{ fontSize: 9, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false}
               tickFormatter={(v) => `${v.toFixed(0)}%`} />
             <Tooltip formatter={(v) => [`${Number(v).toFixed(0)}%`, "Δ vs. media 14d"]} labelStyle={{ fontSize: 11 }} />
             <ReferenceLine y={0} stroke="hsl(220,13%,70%)" />
             <Bar dataKey="delta" radius={[3, 3, 0, 0]}>
               {channels.map((c, i) => (
-                <Cell key={i} fill={c.delta < -25 ? "hsl(200,90%,38%)" : c.delta < 0 ? "hsl(199,60%,78%)" : "hsl(199,80%,64%)"} />
+                <Cell key={i} fill={c.delta < -25 ? "hsl(186,32%,26%)" : c.delta < 0 ? "hsl(37,42%,74%)" : "hsl(30,72%,66%)"} />
               ))}
             </Bar>
           </BarChart>

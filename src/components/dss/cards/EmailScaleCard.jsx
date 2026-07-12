@@ -11,7 +11,7 @@ const Tip = ({ active, payload }) => {
   return (
     <div className="bg-card/95 backdrop-blur border border-border rounded-lg p-2.5 shadow-xl max-w-56">
       <p className="text-xs font-semibold mb-1 line-clamp-2">{d.name}</p>
-      <p className="text-[11px] text-muted-foreground">RPMil: <span className="font-mono text-sky-600">€{d.rpm.toFixed(1)}</span></p>
+      <p className="text-[11px] text-muted-foreground">RPMil: <span className="font-mono text-orange-600">€{d.rpm.toFixed(1)}</span></p>
       <p className="text-[11px] text-muted-foreground">Enviados: <span className="font-mono">{fmtNumber(d.sent)}</span></p>
       <p className="text-[11px] text-muted-foreground">Revenue: <span className="font-mono">{fmtCurrency(d.revenue)}</span></p>
     </div>
@@ -50,7 +50,7 @@ export default function EmailScaleCard({ delay }) {
   const top = byRpm.slice(0, 3);
   const bottom = byRpm.filter(p => p.sent > 500).slice(-3).reverse();
 
-  const color = (p) => p.rpm >= q75 ? "hsl(199,80%,64%)" : p.rpm >= q50 ? "hsl(199,89%,48%)" : "hsl(220,13%,65%)";
+  const color = (p) => p.rpm >= q75 ? "hsl(30,72%,66%)" : p.rpm >= q50 ? "hsl(16,79%,57%)" : "hsl(220,13%,65%)";
 
   const hasData = pts.length >= 3;
 
@@ -78,13 +78,13 @@ export default function EmailScaleCard({ delay }) {
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
             <ScatterChart margin={{ top: 10, right: 12, bottom: 22, left: 6 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,13%,91%)" />
-              <XAxis type="number" dataKey="x" name="Enviados" tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }}
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" />
+              <XAxis type="number" dataKey="x" name="Enviados" tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }}
                 tickFormatter={v => `${(v/1000).toFixed(0)}K`}
-                label={{ value: "Volumen enviado", position: "insideBottom", offset: -12, fontSize: 9, fill: "hsl(220,10%,50%)" }} />
-              <YAxis type="number" dataKey="y" name="RPMil" tick={{ fontSize: 8, fill: "hsl(220,10%,50%)" }}
+                label={{ value: "Volumen enviado", position: "insideBottom", offset: -12, fontSize: 9, fill: "hsl(32,7%,48%)" }} />
+              <YAxis type="number" dataKey="y" name="RPMil" tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }}
                 tickFormatter={v => `€${v.toFixed(0)}`}
-                label={{ value: "€ / 1.000 env.", angle: -90, position: "insideLeft", offset: 16, fontSize: 9, fill: "hsl(220,10%,50%)" }} />
+                label={{ value: "€ / 1.000 env.", angle: -90, position: "insideLeft", offset: 16, fontSize: 9, fill: "hsl(32,7%,48%)" }} />
               <ZAxis type="number" dataKey="z" range={[40, 400]} />
               <Tooltip content={<Tip />} />
               {avgRpm > 0 && <ReferenceLine y={avgRpm} stroke="hsl(220,13%,75%)" strokeDasharray="4 4" />}
