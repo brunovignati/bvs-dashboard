@@ -46,6 +46,7 @@ export default function Marketing() {
 
       {/* 4 · Notoriedad y tráfico (parte alta del embudo) */}
       <Sub>Notoriedad y tráfico</Sub>
+      <p className="text-xs text-muted-foreground -mt-2">Métricas de alcance y audiencia: parte alta del embudo. Miden notoriedad, no ingresos directos.</p>
       <Grid>
         <Ga4TrafficCard delay={0.15} />
         <SocialReachCard delay={0.17} />
