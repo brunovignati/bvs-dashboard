@@ -1,6 +1,4 @@
 import SectionNav from "../SectionNav";
-import ViewHeader from "../ViewHeader";
-import { useComparison } from "@/lib/ComparisonContext";
 import MarketingFunnelCard from "../cards/MarketingFunnelCard";
 import EmailScaleCard from "../cards/EmailScaleCard";
 import PushPerformanceCard from "../cards/PushPerformanceCard";
@@ -24,11 +22,8 @@ const Grid = ({ children }) => (
 // en la web → notoriedad y tráfico (contexto de embudo) → optimización de envíos.
 // Layout bento: embudo/tabla a todo el ancho; el resto en 2 columnas.
 export default function Marketing() {
-  const { rangeB, rangeA, labelRange } = useComparison();
-  const meta = `Datos a ${labelRange(rangeB)} · comparado con ${labelRange(rangeA)}`;
   return (
     <div className="space-y-6">
-      <ViewHeader view="Marketing" section="Canales y campañas" meta={meta} />
       <SectionNav sections={[
         { id: "mk-canales", label: "Canales de venta" },
         { id: "mk-web", label: "Captación web" },

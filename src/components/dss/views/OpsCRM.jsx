@@ -5,17 +5,12 @@
 import CRM from "../domains/CRM";
 import Operaciones from "../domains/Operaciones";
 import SectionNav from "../SectionNav";
-import ViewHeader from "../ViewHeader";
-import { useComparison } from "@/lib/ComparisonContext";
 
 // Producto (temáticas) se fusionó en Growth › Revenue como composición del revenue;
 // "marca propia" ya vivía allí. Ops & CRM queda como mantenimiento: base + envío.
 export default function OpsCRM() {
-  const { rangeB, rangeA, labelRange } = useComparison();
-  const meta = `Datos a ${labelRange(rangeB)} · comparado con ${labelRange(rangeA)}`;
   return (
     <div className="space-y-6">
-      <ViewHeader view="Ops & CRM" section="Retención y operación" meta={meta} />
       <SectionNav sections={[
         { id: "sec-crm", label: "CRM" },
         { id: "sec-envio", label: "Salud de envío" },

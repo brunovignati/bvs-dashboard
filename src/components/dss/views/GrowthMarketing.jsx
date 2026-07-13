@@ -6,8 +6,6 @@
  */
 import DomainHeader from "../DomainHeader";
 import SectionNav from "../SectionNav";
-import ViewHeader from "../ViewHeader";
-import { useComparison } from "@/lib/ComparisonContext";
 import MixChannelCard from "../cards/MixChannelCard";
 import RevenueBridgeCard from "../cards/RevenueBridgeCard";
 import UnattributedRevenueCard from "../cards/UnattributedRevenueCard";
@@ -18,11 +16,8 @@ import Clientes from "../domains/Clientes";
 import Automatizaciones from "../domains/Automatizaciones";
 
 export default function GrowthMarketing() {
-  const { rangeB, rangeA, labelRange } = useComparison();
-  const meta = `Datos a ${labelRange(rangeB)} · comparado con ${labelRange(rangeA)}`;
   return (
     <div className="space-y-6">
-      <ViewHeader view="Growth" section="Adquisición y retención" meta={meta} />
       <SectionNav sections={[
         { id: "sec-revenue", label: "Revenue" },
         { id: "sec-clientes", label: "Clientes" },
