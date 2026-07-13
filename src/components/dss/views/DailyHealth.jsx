@@ -3,8 +3,6 @@
  */
 import DomainHeader from "../DomainHeader";
 import ViewHeader from "../ViewHeader";
-import KpiBand from "../KpiBand";
-import { useEstadoKpis } from "@/lib/dss/useKpis";
 import { useComparison } from "@/lib/ComparisonContext";
 import SaludDelNegocio from "../domains/SaludDelNegocio";
 import SaludResumen from "../domains/SaludResumen";
@@ -12,14 +10,12 @@ import RevenueTargetCard from "../cards/RevenueTargetCard";
 import RevenueEvolutionCard from "../cards/RevenueEvolutionCard";
 
 export default function DailyHealth() {
-  const kpis = useEstadoKpis();
   const { rangeB, rangeA, labelRange } = useComparison();
   const meta = `Datos a ${labelRange(rangeB)} · comparado con ${labelRange(rangeA)}`;
 
   return (
     <div className="space-y-6">
       <ViewHeader view="Estado del negocio" section="Rumbo del mes" meta={meta} />
-      <KpiBand items={kpis} />
 
       <section className="space-y-6 pt-2">
         <DomainHeader title="Rumbo del mes" objetivo="¿Voy camino del objetivo del mes, cómo evoluciona el revenue y de qué línea viene? (acumulado mensual)" index={1} total={2} />
