@@ -90,7 +90,8 @@ export default function EvidenceCard({
         ? { tone: "warn", label: "Vigilar" }
         : null;
   const showMaturity = !statusPill && MATURITY[maturity] && MATURITY[maturity].label;
-  const leftBorder = severity ? "border-l-4 border-l-red-500" : "";
+  // Sin borde grueso: el estado se comunica con el pill (En riesgo/Vigilar), no con el borde.
+  const leftBorder = "";
   const rec = action
     ? { rationale: action }
     : (actions && actions.length ? actions[0] : null);
