@@ -1,25 +1,50 @@
 /**
- * EvidenceCard — el bloque canónico ÚNICO del dashboard.
- *
- * Estructura fija e idéntica en TODOS los bloques y subloques (no desviarse):
- *   1. Pregunta de negocio (encabezado)        + chip de estado del dato
- *   2. KPI principal (1–3 métricas)            (prop `kpis` o `answer`)
- *   3. Visualización (elemento dominante)      (children)
- *   4. Insight — qué significa                 (prop `insight`, opcional)
- *   5. Acción recomendada — qué hacer          (prop `action` o `actions[0]`)
- *   6. Fuente del dato                         (prop `note`)
- *
- * Escala tipográfica fija: pregunta = text-base/semibold · KPI = text-3xl/bold ·
- * insight = text-sm · acción = text-sm · fuente = text-[10px]. Paleta de dos colores.
+ * EvidenceCard — bloque canónico ÚNICO del dashboard.
+ *   1. Pregunta + distintivo(s) de fuente + asterisco (abre "fuente y método")
+ *   2. KPI principal (kpis o answer)
+ *   3. Visualización (children)
+ *   4. Acción — OCULTA por defecto; se muestra/oculta con el icono de ojo.
+ * Estado semántico por pill (verde/ámbar/rojo). Sin bordes gruesos.
  */
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { MATURITY } from "@/lib/dss/dssUtils";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Eye, EyeOff } from "lucide-react";
+
+// ── Distintivos de fuente (marca por color + inicial; no son los logos oficiales) ──
+const SOURCES = {
+  connectif: { short: "C", title: "Connectif", cls: "bg-[#2f5c9e] text-white" },
+  ga4:       { short: "GA", title: "Google Analytics", cls: "bg-[#e8730b] text-white" },
+  metricool: { short: "M", title: "Metricool", cls: "bg-[#c9f24d] text-neutral-900" },
+};
+function detectSources(note) {
+  if (!note) return [];
+  const out = [];
+  if (/connectif/i.test(note)) out.push("connectif");
+  if (/ga4|google analytics|analytics/i.test(note)) out.push("ga4");
+  if (/metricool/i.test(note)) out.push("metricool");
+  return out;
+}
+function SourceBadges({ ids }) {
+  if (!ids.length) return null;
+  return (
+    <span className="inline-flex items-center gap-1 ml-1.5 align-middle">
+      {ids.map((id) => {
+        const s = SOURCES[id];
+        return (
+          <span key={id} title={`Fuente: ${s.title}`}
+            className={`inline-flex items-center justify-center h-4 min-w-4 px-1 rounded text-[9px] font-bold leading-none ${s.cls}`}>
+            {s.short}
+          </span>
+        );
+      })}
+    </span>
+  );
+}
 
 function MaturityChip({ state = "green" }) {
   const m = MATURITY[state] || MATURITY.green;
-  if (!m.label) return null; // "al día" no lleva chip: elimina el badge repetido
+  if (!m.label) return null;
   return (
     <span title={m.tip}
       className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${m.cls} whitespace-nowrap cursor-help`}>
@@ -28,7 +53,6 @@ function MaturityChip({ state = "green" }) {
   );
 }
 
-// Color semántico de estado (prueba aprobada): verde/ámbar/rojo.
 const PILL = {
   good: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
   warn: "bg-amber-500/10 text-amber-600 border-amber-500/20",
@@ -44,15 +68,8 @@ function StatusPill({ tone = "good", label }) {
   );
 }
 
-// El enunciado principal se tiñe según su estado (semántico).
-const TONE = {
-  good:    "text-emerald-600",
-  bad:     "text-red-600",
-  warn:    "text-amber-600",
-  neutral: "text-foreground",
-};
+const TONE = { good: "text-emerald-600", bad: "text-red-600", warn: "text-amber-600", neutral: "text-foreground" };
 
-// Delta con dirección semántica: sube = verde, baja = rojo.
 function Delta({ value, suffix = "%" }) {
   if (value === null || value === undefined || Number.isNaN(value)) return null;
   const Icon = value > 0 ? TrendingUp : value < 0 ? TrendingDown : Minus;
@@ -66,35 +83,30 @@ function Delta({ value, suffix = "%" }) {
 
 export default function EvidenceCard({
   question,
-  kpis,                   // [{ value, label, delta?, deltaSuffix? }] — franja de 1–3 KPIs
-  answer,                 // KPI único (fallback si no hay `kpis`)
+  kpis,
+  answer,
   answerTone = "neutral",
-  context,                // matiz breve bajo el KPI (período, deltas)
+  context,
   maturity = "green",
-  severity,               // 'high'|'medium' resalta el borde izquierdo
-  insight,                // 4. qué significa
-  action,                 // 5. qué hacer (string). Si no, se usa actions[0]
-  actions = [],           // [{ verb, rationale }]
-  note,                   // 6. fuente del dato
-  children,               // 3. la visualización
-  status,                 // { tone:'good'|'warn'|'bad', label } — pill de estado explícito
-  delay = 0,              // (compat; sin animación)
+  severity,
+  insight,               // (compat; ya no se renderiza)
+  action,
+  actions = [],
+  note,
+  children,
+  status,
+  delay = 0,
 }) {
   const [showNote, setShowNote] = useState(false);
-  // Estado semántico: explícito > riesgo (severity) > answerTone malo. Verde no lleva pill (solo se marcan excepciones).
+  const [showAction, setShowAction] = useState(false);
   const statusPill = status
     ? status
-    : severity
-      ? { tone: "bad", label: "En riesgo" }
-      : answerTone === "bad"
-        ? { tone: "warn", label: "Vigilar" }
-        : null;
+    : severity ? { tone: "bad", label: "En riesgo" }
+    : answerTone === "bad" ? { tone: "warn", label: "Vigilar" }
+    : null;
   const showMaturity = !statusPill && MATURITY[maturity] && MATURITY[maturity].label;
-  // Sin borde grueso: el estado se comunica con el pill (En riesgo/Vigilar), no con el borde.
-  const leftBorder = "";
-  const rec = action
-    ? { rationale: action }
-    : (actions && actions.length ? actions[0] : null);
+  const rec = action ? { rationale: action } : (actions && actions.length ? actions[0] : null);
+  const sources = detectSources(note);
 
   return (
     <motion.div
@@ -102,14 +114,32 @@ export default function EvidenceCard({
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-40px" }}
       transition={{ duration: 0.4, delay: delay || 0, ease: [0.22, 1, 0.36, 1] }}
-      className={`h-full bg-card border border-border/70 rounded-2xl p-6 shadow-sm transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 hover:border-primary/30 ${leftBorder}`}>
-      {/* 1. Pregunta + estado */}
+      className="h-full bg-card border border-border/70 rounded-2xl p-6 shadow-sm transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5 hover:border-primary/30">
+      {/* 1. Pregunta + fuente(s) + asterisco */}
       <div className="flex items-start justify-between gap-3 mb-3">
-        <h3 className="text-base font-semibold leading-snug text-foreground">{question}</h3>
+        <h3 className="text-base font-semibold leading-snug text-foreground">
+          {question}
+          {note && (
+            <span className="relative inline-block">
+              <button type="button" onClick={() => setShowNote((v) => !v)} aria-label="Fuente y método" title="Fuente y método"
+                className="align-super text-[12px] font-bold text-primary hover:opacity-70 cursor-pointer ml-0.5">*</button>
+              {showNote && (
+                <>
+                  <span className="fixed inset-0 z-30" onClick={() => setShowNote(false)} aria-hidden="true" />
+                  <span className="absolute left-0 top-full mt-1.5 z-40 block w-64 max-w-[80vw] bg-popover border border-border rounded-xl shadow-lg p-3 text-left font-normal">
+                    <span className="block text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-1">Fuente y método</span>
+                    <span className="block text-[11px] text-muted-foreground leading-relaxed italic">{note}</span>
+                  </span>
+                </>
+              )}
+            </span>
+          )}
+          <SourceBadges ids={sources} />
+        </h3>
         {statusPill ? <StatusPill tone={statusPill.tone} label={statusPill.label} /> : showMaturity ? <MaturityChip state={maturity} /> : null}
       </div>
 
-      {/* 2. KPI principal (franja o único) */}
+      {/* 2. KPI principal */}
       {kpis && kpis.length > 0 ? (
         <div className="flex flex-wrap gap-x-8 gap-y-3">
           {kpis.slice(0, 3).map((k, i) => (
@@ -127,42 +157,25 @@ export default function EvidenceCard({
       ) : null}
       {context && <p className="text-xs text-muted-foreground mt-1.5">{context}</p>}
 
-      {/* 3. Visualización (elemento dominante) */}
+      {/* 3. Visualización */}
       {children && <div className="mt-4">{children}</div>}
 
-      {/* Acción — ÚNICO bloque tras el dato. La fuente y el método se consultan en una
-          burbuja que se abre desde el asterisco (*) al final de la acción. */}
-      {(rec || note) && (
-        <div className="mt-4 relative">
-          <div className="flex items-start gap-2 rounded-xl bg-primary/[0.06] border border-primary/15 px-3 py-2">
-            <span className="text-[10px] font-bold uppercase tracking-wide text-primary mt-0.5 shrink-0">Acción</span>
-            <p className="text-sm text-foreground/90 leading-snug">
-              {rec ? (
-                <>
-                  {rec.verb && <span className="font-semibold capitalize">{rec.verb} · </span>}
-                  {rec.rationale}
-                </>
-              ) : "Sin acción hoy."}
-              {note && (
-                <button
-                  type="button"
-                  onClick={() => setShowNote((v) => !v)}
-                  aria-label="Ver fuente y método"
-                  title="Fuente y método"
-                  className="ml-0.5 align-super text-[12px] font-bold text-primary hover:opacity-70 cursor-pointer">*</button>
-              )}
-            </p>
-          </div>
-
-          {/* Burbuja de fuente y método */}
-          {showNote && note && (
-            <>
-              <div className="fixed inset-0 z-30" onClick={() => setShowNote(false)} aria-hidden="true" />
-              <div className="absolute right-0 z-40 mt-1.5 w-72 max-w-[85vw] bg-popover border border-border rounded-xl shadow-lg p-3">
-                <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-1">Fuente y método</p>
-                <p className="text-[11px] text-muted-foreground leading-relaxed italic">{note}</p>
-              </div>
-            </>
+      {/* 4. Acción — oculta por defecto; se revela con el ojo */}
+      {rec && (
+        <div className="mt-4">
+          <button type="button" onClick={() => setShowAction((v) => !v)}
+            className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary hover:opacity-70">
+            {showAction ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+            {showAction ? "Ocultar acción" : "Ver acción"}
+          </button>
+          {showAction && (
+            <div className="mt-2 flex items-start gap-2 rounded-xl bg-primary/[0.06] border border-primary/15 px-3 py-2">
+              <span className="text-[10px] font-bold uppercase tracking-wide text-primary mt-0.5 shrink-0">Acción</span>
+              <p className="text-sm text-foreground/90 leading-snug">
+                {rec.verb && <span className="font-semibold capitalize">{rec.verb} · </span>}
+                {rec.rationale}
+              </p>
+            </div>
           )}
         </div>
       )}
