@@ -5,6 +5,7 @@ import PushPerformanceCard from "../cards/PushPerformanceCard";
 import PushChannelTrendCard from "../cards/PushChannelTrendCard";
 import WebStickyCard from "../cards/WebStickyCard";
 import WebContentTrendCard from "../cards/WebContentTrendCard";
+import WebConversionCard from "../cards/WebConversionCard";
 import BestDayCard from "../cards/BestDayCard";
 import Ga4TrafficCard from "../cards/Ga4TrafficCard";
 import SocialReachCard from "../cards/SocialReachCard";
@@ -47,6 +48,7 @@ export default function Marketing() {
       <Grid>
         <WebStickyCard delay={0.11} />
         <WebContentTrendCard delay={0.13} />
+        <div className="lg:col-span-2"><WebConversionCard delay={0.15} /></div>
       </Grid>
 
       {/* 4 · Notoriedad y tráfico (parte alta del embudo) */}
