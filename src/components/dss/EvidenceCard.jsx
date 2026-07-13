@@ -100,8 +100,8 @@ export default function EvidenceCard({
     : null;
   const showMaturity = !statusPill && MATURITY[maturity] && MATURITY[maturity].label;
   const rec = action ? { rationale: action } : (actions && actions.length ? actions[0] : null);
-  // Fuente explícita; por defecto Connectif (origen de casi todos los datos del panel).
-  const sources = (sourcesProp && sourcesProp.length) ? sourcesProp : ["connectif"];
+  // Fuente SIEMPRE explícita por carta (auditada). Sin default: si no se declara, no hay logo.
+  const sources = (sourcesProp && sourcesProp.length) ? sourcesProp : [];
 
   return (
     <motion.div

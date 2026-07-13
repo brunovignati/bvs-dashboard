@@ -29,7 +29,7 @@ export default function MixChannelCard({ delay }) {
   const topPct = top && lastAttr>0 ? (top[1]/lastAttr)*100 : 0;
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿De dónde viene cada euro (mix de canal)?"
       kpis={hasData && top ? [
         { value: top[0], label: "Canal líder" },

@@ -19,7 +19,7 @@ export default function BestDayCard({ delay }) {
   const best = hasData ? [...rows].sort((a,b)=>b.rpm-a.rpm)[0] : null;
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿Cuál es el mejor día para enviar?"
       answer={hasData && best ? best.full : "Sin datos"}
       answerTone={hasData ? "good" : "neutral"}

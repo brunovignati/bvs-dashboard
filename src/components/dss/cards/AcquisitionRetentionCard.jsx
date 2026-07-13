@@ -18,7 +18,7 @@ export default function AcquisitionRetentionCard({ delay }) {
   const trend = hasData ? last.pctRec - first.pctRec : 0;
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿Dependemos de adquisición o de retención?"
       answer={hasData ? `${last.pctRec.toFixed(0)}% recurrentes` : "Sin datos"}
       answerTone={hasData ? (last.pctRec >= 60 ? "good" : last.pctRec >= 40 ? "warn" : "bad") : "neutral"}

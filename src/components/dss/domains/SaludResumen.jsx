@@ -63,7 +63,7 @@ export default function SaludResumen() {
   const hasData = nutraRevB > 0 || vetRevB > 0;
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿Cómo se reparte el revenue por línea de negocio?"
       answer={!hasData ? "Sin datos para el período seleccionado" : undefined}
       maturity="green"

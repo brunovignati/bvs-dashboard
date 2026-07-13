@@ -30,7 +30,7 @@ export default function OmnichannelCard({ delay }) {
   const last = hasData ? rows[rows.length - 1] : null;
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿Cómo se reparte la venta por canal (online / retail / omnicanal)?"
       answer={hasData
         ? present.map(p => `${p.label} ${Math.round(last[p.label] || 0)}%`).join(" · ")

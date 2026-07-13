@@ -20,7 +20,7 @@ export default function SegmentsCard({ delay }) {
   const total = clean.reduce((s,r)=>s+(r.contacts||0),0);
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿Cómo se compone mi base de segmentos (incl. RFM)?"
       answer={hasData ? `${fmtNumber(clean.length)} segmentos activos` : "Sin datos"}
       answerTone="neutral"

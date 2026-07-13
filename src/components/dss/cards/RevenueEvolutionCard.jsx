@@ -37,7 +37,7 @@ export default function RevenueEvolutionCard({ delay }) {
   const avgRev = chart.length ? chart.reduce((s, m) => s + m.revenue, 0) / chart.length : 0;
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿Cómo evoluciona el revenue mes a mes?"
       kpis={hasData ? [
         { value: fmtCurrency(last.revenue), label: `Revenue ${M[last.month]} ${last.year}`, delta: mom == null ? undefined : mom },

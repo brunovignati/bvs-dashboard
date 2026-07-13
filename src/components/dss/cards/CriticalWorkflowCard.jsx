@@ -4,7 +4,7 @@ import { fmtNumber } from "@/lib/dashboardData";
 export default function CriticalWorkflowCard({ workflows, anyStalled, hasData, delay }) {
   if (!hasData) {
     return (
-      <EvidenceCard
+      <EvidenceCard sources={["connectif"]}
         question="¿Un workflow crítico dejó de enviar o convertir?"
         answer="Sin datos diarios de workflow"
         answerTone="neutral"
@@ -21,7 +21,7 @@ export default function CriticalWorkflowCard({ workflows, anyStalled, hasData, d
     : "Los flujos de carrito y reactivación siguen enviando con normalidad.";
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿Un workflow crítico dejó de enviar o convertir?"
       answer={answer}
       answerTone={anyStalled ? "bad" : "good"}

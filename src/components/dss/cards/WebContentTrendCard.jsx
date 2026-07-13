@@ -35,7 +35,7 @@ export default function WebContentTrendCard({ delay }) {
 
   if (!hasData) {
     return (
-      <EvidenceCard question="¿Cómo evoluciona la captación por contenido web?" answer="Sin datos suficientes"
+      <EvidenceCard sources={["connectif"]} question="¿Cómo evoluciona la captación por contenido web?" answer="Sin datos suficientes"
         answerTone="neutral" maturity="amber" delay={delay}
         actions={[{ verb: "investigar", rationale: "Faltan días de contenido web (daily_sticky) en el período." }]}
         note="Fuente: Connectif · daily_sticky." />
@@ -46,7 +46,7 @@ export default function WebContentTrendCard({ delay }) {
   const totRev = rows.reduce((s, r) => s + r.revenue, 0);
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿Cómo evoluciona la captación por contenido web?"
       answer={`${fmtNumber(totClicks)} clics · ${fmtCurrency(totRev)} en el período`}
       answerTone="neutral"

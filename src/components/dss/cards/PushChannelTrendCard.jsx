@@ -32,7 +32,7 @@ export default function PushChannelTrendCard({ delay }) {
 
   if (!hasData) {
     return (
-      <EvidenceCard question="¿Cuánto aporta el push como canal y cómo evoluciona?" answer="Sin datos suficientes"
+      <EvidenceCard sources={["connectif"]} question="¿Cuánto aporta el push como canal y cómo evoluciona?" answer="Sin datos suficientes"
         answerTone="neutral" maturity="amber" delay={delay}
         actions={[{ verb: "investigar", rationale: "Faltan meses de rendimiento/ventas de push." }]}
         note="Fuente: Connectif · rendimiento_push + ventas_push." />
@@ -44,7 +44,7 @@ export default function PushChannelTrendCard({ delay }) {
   const revTrend = prev && prev.revenue > 0 ? ((last.revenue - prev.revenue) / prev.revenue) * 100 : null;
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿Cuánto aporta el push como canal y cómo evoluciona?"
       answer={`${fmtCurrency(last.revenue)}/mes · conversión ${last.conv.toFixed(2)}%`}
       answerTone="neutral"

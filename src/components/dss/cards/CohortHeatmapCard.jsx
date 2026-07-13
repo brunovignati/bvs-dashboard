@@ -21,7 +21,7 @@ export default function CohortHeatmapCard({ delay }) {
 
   if (!hasData) {
     return (
-      <EvidenceCard
+      <EvidenceCard sources={["connectif"]}
         question="¿Cómo retiene y cuánto vale cada cohorte? (LTV real)"
         answer="Se enciende con el informe de cohortes"
         answerTone="neutral"
@@ -62,7 +62,7 @@ export default function CohortHeatmapCard({ delay }) {
   const fg = (v) => v != null && v >= 55 ? "#fff" : "hsl(220,10%,30%)";
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿Cómo retiene y cuánto vale cada cohorte? (LTV real)"
       answer={r1 != null ? `Retención mes 1: ${r1.toFixed(0)}%` : "Cohortes disponibles"}
       answerTone="neutral"

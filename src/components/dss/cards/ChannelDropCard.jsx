@@ -4,7 +4,7 @@ import EvidenceCard from "../EvidenceCard";
 export default function ChannelDropCard({ channels, worst, hasAttribution, delay }) {
   if (!hasAttribution) {
     return (
-      <EvidenceCard
+      <EvidenceCard sources={["connectif"]}
         question="¿Algún canal atribuido se desplomó de un día a otro?"
         answer="Sin atribución diaria"
         answerTone="neutral"
@@ -22,7 +22,7 @@ export default function ChannelDropCard({ channels, worst, hasAttribution, delay
     : "Ningún canal cae más de un 25% respecto a su media reciente.";
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿Algún canal atribuido se desplomó de un día a otro?"
       answer={answer}
       answerTone={anyDrop ? "bad" : "good"}

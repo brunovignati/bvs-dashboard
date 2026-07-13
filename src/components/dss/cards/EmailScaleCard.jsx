@@ -55,7 +55,7 @@ export default function EmailScaleCard({ delay }) {
   const hasData = pts.length >= 3;
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿Rinde el email y qué campañas escalo?"
       kpis={hasData ? [
         { value: `${openRate.toFixed(1)}%`, label: `Apertura ±${openW.half.toFixed(1)}pp · ${periodNote}` },

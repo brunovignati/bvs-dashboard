@@ -30,7 +30,7 @@ export default function ReactivationCard({ delay }) {
   const total = agg.reduce((s, w) => s + w.revenue, 0);
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿Qué workflows de reactivación / reabastecimiento rinden?"
       answer={hasData && winner ? winner.name : "Sin flujos detectados"}
       answerTone={hasData ? "good" : "neutral"}

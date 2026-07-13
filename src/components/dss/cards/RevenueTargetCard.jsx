@@ -100,7 +100,7 @@ export default function RevenueTargetCard({ delay }) {
                : "Refuerza campañas/promoción para cerrar la brecha antes de fin de período.");
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿Voy camino de cumplir el objetivo de revenue?"
       kpis={kpis}
       answer={!hasData ? "Sin datos para el período seleccionado" : undefined}

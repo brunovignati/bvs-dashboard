@@ -21,7 +21,7 @@ export default function BaseHealthCard({ delay }) {
   const last = rows[rows.length - 1];
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿Está sana la base de contactos?"
       answer={hasData ? `${fmtNumber(last.base)} suscriptores` : "Sin datos"}
       answerTone={hasData ? (last.neto >= 0 ? "good" : "bad") : "neutral"}

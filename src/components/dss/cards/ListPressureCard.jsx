@@ -47,7 +47,7 @@ export default function ListPressureCard({ delay }) {
 
   if (!hasData) {
     return (
-      <EvidenceCard question="¿La presión de envío está quemando la base?" answer="Datos insuficientes" answerTone="neutral"
+      <EvidenceCard sources={["connectif"]} question="¿La presión de envío está quemando la base?" answer="Datos insuficientes" answerTone="neutral"
         maturity="amber" delay={delay}
         actions={[{ verb: "investigar", rationale: "Se necesitan varios meses con envíos y bajas de lista para ver la relación." }]}
         note="Fuente: Connectif · email_campaigns (envíos) + subscribers (bajas de lista)." />
@@ -62,7 +62,7 @@ export default function ListPressureCard({ delay }) {
   const strong = corr != null && corr >= 0.4;
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿La presión de envío está quemando la base?"
       answer={`${last.rate.toFixed(2)}% de baja este mes${rateTrend ? ` (${rateTrend >= 0 ? "+" : ""}${rateTrend.toFixed(2)} pts vs mes anterior)` : ""}`}
       answerTone={strong ? "bad" : "good"}

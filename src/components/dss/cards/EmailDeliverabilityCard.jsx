@@ -46,7 +46,7 @@ export default function EmailDeliverabilityCard({ delay }) {
 
   if (!hasData) {
     return (
-      <EvidenceCard
+      <EvidenceCard sources={["connectif"]}
         question="¿Se mantiene el interés por el email?"
         answer="Sin datos suficientes"
         answerTone="neutral"
@@ -67,7 +67,7 @@ export default function EmailDeliverabilityCard({ delay }) {
   const drop = mean > 0 && last[key] < mean * 0.92 && mean > last[key] + last[halfKey];
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿Se mantiene el interés por el email?"
       kpis={[
         { value: `${last.ctr.toFixed(1)}%`, label: "Clic / envío · señal fiable" },

@@ -41,14 +41,14 @@ export default function CustomerValueCard({ delay }) {
 
   if (!hasData) {
     return (
-      <EvidenceCard question="¿Cuánto vale un cliente? (estimación agregada)" answer="Datos insuficientes" answerTone="neutral"
+      <EvidenceCard sources={["connectif"]} question="¿Cuánto vale un cliente? (estimación agregada)" answer="Datos insuficientes" answerTone="neutral"
         maturity="amber" delay={delay}
         actions={[{verb:"investigar", rationale:"Se necesita histórico de compradores y revenue para estimar."}]} />
     );
   }
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿Cuánto vale un cliente? (estimación agregada)"
       answer={`≈ ${fmtCurrency(revPerBuyer)} por comprador/mes`}
       answerTone="neutral"

@@ -17,7 +17,7 @@ export default function WebStickyCard({ delay }) {
   const best = active[0];
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿Convierte el contenido web / sticky? (captación)"
       answer={hasData ? (best ? `Top: ${best.name}` : "Sin piezas activas") : "Sin datos"}
       answerTone={hasData && best ? "good" : "warn"}

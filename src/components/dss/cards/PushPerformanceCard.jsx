@@ -67,7 +67,7 @@ export default function PushPerformanceCard({ delay }) {
   );
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿Qué campañas push rinden y cuáles no?"
       answer={hasData && top[0] ? `Top: ${top[0].name}` : "Sin campañas suficientes"}
       answerTone={hasData ? "good" : "neutral"}

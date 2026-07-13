@@ -28,7 +28,7 @@ export default function OwnBrandCard({ delay }) {
   const trend = hasData ? last.pct - first.pct : 0;
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿Cómo va la marca propia y su peso sobre el total?"
       answer={hasData ? `${last.pct.toFixed(1)}% del revenue` : "Sin datos"}
       answerTone={hasData ? (trend >= 0 ? "good" : "warn") : "neutral"}

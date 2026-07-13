@@ -121,7 +121,7 @@ export default function RevenueBridgeCard({ delay }) {
   ];
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿Qué mueve el revenue: nº de pedidos o ticket medio?"
       kpis={hasData ? [
         { value: fmtCurrency(cur.revenue), label: `Revenue · ${curLbl}`, delta: revD },

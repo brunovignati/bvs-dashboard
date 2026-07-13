@@ -18,7 +18,7 @@ export default function RevenueDailyCard({ series, lastValue, mean, std, outside
     : [{ verb: "mantener", rationale: "Sin anomalía: ninguna acción urgente hoy." }];
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿El revenue de ayer está dentro del rango normal?"
       answer={answer}
       answerTone={answerTone}

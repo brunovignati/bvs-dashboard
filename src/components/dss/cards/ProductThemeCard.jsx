@@ -41,7 +41,7 @@ export default function ProductThemeCard({ delay }) {
 
   if (!hasData) {
     return (
-      <EvidenceCard question="¿Qué temáticas de producto funcionan mejor? (inferido de nombres de campaña)" answer="Sin señal suficiente" answerTone="neutral"
+      <EvidenceCard sources={["connectif"]} question="¿Qué temáticas de producto funcionan mejor? (inferido de nombres de campaña)" answer="Sin señal suficiente" answerTone="neutral"
         maturity="amber" delay={delay}
         note="No se detectan suficientes temáticas de producto en los nombres de campaña."
         actions={[{verb:"investigar", rationale:"Nomenclatura de campañas poco descriptiva: dificulta clasificar por producto."}]} />
@@ -49,7 +49,7 @@ export default function ProductThemeCard({ delay }) {
   }
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿Qué temáticas de producto funcionan mejor? (inferido de nombres de campaña)"
       answer={top ? `${top.label}` : "—"}
       answerTone="good"

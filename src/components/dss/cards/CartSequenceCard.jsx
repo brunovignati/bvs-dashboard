@@ -34,7 +34,7 @@ export default function CartSequenceCard({ delay }) {
 
   if (!hasData) {
     return (
-      <EvidenceCard question="¿Qué email de la secuencia de carrito recupera más?" answer="Sin datos suficientes"
+      <EvidenceCard sources={["connectif"]} question="¿Qué email de la secuencia de carrito recupera más?" answer="Sin datos suficientes"
         answerTone="neutral" maturity="amber" delay={delay}
         actions={[{ verb: "investigar", rationale: "Faltan datos de los emails de carrito." }]}
         note="Fuente: Connectif · carrito (detalle por email de la secuencia)." />
@@ -42,7 +42,7 @@ export default function CartSequenceCard({ delay }) {
   }
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿Qué email de la secuencia de carrito recupera más?"
       answer={`${best.name} · ${fmtCurrency(best.revenue)}`}
       answerTone="good"

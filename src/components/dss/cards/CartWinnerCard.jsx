@@ -32,7 +32,7 @@ export default function CartWinnerCard({ delay }) {
   ] : [{ verb: "investigar", rationale: "Aún no hay suficientes flujos de carrito para comparar." }];
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿Qué workflow de carrito gana (incl. A/B) y cuál consolido?"
       answer={hasData && winner ? winner.name : "Sin datos de carrito"}
       answerTone={hasData ? "good" : "neutral"}

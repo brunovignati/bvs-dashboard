@@ -25,7 +25,7 @@ export default function SendVolumeCard({ delay }) {
   const peak = hasData ? Math.max(...rows.map(r=>r.Email+r.Push)) : 0;
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿Hay picos operativos de envío?"
       answer={hasData ? `Pico ${fmtNumber(peak)} env./día` : "Sin datos diarios"}
       answerTone="neutral"

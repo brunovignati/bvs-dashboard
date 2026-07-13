@@ -30,7 +30,7 @@ export default function MarketingFunnelCard({ delay }) {
 
   if (!hasData) {
     return (
-      <EvidenceCard question="¿Está funcionando el marketing? (embudo completo)" answer="Sin envíos en el período"
+      <EvidenceCard sources={["connectif"]} question="¿Está funcionando el marketing? (embudo completo)" answer="Sin envíos en el período"
         answerTone="neutral" maturity="amber" delay={delay}
         actions={[{ verb: "investigar", rationale: "No hay campañas de email con envíos en el período seleccionado." }]} />
     );
@@ -55,7 +55,7 @@ export default function MarketingFunnelCard({ delay }) {
   const worst = steps.reduce((m, st) => (st.ci.mid < m.ci.mid ? st : m), steps[0]);
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif"]}
       question="¿Está funcionando el marketing? (embudo completo)"
       answer={`${fmtCurrency(T.revenue)} · ${fmtNumber(T.purchases)} compras`}
       answerTone="neutral"
