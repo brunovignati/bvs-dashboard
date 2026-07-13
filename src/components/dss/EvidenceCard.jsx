@@ -28,20 +28,35 @@ function MaturityChip({ state = "green" }) {
   );
 }
 
-// Un solo color para el enunciado bajo la pregunta: coherencia visual en TODAS
-// las tarjetas. El matiz (sube/baja) se transmite solo por los deltas numéricos.
+// Color semántico de estado (prueba aprobada): verde/ámbar/rojo.
+const PILL = {
+  good: "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+  warn: "bg-amber-500/10 text-amber-600 border-amber-500/20",
+  bad:  "bg-red-500/10 text-red-600 border-red-500/20",
+};
+function StatusPill({ tone = "good", label }) {
+  if (!label) return null;
+  return (
+    <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full border whitespace-nowrap ${PILL[tone] || PILL.good}`}>
+      <span className={`w-1.5 h-1.5 rounded-full ${tone === "bad" ? "bg-red-500" : tone === "warn" ? "bg-amber-500" : "bg-emerald-500"}`} />
+      {label}
+    </span>
+  );
+}
+
+// El enunciado principal se tiñe según su estado (semántico).
 const TONE = {
-  good:    "text-foreground",
-  bad:     "text-foreground",
-  warn:    "text-foreground",
+  good:    "text-emerald-600",
+  bad:     "text-red-600",
+  warn:    "text-amber-600",
   neutral: "text-foreground",
 };
 
-// Delta en paleta de dos colores: sube = predominante, baja = neutro.
+// Delta con dirección semántica: sube = verde, baja = rojo.
 function Delta({ value, suffix = "%" }) {
   if (value === null || value === undefined || Number.isNaN(value)) return null;
   const Icon = value > 0 ? TrendingUp : value < 0 ? TrendingDown : Minus;
-  const color = value > 0 ? "text-primary" : "text-muted-foreground";
+  const color = value > 0 ? "text-emerald-600" : value < 0 ? "text-red-600" : "text-muted-foreground";
   return (
     <span className={`inline-flex items-center gap-0.5 text-xs font-semibold ${color}`}>
       <Icon className="w-3 h-3" />{value > 0 ? "+" : ""}{value.toFixed(1)}{suffix}
@@ -62,10 +77,20 @@ export default function EvidenceCard({
   actions = [],           // [{ verb, rationale }]
   note,                   // 6. fuente del dato
   children,               // 3. la visualización
+  status,                 // { tone:'good'|'warn'|'bad', label } — pill de estado explícito
   delay = 0,              // (compat; sin animación)
 }) {
   const [showNote, setShowNote] = useState(false);
-  const leftBorder = severity ? "border-l-4 border-l-primary" : "";
+  // Estado semántico: explícito > riesgo (severity) > answerTone malo. Verde no lleva pill (solo se marcan excepciones).
+  const statusPill = status
+    ? status
+    : severity
+      ? { tone: "bad", label: "En riesgo" }
+      : answerTone === "bad"
+        ? { tone: "warn", label: "Vigilar" }
+        : null;
+  const showMaturity = !statusPill && MATURITY[maturity] && MATURITY[maturity].label;
+  const leftBorder = severity ? "border-l-4 border-l-red-500" : "";
   const rec = action
     ? { rationale: action }
     : (actions && actions.length ? actions[0] : null);
@@ -80,7 +105,7 @@ export default function EvidenceCard({
       {/* 1. Pregunta + estado */}
       <div className="flex items-start justify-between gap-3 mb-3">
         <h3 className="text-base font-semibold leading-snug text-foreground">{question}</h3>
-        <MaturityChip state={maturity} />
+        {statusPill ? <StatusPill tone={statusPill.tone} label={statusPill.label} /> : showMaturity ? <MaturityChip state={maturity} /> : null}
       </div>
 
       {/* 2. KPI principal (franja o único) */}

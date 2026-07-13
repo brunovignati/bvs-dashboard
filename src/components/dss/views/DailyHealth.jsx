@@ -1,28 +1,34 @@
 /**
- * DailyHealth — "café de la mañana": estado del negocio + desviaciones recientes
- * + progreso a objetivo y evolución del revenue. Reúne Salud del Negocio y las dos
- * tarjetas de cabecera de Revenue (objetivo + evolución). El resto de Revenue vive
- * en Growth & Marketing (cada tarjeta en un único sitio, sin duplicar).
+ * DailyHealth — "café de la mañana": banda-resumen + rumbo del mes + alertas.
  */
 import DomainHeader from "../DomainHeader";
+import ViewHeader from "../ViewHeader";
+import KpiBand from "../KpiBand";
+import { useEstadoKpis } from "@/lib/dss/useKpis";
+import { useComparison } from "@/lib/ComparisonContext";
 import SaludDelNegocio from "../domains/SaludDelNegocio";
 import SaludResumen from "../domains/SaludResumen";
 import RevenueTargetCard from "../cards/RevenueTargetCard";
 import RevenueEvolutionCard from "../cards/RevenueEvolutionCard";
 
-// Cascada: objetivo → evolución del revenue → su composición por línea → y por último
-// las desviaciones recientes. Sin el header redundante "Salud del negocio".
 export default function DailyHealth() {
+  const kpis = useEstadoKpis();
+  const { rangeB, rangeA, labelRange } = useComparison();
+  const meta = `Datos a ${labelRange(rangeB)} · comparado con ${labelRange(rangeA)}`;
+
   return (
-    <div className="space-y-8">
-      <section className="space-y-6">
-        <DomainHeader title="Rumbo del mes" objetivo="¿Voy camino del objetivo del mes, cómo evoluciona el revenue y de qué línea viene? (acumulado mensual)" />
+    <div className="space-y-6">
+      <ViewHeader view="Estado del negocio" section="Rumbo del mes" meta={meta} />
+      <KpiBand items={kpis} />
+
+      <section className="space-y-6 pt-2">
+        <DomainHeader title="Rumbo del mes" objetivo="¿Voy camino del objetivo del mes, cómo evoluciona el revenue y de qué línea viene? (acumulado mensual)" index={1} total={2} />
         <RevenueTargetCard delay={0.03} />
         <RevenueEvolutionCard delay={0.05} />
         <SaludResumen />
       </section>
       <section className="space-y-6">
-        <DomainHeader title="Alertas de los últimos días" objetivo="¿Qué se ha desviado de lo normal en los últimos días? (seguimiento diario)" />
+        <DomainHeader title="Alertas de los últimos días" objetivo="¿Qué se ha desviado de lo normal en los últimos días? (seguimiento diario)" index={2} total={2} />
         <SaludDelNegocio />
       </section>
     </div>

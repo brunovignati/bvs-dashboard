@@ -5,18 +5,27 @@
 import CRM from "../domains/CRM";
 import Operaciones from "../domains/Operaciones";
 import SectionNav from "../SectionNav";
+import ViewHeader from "../ViewHeader";
+import KpiBand from "../KpiBand";
+import { useOpsKpis } from "@/lib/dss/useKpis";
+import { useComparison } from "@/lib/ComparisonContext";
 
 // Producto (temáticas) se fusionó en Growth › Revenue como composición del revenue;
 // "marca propia" ya vivía allí. Ops & CRM queda como mantenimiento: base + envío.
 export default function OpsCRM() {
+  const kpis = useOpsKpis();
+  const { rangeB, rangeA, labelRange } = useComparison();
+  const meta = `Datos a ${labelRange(rangeB)} · comparado con ${labelRange(rangeA)}`;
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
+      <ViewHeader view="Ops & CRM" section="Retención y operación" meta={meta} />
+      <KpiBand items={kpis} />
       <SectionNav sections={[
         { id: "sec-crm", label: "CRM" },
         { id: "sec-envio", label: "Salud de envío" },
       ]} />
-      <div id="sec-crm" className="scroll-mt-28"><CRM /></div>
-      <div id="sec-envio" className="scroll-mt-28"><Operaciones /></div>
+      <div id="sec-crm" className="scroll-mt-28"><CRM index={1} total={2} /></div>
+      <div id="sec-envio" className="scroll-mt-28"><Operaciones index={2} total={2} /></div>
     </div>
   );
 }
