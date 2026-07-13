@@ -26,12 +26,8 @@ from google.oauth2 import service_account
 
 GA4_PROPERTY_ID = os.environ["GA4_PROPERTY_ID"]
 GA4_CREDENTIALS_JSON = os.environ["GA4_CREDENTIALS_JSON"]
-# Supabase: mismo destino que el resto de syncs. Aceptamos ambos nombres de secreto
-# (SUPABASE_SERVICE_ROLE_KEY es el que ya existe en el repo) y la URL con fallback.
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://tdygooblqxldyakijgda.supabase.co")
-SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY") or os.environ.get("SUPABASE_KEY")
-if not SUPABASE_KEY:
-    raise SystemExit("Falta SUPABASE_SERVICE_ROLE_KEY (o SUPABASE_KEY) en el entorno.")
+SUPABASE_URL = os.environ["SUPABASE_URL"]
+SUPABASE_KEY = os.environ["SUPABASE_KEY"]
 
 NOW_ISO = datetime.now(timezone.utc).isoformat()
 
