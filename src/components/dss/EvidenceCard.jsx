@@ -165,7 +165,7 @@ export default function EvidenceCard({
         <div className="mt-4">
           <button type="button" onClick={() => setShowAction((v) => !v)}
             aria-label={showAction ? "Ocultar acción" : "Ver acción"} title={showAction ? "Ocultar" : "Ver acción"}
-            className="text-primary hover:opacity-70">
+            className="text-muted-foreground/50 hover:text-muted-foreground transition-colors">
             {showAction ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
           {showAction && (
