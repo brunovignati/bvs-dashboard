@@ -51,12 +51,14 @@ export default function WebFunnelCard({ delay }) {
     );
   }
 
+  // Etapas intermedias solo si el evento existe en GA4 (>0); las no instrumentadas
+  // (p.ej. vistas de producto / carrito a 0) se ocultan en vez de mostrar un "0" engañoso.
   const stages = [
-    { key: "ses", label: "Sesiones", v: sessions, show: true },
-    { key: "view", label: "Vistas de producto", v: itemViews, show: hasEco },
-    { key: "cart", label: "Añadir al carrito", v: addToCarts, show: hasEco },
-    { key: "checkout", label: "Checkout iniciado", v: checkouts, show: hasEco },
-    { key: "buy", label: "Compra", v: purchases, show: true },
+    { key: "ses", label: "Sesiones", v: sessions, show: sessions > 0 },
+    { key: "view", label: "Vistas de producto", v: itemViews, show: itemViews > 0 },
+    { key: "cart", label: "Añadir al carrito", v: addToCarts, show: addToCarts > 0 },
+    { key: "checkout", label: "Checkout iniciado", v: checkouts, show: checkouts > 0 },
+    { key: "buy", label: "Compra", v: purchases, show: purchases > 0 },
   ].filter(s => s.show);
 
   const top = stages[0].v || 1;
@@ -70,9 +72,9 @@ export default function WebFunnelCard({ delay }) {
         { value: fmtCurrency(cnRevenue), label: "Revenue del período (Connectif)" },
       ]}
       maturity={hasEco ? "green" : "amber"}
-      insight={hasEco
-        ? `De ${fmtNumber(sessions)} sesiones, ${fmtNumber(addToCarts)} añaden al carrito y ${fmtNumber(purchases)} compran. Mira dónde cae el mayor % entre etapas: ahí está la fuga.`
-        : `Embudo corto (sesiones → compra) con datos actuales. Las etapas intermedias (producto → carrito → checkout) se encienden al ejecutar el ALTER de ga4_daily y correr el sync ampliado de GA4.`}
+      insight={stages.length > 2
+        ? `De ${fmtNumber(sessions)} sesiones, ${fmtNumber(purchases)} acaban en compra (${convTotal.toFixed(1)}%). Mira la etapa con mayor caída de % — ahí está la fuga. (Solo se muestran las etapas que GA4 tiene instrumentadas.)`
+        : `Embudo corto (sesiones → compra): GA4 aún no instrumenta las etapas intermedias (vistas de producto / carrito). Actívalas en la medición de GA4 para ver dónde se pierde la venta.`}
       actions={[
         { verb: "investigar", rationale: hasEco
           ? "Ataca la etapa con mayor caída: si es carrito→checkout, revisa gastos de envío y fricción; si es sesión→producto, revisa relevancia de la landing."
