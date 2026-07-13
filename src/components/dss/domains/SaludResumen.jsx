@@ -84,24 +84,30 @@ export default function SaludResumen() {
     >
       {hasData && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {/* Foto del período: las dos líneas */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="rounded-xl bg-muted/30 border border-border p-4 space-y-1.5">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Nutracéuticos BVS · revenue</p>
-              <p className="text-xl font-black">{fmtCurrency(nutraRevB)}</p>
-              <Delta pct={pctChange(nutraRevB, nutraRevA)} suffix={cmp} />
-              <div className="pt-2">
-                <Row label="Aporte a las ventas" value={`${nutraShareB.toFixed(0)}%`} pts={nutraSharePts} />
+          {/* Foto del período: reparto en una barra de doble color (mismo estilo) */}
+          <div className="flex flex-col justify-center">
+            <div className="flex items-baseline justify-between gap-3 mb-2">
+              <span className="flex items-baseline gap-1.5 text-sm">
+                <span className="w-2.5 h-2.5 rounded-sm self-center" style={{ background: SERIES[1] }} />
+                <span className="font-semibold text-foreground">Nutracéuticos BVS</span>
+                <span className="text-muted-foreground">{fmtCurrency(nutraRevB)}</span>
+                <Delta pct={pctChange(nutraRevB, nutraRevA)} suffix="" />
+              </span>
+              <span className="flex items-baseline gap-1.5 text-sm">
+                <span className="w-2.5 h-2.5 rounded-sm self-center" style={{ background: SERIES[0] }} />
+                <span className="font-semibold text-foreground">BVS Vet Shop</span>
+                <span className="text-muted-foreground">{fmtCurrency(vetRevB)}</span>
+              </span>
+            </div>
+            <div className="h-10 w-full rounded-lg overflow-hidden flex text-xs font-bold text-white">
+              <div className="flex items-center justify-center" style={{ width: `${nutraShareB}%`, background: SERIES[1] }} title={`Nutracéuticos ${nutraShareB.toFixed(0)}%`}>
+                {nutraShareB >= 8 ? `${nutraShareB.toFixed(0)}%` : ""}
+              </div>
+              <div className="flex items-center justify-center" style={{ width: `${vetShareB}%`, background: SERIES[0] }} title={`Vet Shop ${vetShareB.toFixed(0)}%`}>
+                {vetShareB >= 8 ? `${vetShareB.toFixed(0)}%` : ""}
               </div>
             </div>
-            <div className="rounded-xl bg-muted/30 border border-border p-4 space-y-1.5">
-              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">BVS Vet Shop · revenue</p>
-              <p className="text-xl font-black">{fmtCurrency(vetRevB)}</p>
-              <Delta pct={pctChange(vetRevB, vetRevA)} suffix={cmp} />
-              <div className="pt-2">
-                <Row label="Aporte a las ventas" value={`${vetShareB.toFixed(0)}%`} pts={vetSharePts} />
-              </div>
-            </div>
+            <p className="text-[10px] text-muted-foreground mt-1.5">Aporte de cada línea al revenue del período{cmp ? ` · Nutracéuticos ${cmp}` : ""}.</p>
           </div>
 
           {/* Evolución del reparto (últimos 12 meses) */}

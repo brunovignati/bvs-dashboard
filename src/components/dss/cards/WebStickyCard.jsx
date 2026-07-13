@@ -1,34 +1,48 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import EvidenceCard from "../EvidenceCard";
-import { useStickyData } from "@/lib/useEntities";
+import { useDailySticky } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
 import { fmtCurrency } from "@/lib/dashboardData";
 
 export default function WebStickyCard({ delay }) {
-  const { data = [] } = useStickyData();
-  // Ordena por EFICIENCIA (tasa de conversión), no por revenue absoluto: el revenue bruto
-  // favorece a los sticky más antiguos. Sin impresiones en la tabla, convRate es el mejor
-  // proxy de eficiencia disponible; el revenue queda como contexto en el tooltip.
-  const rows = [...data].filter(s => s.workflow)
-    .sort((a,b)=>(b.convRate||0)-(a.convRate||0) || (b.revenue||0)-(a.revenue||0)).slice(0,8)
-    .map(s => ({ name: s.workflow.length>26 ? s.workflow.slice(0,25)+"…" : s.workflow, full:s.workflow,
-      revenue:s.revenue||0, conv:(s.convRate||0), inactive:(s.convRate||0)===0 }));
+  // Desde el dato DIARIO (daily_sticky) con nombre de pieza + fecha → así el ranking
+  // respeta el periodo del selector (antes usaba la tabla `sticky` acumulada sin fecha).
+  const { data = [] } = useDailySticky();
+  const { rangeB } = useComparison();
+  const cutoff = rangeB.end.year * 12 + rangeB.end.month;
+
+  const agg = {};
+  for (const r of data) {
+    if ((r.year * 12 + r.month) > cutoff) continue;
+    const name = r.contentName || r.content_name;
+    if (!name) continue;
+    const a = (agg[name] ||= { name, opens: 0, clicks: 0, buyers: 0, revenue: 0 });
+    a.opens += r.opens || 0; a.clicks += r.clicks || 0; a.buyers += r.buyers || 0; a.revenue += r.revenue || 0;
+  }
+  const rows = Object.values(agg)
+    .map(s => ({
+      name: s.name.length > 26 ? s.name.slice(0, 25) + "…" : s.name, full: s.name,
+      revenue: s.revenue, conv: s.opens > 0 ? (s.buyers / s.opens) * 100 : 0, inactive: (s.buyers || 0) === 0,
+    }))
+    .sort((a, b) => (b.conv - a.conv) || (b.revenue - a.revenue))
+    .slice(0, 8);
   const hasData = rows.length >= 2;
-  const active = rows.filter(r=>!r.inactive);
+  const active = rows.filter(r => !r.inactive);
   const best = active[0];
 
   return (
     <EvidenceCard sources={["connectif"]}
       question="¿Convierte el contenido web / sticky? (captación)"
-      answer={hasData ? (best ? `Top: ${best.name}` : "Sin piezas activas") : "Sin datos"}
+      answer={hasData ? (best ? `Top: ${best.name}` : "Sin piezas activas") : "Sin datos en el período"}
       answerTone={hasData && best ? "good" : "warn"}
-      context={hasData ? `Ordenado por tasa de conversión. ${active.length}/${rows.length} piezas convierten > 0; el resto, candidatas a retirar.` : undefined}
+      context={hasData ? `Ordenado por conversión (compradores/aperturas). ${active.length}/${rows.length} piezas convierten > 0 en el período; el resto, candidatas a retirar.` : undefined}
       maturity="amber"
       actions={[
         { verb: "escalar", rationale: best ? `Mayor eficiencia de conversión: "${best.name}". Replícala.` : "Prioriza las piezas con conversión probada." },
         { verb: "detener", rationale: "Retira los sticky con conversión 0 sostenida (ocupan espacio sin captar)." },
       ]}
       delay={delay}
-      note="Fuente: Connectif · sticky (acumulado sin fecha). Ranking por tasa de conversión (eficiencia), no por revenue bruto; sin impresiones disponibles, convRate es el mejor proxy. Revenue en el tooltip."
+      note="Fuente: Connectif · daily_sticky (por pieza y día → respeta el periodo). Conversión = compradores / aperturas de la pieza; revenue en el tooltip."
     >
       {hasData && (
         <div className="h-56">
