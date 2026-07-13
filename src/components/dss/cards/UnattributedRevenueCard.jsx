@@ -38,7 +38,7 @@ export default function UnattributedRevenueCard({ delay }) {
   const mGa4 = MATURITY[ga4State];
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["connectif","ga4"]}
       question="¿Cuánto revenue es no atribuido y de dónde viene?"
       kpis={hasData ? [
         { value: `${last.pct.toFixed(0)}%`, label: "Compras sin atribuir" },

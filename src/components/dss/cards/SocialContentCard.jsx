@@ -40,7 +40,7 @@ export default function SocialContentCard({ delay }) {
   const avgEng = items.length ? items.reduce((s, r) => s + r.engagement, 0) / items.length : 0;
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["metricool"]}
       question="¿Qué contenido funciona en cada red?"
       answer={hasData ? `${cfg.label}: top ${best.engagement.toFixed(1)} engagement` : `Sin datos de ${cfg.label} aún`}
       answerTone={hasData ? "good" : "neutral"}

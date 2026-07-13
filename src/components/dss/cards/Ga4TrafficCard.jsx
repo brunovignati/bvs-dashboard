@@ -23,7 +23,7 @@ export default function Ga4TrafficCard({ delay }) {
 
   if (!hasData) {
     return (
-      <EvidenceCard
+      <EvidenceCard sources={["ga4"]}
         question="¿Cuánto tráfico web llega y cómo se comporta?"
         answer="Sin datos de GA4 aún"
         answerTone="neutral"
@@ -54,7 +54,7 @@ export default function Ga4TrafficCard({ delay }) {
   const bouncePct = avgBounce > 1 ? avgBounce : avgBounce * 100; // GA4 devuelve ratio 0-1
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["ga4"]}
       question="¿Cuánto tráfico web llega y cómo se comporta?"
       answer={`${fmtNumber(last.Sesiones)} sesiones/día`}
       answerTone="neutral"

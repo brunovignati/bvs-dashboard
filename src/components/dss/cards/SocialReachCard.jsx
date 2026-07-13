@@ -49,7 +49,7 @@ export default function SocialReachCard({ delay }) {
 
   if (!hasData) {
     return (
-      <EvidenceCard
+      <EvidenceCard sources={["metricool"]}
         question="¿Cuánta notoriedad y alcance generan las redes?"
         answer="Sin datos de redes aún"
         answerTone="neutral"
@@ -63,7 +63,7 @@ export default function SocialReachCard({ delay }) {
   }
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["metricool"]}
       question="¿Cuánta notoriedad y alcance generan las redes?"
       answer={leader ? `${leader[0]} lidera · ${fmtNumber(leader[1])} views/30d` : "Sin visualizaciones"}
       answerTone="neutral"

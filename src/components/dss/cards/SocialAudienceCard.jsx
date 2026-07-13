@@ -48,7 +48,7 @@ export default function SocialAudienceCard({ delay }) {
 
   if (!hasData) {
     return (
-      <EvidenceCard
+      <EvidenceCard sources={["metricool"]}
         question="¿Crece o se erosiona la base de audiencia social?"
         answer="Sin datos de redes aún"
         answerTone="neutral"
@@ -62,7 +62,7 @@ export default function SocialAudienceCard({ delay }) {
   }
 
   return (
-    <EvidenceCard
+    <EvidenceCard sources={["metricool"]}
       question="¿Crece o se erosiona la base de audiencia social?"
       answer={`${fmtNumber(totalFollowers)} seguidores · ${totalNet >= 0 ? "+" : ""}${fmtNumber(totalNet)}/30d`}
       answerTone={totalNet >= 0 ? "good" : "bad"}

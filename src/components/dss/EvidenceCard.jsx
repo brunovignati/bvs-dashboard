@@ -17,14 +17,6 @@ const SOURCES = {
   ga4:       { short: "GA", title: "Google Analytics", cls: "bg-[#e8730b] text-white" },
   metricool: { short: "M", title: "Metricool", cls: "bg-[#c9f24d] text-neutral-900" },
 };
-function detectSources(note) {
-  if (!note) return [];
-  const out = [];
-  if (/connectif/i.test(note)) out.push("connectif");
-  if (/ga4|google analytics|analytics/i.test(note)) out.push("ga4");
-  if (/metricool/i.test(note)) out.push("metricool");
-  return out;
-}
 function SourceBadges({ ids }) {
   if (!ids.length) return null;
   return (
@@ -95,6 +87,7 @@ export default function EvidenceCard({
   note,
   children,
   status,
+  sources: sourcesProp,   // ['connectif'|'ga4'|'metricool'] — por defecto Connectif
   delay = 0,
 }) {
   const [showNote, setShowNote] = useState(false);
@@ -106,7 +99,8 @@ export default function EvidenceCard({
     : null;
   const showMaturity = !statusPill && MATURITY[maturity] && MATURITY[maturity].label;
   const rec = action ? { rationale: action } : (actions && actions.length ? actions[0] : null);
-  const sources = detectSources(note);
+  // Fuente explícita; por defecto Connectif (origen de casi todos los datos del panel).
+  const sources = (sourcesProp && sourcesProp.length) ? sourcesProp : ["connectif"];
 
   return (
     <motion.div
