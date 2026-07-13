@@ -60,7 +60,8 @@ function StatusPill({ tone = "good", label }) {
   );
 }
 
-const TONE = { good: "text-emerald-600", bad: "text-red-600", warn: "text-amber-600", neutral: "text-foreground" };
+// El enunciado va en color neutro; el estado lo comunican el pill y los deltas, no la frase.
+const TONE = { good: "text-foreground", bad: "text-foreground", warn: "text-foreground", neutral: "text-foreground" };
 
 function Delta({ value, suffix = "%" }) {
   if (value === null || value === undefined || Number.isNaN(value)) return null;
