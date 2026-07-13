@@ -150,4 +150,45 @@ try:
 except Exception as e:
     print(f" Ecommerce GA4 omitido (el core no se ve afectado): {e}")
 
+# ── Ventas por MARCA (fabricante) — bloque PROTEGIDO e independiente. Usa la dimensión
+# itemBrand de GA4 (Seresto, Royal Canin, Advantix, …), agregada por mes. Puebla la tabla
+# brand_sales; requiere haber ejecutado supabase/brand_sales_schema.sql. Si falla, nada de
+# lo anterior se ve afectado. Ventana amplia: GA4 devuelve lo que su retención permita; el
+# upsert idempotente por (year,month,brand) va acumulando histórico ejecución a ejecución.
+try:
+    print("Consultando GA4 ventas por marca (itemBrand x mes: itemRevenue, itemsPurchased)...")
+    brand_req = RunReportRequest(
+        property=f"properties/{GA4_PROPERTY_ID}",
+        dimensions=[Dimension(name="yearMonth"), Dimension(name="itemBrand")],
+        metrics=[
+            Metric(name="itemRevenue"),
+            Metric(name="itemsPurchased"),
+        ],
+        date_ranges=[DateRange(start_date="2024-01-01", end_date="today")],
+    )
+    brand_resp = client.run_report(brand_req)
+    brand_rows = []
+    for row in brand_resp.rows:
+        ym = row.dimension_values[0].value           # "YYYYMM"
+        brand = (row.dimension_values[1].value or "").strip()
+        rev, units = [m.value for m in row.metric_values]
+        if not ym or len(ym) < 6:
+            continue
+        if not brand:
+            brand = "(sin marca)"
+        # itemsPurchased puede ser 0 con revenue 0 (marca vista pero no comprada): la
+        # dejamos igualmente, el frontend filtra por revenue/units > 0.
+        brand_rows.append({
+            "year": int(ym[:4]),
+            "month": int(ym[4:6]),
+            "brand": brand,
+            "revenue": fv(rev) or 0,
+            "units": fv(units) or 0,
+            "updated_at": NOW_ISO,
+        })
+    print(f" {len(brand_rows)} filas marca-mes recibidas de GA4")
+    print(f" brand_sales: {upsert('brand_sales', brand_rows, 'year,month,brand')}")
+except Exception as e:
+    print(f" Ventas por marca GA4 omitido (el resto no se ve afectado): {e}")
+
 print("\nSync GA4 completo.")

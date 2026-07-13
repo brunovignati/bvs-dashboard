@@ -246,6 +246,14 @@ export function useChannelSegmentation() {
   })
 }
 
+export function useBrandSales() {
+  return useQuery({
+    queryKey: ['brand_sales'],
+    queryFn: () => fetchTable('brand_sales', 'year', true, 5000),
+    initialData: [],
+  })
+}
+
 
 // ─── Social Media (Metricool) ──────────────────────────────
 

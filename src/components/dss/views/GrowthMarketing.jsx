@@ -13,6 +13,7 @@ import OwnBrandCard from "../cards/OwnBrandCard";
 import OmnichannelCard from "../cards/OmnichannelCard";
 import ProductThemeCard from "../cards/ProductThemeCard";
 import LineRevenueTrendCard from "../cards/LineRevenueTrendCard";
+import BrandSalesCard from "../cards/BrandSalesCard";
 import Clientes from "../domains/Clientes";
 import Automatizaciones from "../domains/Automatizaciones";
 
@@ -30,6 +31,7 @@ export default function GrowthMarketing() {
           <MixChannelCard delay={0.03} />
           <RevenueBridgeCard delay={0.05} />
           <div className="lg:col-span-2"><LineRevenueTrendCard delay={0.055} /></div>
+          <div className="lg:col-span-2"><BrandSalesCard delay={0.057} /></div>
           <UnattributedRevenueCard delay={0.07} />
           <OwnBrandCard delay={0.09} />
           <OmnichannelCard delay={0.11} />
