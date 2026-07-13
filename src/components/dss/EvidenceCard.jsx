@@ -12,6 +12,7 @@
  * Escala tipográfica fija: pregunta = text-base/semibold · KPI = text-3xl/bold ·
  * insight = text-sm · acción = text-sm · fuente = text-[10px]. Paleta de dos colores.
  */
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { MATURITY } from "@/lib/dss/dssUtils";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
@@ -63,11 +64,11 @@ export default function EvidenceCard({
   children,               // 3. la visualización
   delay = 0,              // (compat; sin animación)
 }) {
+  const [showNote, setShowNote] = useState(false);
   const leftBorder = severity ? "border-l-4 border-l-primary" : "";
   const rec = action
     ? { rationale: action }
     : (actions && actions.length ? actions[0] : null);
-  const hasFooter = insight || rec;
 
   return (
     <motion.div
@@ -103,32 +104,41 @@ export default function EvidenceCard({
       {/* 3. Visualización (elemento dominante) */}
       {children && <div className="mt-4">{children}</div>}
 
-      {/* 4. Insight */}
-      {insight && (
-        <div className="mt-4 pt-3 border-t border-border">
-          <p className="text-sm text-foreground/90 leading-snug">{insight}</p>
-        </div>
-      )}
+      {/* Acción — ÚNICO bloque tras el dato. La fuente y el método se consultan en una
+          burbuja que se abre desde el asterisco (*) al final de la acción. */}
+      {(rec || note) && (
+        <div className="mt-4 relative">
+          <div className="flex items-start gap-2 rounded-xl bg-primary/[0.06] border border-primary/15 px-3 py-2">
+            <span className="text-[10px] font-bold uppercase tracking-wide text-primary mt-0.5 shrink-0">Acción</span>
+            <p className="text-sm text-foreground/90 leading-snug">
+              {rec ? (
+                <>
+                  {rec.verb && <span className="font-semibold capitalize">{rec.verb} · </span>}
+                  {rec.rationale}
+                </>
+              ) : "Sin acción hoy."}
+              {note && (
+                <button
+                  type="button"
+                  onClick={() => setShowNote((v) => !v)}
+                  aria-label="Ver fuente y método"
+                  title="Fuente y método"
+                  className="ml-0.5 align-super text-[12px] font-bold text-primary hover:opacity-70 cursor-pointer">*</button>
+              )}
+            </p>
+          </div>
 
-      {/* 5. Acción — barra destacada y consistente en todas las tarjetas */}
-      {rec && (
-        <div className="mt-3 flex items-start gap-2 rounded-xl bg-primary/[0.06] border border-primary/15 px-3 py-2">
-          <span className="text-[10px] font-bold uppercase tracking-wide text-primary mt-0.5 shrink-0">Acción</span>
-          <p className="text-sm text-foreground/90 leading-snug">
-            {rec.verb && <span className="font-semibold capitalize">{rec.verb} · </span>}
-            {rec.rationale}
-          </p>
+          {/* Burbuja de fuente y método */}
+          {showNote && note && (
+            <>
+              <div className="fixed inset-0 z-30" onClick={() => setShowNote(false)} aria-hidden="true" />
+              <div className="absolute right-0 z-40 mt-1.5 w-72 max-w-[85vw] bg-popover border border-border rounded-xl shadow-lg p-3">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground mb-1">Fuente y método</p>
+                <p className="text-[11px] text-muted-foreground leading-relaxed italic">{note}</p>
+              </div>
+            </>
+          )}
         </div>
-      )}
-
-      {/* 6. Fuente y método — colapsada por defecto para no competir con el dato */}
-      {note && (
-        <details className="mt-3 group">
-          <summary className="text-[10px] text-muted-foreground/80 cursor-pointer select-none list-none hover:text-foreground transition-colors">
-            <span className="underline decoration-dotted underline-offset-2">Fuente y método</span>
-          </summary>
-          <p className="text-[10px] text-muted-foreground mt-1.5 italic leading-relaxed">{note}</p>
-        </details>
       )}
     </motion.div>
   );
