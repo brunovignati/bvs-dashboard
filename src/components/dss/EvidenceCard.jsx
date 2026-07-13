@@ -9,13 +9,13 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { MATURITY } from "@/lib/dss/dssUtils";
-import { TrendingUp, TrendingDown, Minus, Eye, EyeOff } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, ChevronDown, ChevronUp } from "lucide-react";
 
-// ── Distintivos de fuente (marca por color + inicial; no son los logos oficiales) ──
+// ── Distintivos de fuente (inicial, en gris tenue para no robar atención) ──
 const SOURCES = {
-  connectif: { short: "C", title: "Connectif", cls: "bg-[#2f5c9e] text-white" },
-  ga4:       { short: "GA", title: "Google Analytics", cls: "bg-[#e8730b] text-white" },
-  metricool: { short: "M", title: "Metricool", cls: "bg-[#c9f24d] text-neutral-900" },
+  connectif: { short: "C", title: "Connectif" },
+  ga4:       { short: "GA", title: "Google Analytics" },
+  metricool: { short: "M", title: "Metricool" },
 };
 function SourceBadges({ ids }) {
   if (!ids.length) return null;
@@ -25,7 +25,7 @@ function SourceBadges({ ids }) {
         const s = SOURCES[id];
         return (
           <span key={id} title={`Fuente: ${s.title}`}
-            className={`inline-flex items-center justify-center h-4 min-w-4 px-1 rounded text-[9px] font-bold leading-none ${s.cls}`}>
+            className="inline-flex items-center justify-center h-4 min-w-4 px-1 rounded text-[9px] font-semibold leading-none bg-muted text-muted-foreground/70 border border-border">
             {s.short}
           </span>
         );
@@ -160,8 +160,8 @@ export default function EvidenceCard({
         <div className="mt-4">
           <button type="button" onClick={() => setShowAction((v) => !v)}
             aria-label={showAction ? "Ocultar acción" : "Ver acción"} title={showAction ? "Ocultar" : "Ver acción"}
-            className="text-muted-foreground/50 hover:text-muted-foreground transition-colors">
-            {showAction ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            className="w-full flex justify-center text-muted-foreground/50 hover:text-muted-foreground transition-colors">
+            {showAction ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </button>
           {showAction && (
             <div className="mt-2 rounded-xl bg-primary/[0.06] border border-primary/15 px-3 py-2">
