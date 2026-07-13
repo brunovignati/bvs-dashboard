@@ -164,13 +164,12 @@ export default function EvidenceCard({
       {rec && (
         <div className="mt-4">
           <button type="button" onClick={() => setShowAction((v) => !v)}
-            className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-primary hover:opacity-70">
-            {showAction ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-            {showAction ? "Ocultar acción" : "Ver acción"}
+            aria-label={showAction ? "Ocultar acción" : "Ver acción"} title={showAction ? "Ocultar" : "Ver acción"}
+            className="text-primary hover:opacity-70">
+            {showAction ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
           {showAction && (
-            <div className="mt-2 flex items-start gap-2 rounded-xl bg-primary/[0.06] border border-primary/15 px-3 py-2">
-              <span className="text-[10px] font-bold uppercase tracking-wide text-primary mt-0.5 shrink-0">Acción</span>
+            <div className="mt-2 rounded-xl bg-primary/[0.06] border border-primary/15 px-3 py-2">
               <p className="text-sm text-foreground/90 leading-snug">
                 {rec.verb && <span className="font-semibold capitalize">{rec.verb} · </span>}
                 {rec.rationale}
