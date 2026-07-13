@@ -1,12 +1,16 @@
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useBuyerCohorts } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
 
 const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
 export default function AcquisitionRetentionCard({ delay }) {
   const { data = [] } = useBuyerCohorts();
-  const rows = [...data].sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month)
+  const { rangeB } = useComparison();
+  const cutoff = rangeB.end.year * 12 + rangeB.end.month;
+  const rows = [...data].filter(r => (r.year * 12 + r.month) <= cutoff)
+    .sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month)
     .map(r => {
       const ft = r.firstTime || 0, rc = r.recurring || 0, tot = ft + rc;
       return { name: `${M[r.month]} ${String(r.year).slice(2)}`, ft, rc,

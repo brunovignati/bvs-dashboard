@@ -1,15 +1,19 @@
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useDailyRevenue } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
 import { CHART_H, GRID, AXIS, TIP, LEGEND, SERIES, STACK_FILL_OPACITY } from "@/lib/dss/chartTheme";
 
 const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
 export default function MixChannelCard({ delay }) {
   const { data = [] } = useDailyRevenue();
+  const { rangeB } = useComparison();
+  const cutoff = rangeB.end.year * 12 + rangeB.end.month;
   const byM = {};
   for (const r of data) {
     const k = r.year * 12 + r.month;
+    if (k > cutoff) continue;
     if (!byM[k]) byM[k] = { k, year: r.year, month: r.month, email:0, push:0, web:0, sms:0, total:0 };
     byM[k].email += r.emailAttr||0; byM[k].push += r.pushAttr||0; byM[k].web += r.webAttr||0;
     byM[k].sms += r.smsAttr||0; byM[k].total += r.purchases||0;

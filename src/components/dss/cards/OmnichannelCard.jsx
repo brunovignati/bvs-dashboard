@@ -1,6 +1,7 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useChannelSegmentation } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
 
 const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 // Partición MECE que suma exactamente a total_buyers (online + retail + omnicanal).
@@ -14,7 +15,10 @@ const KEYS = [
 const COLORS = ["hsl(16,79%,57%)", "hsl(30,72%,66%)", "hsl(37,42%,74%)"];
 
 export default function OmnichannelCard({ delay }) {
-  const { data = [] } = useChannelSegmentation();
+  const { data: raw = [] } = useChannelSegmentation();
+  const { rangeB } = useComparison();
+  const cutoff = rangeB.end.year * 12 + rangeB.end.month;
+  const data = raw.filter(r => (r.year * 12 + r.month) <= cutoff);
   const present = KEYS.filter(kk => data.some(r => (r[kk.k] || 0) > 0));
   // Cada serie = CUOTA (%) del canal sobre el total del mes → deja ver la evolución de
   // cada canal por separado (el área apilada aplastaba Retail/Omni).

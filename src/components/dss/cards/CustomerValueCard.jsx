@@ -1,6 +1,7 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useDailyRevenue, useBuyerCohorts } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
 import { fmtCurrency } from "@/lib/dashboardData";
 
 const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
@@ -8,12 +9,14 @@ const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "O
 export default function CustomerValueCard({ delay }) {
   const { data: daily = [] } = useDailyRevenue();
   const { data: cohorts = [] } = useBuyerCohorts();
+  const { rangeB } = useComparison();
+  const cutoff = rangeB.end.year * 12 + rangeB.end.month;
 
   // Revenue y pedidos por mes
   const byM = {};
-  for (const r of daily) { const k = r.year*12+r.month; if (!byM[k]) byM[k]={k,year:r.year,month:r.month,rev:0,orders:0}; byM[k].rev+=r.revenue||0; byM[k].orders+=r.purchases||0; }
+  for (const r of daily) { const k = r.year*12+r.month; if (k > cutoff) continue; if (!byM[k]) byM[k]={k,year:r.year,month:r.month,rev:0,orders:0}; byM[k].rev+=r.revenue||0; byM[k].orders+=r.purchases||0; }
   const cohMap = {};
-  for (const c of cohorts) { cohMap[c.year*12+c.month] = { buyers:(c.firstTime||0)+(c.recurring||0), recurring:c.recurring||0 }; }
+  for (const c of cohorts) { const kc = c.year*12+c.month; if (kc > cutoff) continue; cohMap[kc] = { buyers:(c.firstTime||0)+(c.recurring||0), recurring:c.recurring||0 }; }
 
   const rows = Object.values(byM).sort((a,b)=>a.k-b.k).map(m=>{
     const co = cohMap[m.k]; const buyers = co?.buyers||0; const rec = co?.recurring||0;

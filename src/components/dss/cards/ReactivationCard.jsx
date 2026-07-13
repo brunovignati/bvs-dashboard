@@ -1,6 +1,7 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useEmailCampaigns, usePushCampaigns } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
 import { matchName } from "@/lib/dss/dssUtils";
 import { fmtCurrency } from "@/lib/dashboardData";
 
@@ -9,10 +10,13 @@ const RX = /reactiv|reabast|recuper|winback|volver|te echamos/i;
 export default function ReactivationCard({ delay }) {
   const { data: email = [] } = useEmailCampaigns();
   const { data: push = [] } = usePushCampaigns();
+  const { rangeB } = useComparison();
+  const cutoff = rangeB.end.year * 12 + rangeB.end.month;
+  const inPeriod = (r) => (r.year * 12 + r.month) <= cutoff;
 
   const src = [
-    ...email.filter(r => matchName(r, RX)).map(r => ({ name: r.emailName || r.emailWorkflow, channel: "Email", revenue: r.revenue || 0, sent: r.sent || 0, purchases: r.purchases || 0 })),
-    ...push.filter(r => matchName(r, RX)).map(r => ({ name: r.workflow, channel: "Push", revenue: r.revenue || 0, sent: r.sent || 0, purchases: r.purchases || 0 })),
+    ...email.filter(r => inPeriod(r) && matchName(r, RX)).map(r => ({ name: r.emailName || r.emailWorkflow, channel: "Email", revenue: r.revenue || 0, sent: r.sent || 0, purchases: r.purchases || 0 })),
+    ...push.filter(r => inPeriod(r) && matchName(r, RX)).map(r => ({ name: r.workflow, channel: "Push", revenue: r.revenue || 0, sent: r.sent || 0, purchases: r.purchases || 0 })),
   ].filter(r => r.name);
 
   const byName = {};

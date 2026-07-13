@@ -1,6 +1,7 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useEmailCampaigns, usePushCampaigns } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
 import { fmtCurrency } from "@/lib/dashboardData";
 
 // Temáticas de producto detectables en los nombres de campaña
@@ -21,9 +22,12 @@ function classify(name) {
 export default function ProductThemeCard({ delay }) {
   const { data: email = [] } = useEmailCampaigns();
   const { data: push = [] } = usePushCampaigns();
+  const { rangeB } = useComparison();
+  const cutoff = rangeB.end.year * 12 + rangeB.end.month;
+  const inPeriod = (r) => (r.year * 12 + r.month) <= cutoff;
   const all = [
-    ...email.map(r => ({ name: r.emailName || r.emailWorkflow, revenue: r.revenue || 0 })),
-    ...push.map(r => ({ name: r.workflow, revenue: r.revenue || 0 })),
+    ...email.filter(inPeriod).map(r => ({ name: r.emailName || r.emailWorkflow, revenue: r.revenue || 0 })),
+    ...push.filter(inPeriod).map(r => ({ name: r.workflow, revenue: r.revenue || 0 })),
   ];
 
   const acc = {};

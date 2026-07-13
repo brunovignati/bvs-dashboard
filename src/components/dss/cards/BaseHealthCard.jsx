@@ -1,6 +1,7 @@
 import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceLine } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useSubscribers, usePushSubscribers } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
 import { fmtNumber } from "@/lib/dashboardData";
 
 const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
@@ -8,13 +9,15 @@ const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "O
 export default function BaseHealthCard({ delay }) {
   const { data: subs = [] } = useSubscribers();
   const { data: push = [] } = usePushSubscribers();
+  const { rangeB } = useComparison();
+  const cutoff = rangeB.end.year * 12 + rangeB.end.month;
 
   // Base de email suscrita por mes (status = subscribed) + neto (increment)
-  const emailSubs = subs.filter(s => s.status === "subscribed")
+  const emailSubs = subs.filter(s => s.status === "subscribed" && (s.year * 12 + s.month) <= cutoff)
     .sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month)
     .map(s => ({ k: s.year * 12 + s.month, name: `${M[s.month]} ${String(s.year).slice(2)}`, base: s.contacts || 0, neto: s.increment || 0 }));
   const pushMap = {};
-  for (const p of push) pushMap[p.year * 12 + p.month] = p.contacts || 0;
+  for (const p of push) { if ((p.year * 12 + p.month) <= cutoff) pushMap[p.year * 12 + p.month] = p.contacts || 0; }
 
   const rows = emailSubs.map(e => ({ ...e, push: pushMap[e.k] || 0 })).slice(-18);
   const hasData = rows.length >= 2;

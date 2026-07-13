@@ -1,6 +1,7 @@
 import { ComposedChart, Area, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useCompradores, useDailyRevenue } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
 import { fmtCurrency } from "@/lib/dashboardData";
 
 const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
@@ -8,14 +9,18 @@ const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "O
 export default function OwnBrandCard({ delay }) {
   const { data: marca = [] } = useCompradores();
   const { data: daily = [] } = useDailyRevenue();
+  const { rangeB } = useComparison();
+  const cutoff = rangeB.end.year * 12 + rangeB.end.month;
 
   // Total del negocio por mes
   const totalByMonth = {};
   for (const r of daily) {
     const k = r.year * 12 + r.month;
+    if (k > cutoff) continue;
     totalByMonth[k] = (totalByMonth[k] || 0) + (r.revenue || 0);
   }
-  const rows = [...marca].sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month)
+  const rows = [...marca].filter(m => (m.year * 12 + m.month) <= cutoff)
+    .sort((a, b) => a.year !== b.year ? a.year - b.year : a.month - b.month)
     .map(m => {
       const k = m.year * 12 + m.month;
       const total = totalByMonth[k] || 0;
