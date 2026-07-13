@@ -112,4 +112,42 @@ def upsert(table, records, conflict):
 
 
 print(f" ga4_daily: {upsert('ga4_daily', rows, 'date_str')}")
+
+# ── Embudo de ecommerce (Nivel 2) — bloque PROTEGIDO: si algo falla aquí, el sync de
+# tráfico (arriba) ya se guardó y no se ve afectado. Puebla las columnas nuevas de
+# ga4_daily; requiere que se haya ejecutado el ALTER de supabase/ga4_schema.sql.
+try:
+    print("Consultando GA4 ecommerce (itemsViewed, addToCarts, checkouts, ecommercePurchases, purchaseRevenue)...")
+    eco_req = RunReportRequest(
+        property=f"properties/{GA4_PROPERTY_ID}",
+        dimensions=[Dimension(name="date")],
+        metrics=[
+            Metric(name="itemsViewed"),
+            Metric(name="addToCarts"),
+            Metric(name="checkouts"),
+            Metric(name="ecommercePurchases"),
+            Metric(name="purchaseRevenue"),
+        ],
+        date_ranges=[DateRange(start_date="60daysAgo", end_date="today")],
+    )
+    eco_resp = client.run_report(eco_req)
+    eco_rows = []
+    for row in eco_resp.rows:
+        ds = row.dimension_values[0].value
+        iv, atc, ck, ep, pr = [m.value for m in row.metric_values]
+        eco_rows.append({
+            "date_str": ds,
+            **pd(ds),
+            "item_views": fv(iv),
+            "add_to_carts": fv(atc),
+            "checkouts": fv(ck),
+            "ecommerce_purchases": fv(ep),
+            "purchase_revenue": fv(pr),
+            "updated_at": NOW_ISO,
+        })
+    print(f" {len(eco_rows)} dias de ecommerce recibidos de GA4")
+    print(f" ga4_daily (ecommerce): {upsert('ga4_daily', eco_rows, 'date_str')}")
+except Exception as e:
+    print(f" Ecommerce GA4 omitido (el core no se ve afectado): {e}")
+
 print("\nSync GA4 completo.")

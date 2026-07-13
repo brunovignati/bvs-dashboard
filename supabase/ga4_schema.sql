@@ -20,3 +20,12 @@ CREATE TABLE IF NOT EXISTS ga4_daily (
 
 ALTER TABLE ga4_daily ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Lectura publica" ON ga4_daily FOR SELECT USING (true);
+
+-- ── Embudo de ecommerce (Nivel 2). Ejecutar también una vez; es idempotente. ──
+-- Alimenta el embudo completo: sesiones → vistas de producto → carrito → checkout → compra.
+ALTER TABLE ga4_daily ADD COLUMN IF NOT EXISTS item_views NUMERIC;
+ALTER TABLE ga4_daily ADD COLUMN IF NOT EXISTS add_to_carts NUMERIC;
+ALTER TABLE ga4_daily ADD COLUMN IF NOT EXISTS checkouts NUMERIC;
+ALTER TABLE ga4_daily ADD COLUMN IF NOT EXISTS ecommerce_purchases NUMERIC;
+ALTER TABLE ga4_daily ADD COLUMN IF NOT EXISTS purchase_revenue NUMERIC;
+NOTIFY pgrst, 'reload schema';

@@ -1,5 +1,6 @@
 import SectionNav from "../SectionNav";
 import MarketingFunnelCard from "../cards/MarketingFunnelCard";
+import WebFunnelCard from "../cards/WebFunnelCard";
 import EmailScaleCard from "../cards/EmailScaleCard";
 import PushPerformanceCard from "../cards/PushPerformanceCard";
 import PushChannelTrendCard from "../cards/PushChannelTrendCard";
@@ -32,12 +33,13 @@ export default function Marketing() {
         { id: "mk-envios", label: "Optimización de envíos" },
       ]} />
 
-      {/* 1 · Síntesis */}
-      <MarketingFunnelCard delay={0.03} />
+      {/* 1 · Síntesis: embudo del sitio (tráfico → compra) */}
+      <WebFunnelCard delay={0.03} />
 
       {/* 2 · Canales que generan venta */}
       <Sub id="mk-canales">Canales que generan venta</Sub>
       <Grid>
+        <div className="lg:col-span-2"><MarketingFunnelCard delay={0.04} /></div>
         <EmailScaleCard delay={0.05} />
         <PushChannelTrendCard delay={0.07} />
         <div className="lg:col-span-2"><PushPerformanceCard delay={0.09} /></div>

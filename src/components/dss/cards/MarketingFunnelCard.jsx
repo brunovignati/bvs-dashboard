@@ -30,7 +30,7 @@ export default function MarketingFunnelCard({ delay }) {
 
   if (!hasData) {
     return (
-      <EvidenceCard sources={["connectif"]} question="¿Está funcionando el marketing? (embudo completo)" answer="Sin envíos en el período"
+      <EvidenceCard sources={["connectif"]} question="¿Rinde el embudo de email? (envío → compra)" answer="Sin envíos en el período"
         answerTone="neutral" maturity="amber" delay={delay}
         actions={[{ verb: "investigar", rationale: "No hay campañas de email con envíos en el período seleccionado." }]} />
     );
@@ -56,7 +56,7 @@ export default function MarketingFunnelCard({ delay }) {
 
   return (
     <EvidenceCard sources={["connectif"]}
-      question="¿Está funcionando el marketing? (embudo completo)"
+      question="¿Rinde el embudo de email? (envío → compra)"
       answer={`${fmtCurrency(T.revenue)} · ${fmtNumber(T.purchases)} compras`}
       answerTone="neutral"
       context={`Embudo de email conectado (Connectif) · ${labelRange(rangeB)}. Etapas encadenadas 1:1, tasas válidas entre pasos. El mayor descarte está en «${worst.label}» (${worst.ci.mid.toFixed(worst.ci.mid < 10 ? 2 : 1)}%).`}
