@@ -5,11 +5,15 @@
  * las mismas dos métricas: Revenue (€) y su Aporte a las ventas (% del revenue del negocio).
  * La recurrencia ya no vive aquí: es una métrica de cliente y está en Clientes.
  */
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useMonthlyMetrics, useCompradores } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
 import { fmtCurrency } from "@/lib/dashboardData";
+import { CHART_H, GRID, AXIS, TIP, SERIES } from "@/lib/dss/chartTheme";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+
+const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
 const pctChange = (cur, prev) => (prev == null || prev === 0) ? null : ((cur - prev) / Math.abs(prev)) * 100;
 
@@ -62,6 +66,15 @@ export default function SaludResumen() {
 
   const hasData = nutraRevB > 0 || vetRevB > 0;
 
+  // Serie mensual (últimos 12 meses hasta el corte) para ver la EVOLUCIÓN del reparto.
+  const cutoff = rangeB.end.year * 12 + rangeB.end.month;
+  const byM = {};
+  for (const r of metrics) { const k = r.year * 12 + r.month; if (k > cutoff) continue; (byM[k] ||= { k, year: r.year, month: r.month, nutra: 0, vet: 0 }).nutra += r.revenue || 0; }
+  for (const c of compradores) { const k = c.year * 12 + c.month; if (k > cutoff) continue; (byM[k] ||= { k, year: c.year, month: c.month, nutra: 0, vet: 0 }).vet += c.revenue || 0; }
+  const series = Object.values(byM).sort((a, b) => a.k - b.k).slice(-12)
+    .map(m => ({ name: `${M[m.month]} ${String(m.year).slice(2)}`, "Nutracéuticos BVS": m.nutra, "BVS Vet Shop": m.vet }));
+  const hasSeries = series.length >= 2;
+
   return (
     <EvidenceCard sources={["connectif"]}
       question="¿Cómo se reparte el revenue por línea de negocio?"
@@ -70,23 +83,43 @@ export default function SaludResumen() {
       note="Revenue por línea (Connectif · monthly_metrics + compradores). Aporte a las ventas = % del revenue total del negocio; el delta en puntos solo se muestra si ambas líneas tienen dato en el período de comparación."
     >
       {hasData && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="rounded-xl bg-muted/30 border border-border p-4 space-y-1.5">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Nutracéuticos BVS · revenue</p>
-            <p className="text-xl font-black">{fmtCurrency(nutraRevB)}</p>
-            <Delta pct={pctChange(nutraRevB, nutraRevA)} suffix={cmp} />
-            <div className="pt-2">
-              <Row label="Aporte a las ventas" value={`${nutraShareB.toFixed(0)}%`} pts={nutraSharePts} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Foto del período: las dos líneas */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="rounded-xl bg-muted/30 border border-border p-4 space-y-1.5">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Nutracéuticos BVS · revenue</p>
+              <p className="text-xl font-black">{fmtCurrency(nutraRevB)}</p>
+              <Delta pct={pctChange(nutraRevB, nutraRevA)} suffix={cmp} />
+              <div className="pt-2">
+                <Row label="Aporte a las ventas" value={`${nutraShareB.toFixed(0)}%`} pts={nutraSharePts} />
+              </div>
+            </div>
+            <div className="rounded-xl bg-muted/30 border border-border p-4 space-y-1.5">
+              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">BVS Vet Shop · revenue</p>
+              <p className="text-xl font-black">{fmtCurrency(vetRevB)}</p>
+              <Delta pct={pctChange(vetRevB, vetRevA)} suffix={cmp} />
+              <div className="pt-2">
+                <Row label="Aporte a las ventas" value={`${vetShareB.toFixed(0)}%`} pts={vetSharePts} />
+              </div>
             </div>
           </div>
-          <div className="rounded-xl bg-muted/30 border border-border p-4 space-y-1.5">
-            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">BVS Vet Shop · revenue</p>
-            <p className="text-xl font-black">{fmtCurrency(vetRevB)}</p>
-            <Delta pct={pctChange(vetRevB, vetRevA)} suffix={cmp} />
-            <div className="pt-2">
-              <Row label="Aporte a las ventas" value={`${vetShareB.toFixed(0)}%`} pts={vetSharePts} />
+
+          {/* Evolución del reparto (últimos 12 meses) */}
+          {hasSeries && (
+            <div className={CHART_H}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={series} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
+                  <CartesianGrid {...GRID} />
+                  <XAxis dataKey="name" {...AXIS} interval={Math.max(0, Math.floor(series.length / 6))} />
+                  <YAxis {...AXIS} tickFormatter={(v) => `€${(v / 1000).toFixed(0)}K`} />
+                  <Tooltip formatter={(v, n) => [fmtCurrency(v), n]} {...TIP} />
+                  <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
+                  <Bar dataKey="Nutracéuticos BVS" stackId="1" fill={SERIES[1]} radius={[0, 0, 0, 0]} maxBarSize={26} />
+                  <Bar dataKey="BVS Vet Shop" stackId="1" fill={SERIES[0]} radius={[3, 3, 0, 0]} maxBarSize={26} />
+                </BarChart>
+              </ResponsiveContainer>
             </div>
-          </div>
+          )}
         </div>
       )}
     </EvidenceCard>
