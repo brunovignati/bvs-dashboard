@@ -247,9 +247,12 @@ export function useChannelSegmentation() {
 }
 
 export function useBrandSales() {
+  // brand_sales supera las 1000 filas (Supabase corta cada respuesta a 1000). Con un
+  // fetchTable simple solo llegaban los meses más antiguos (2024) y los recientes faltaban
+  // → hay que paginar con fetchPaged, igual que email_campaigns/daily_*.
   return useQuery({
     queryKey: ['brand_sales'],
-    queryFn: () => fetchTable('brand_sales', 'year', true, 5000),
+    queryFn: () => fetchPaged('brand_sales', [['year', true], ['month', true], ['brand', true]], 20000),
     initialData: [],
   })
 }
