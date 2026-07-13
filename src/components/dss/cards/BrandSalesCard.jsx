@@ -11,8 +11,26 @@ import { useBrandSales } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
 import { fmtCurrency, fmtNumber } from "@/lib/dashboardData";
 
-// Marcas "no informativas" que no aportan a un ranking de fabricante.
-const NOISE = new Set(["(sin marca)", "(not set)", "(not provided)", ""]);
+// Marca de la casa / genérico (no es fabricante) + valores vacíos: fuera del ranking de
+// marcas. Se comparan por su forma normalizada (mayúsculas, sin acentos/comillas).
+const HOUSE = new Set(["BARAKALDO VET", "BVS VET SHOP", "(SIN MARCA)", "(NOT SET)", "(NOT PROVIDED)", ""]);
+
+// Clave de unificación: GA4 trae la misma marca escrita de varias formas
+// (Elanco/ELANCO, Bioiberica/BIOIBERICA, Hill´s/Hill's…). Normalizamos para no fragmentar.
+const canonKey = (b) =>
+  (b || "").toUpperCase()
+    .normalize("NFD").replace(/[̀-ͯ]/g, "")   // quita acentos
+    .replace(/[´`'’]/g, "'")                    // unifica comillas/tildes
+    .replace(/\s+/g, " ")
+    .trim();
+
+// Nombre a mostrar: entre las variantes de una misma marca, preferimos la que NO va toda en
+// mayúsculas (Elanco mejor que ELANCO); a igualdad, la más larga.
+const betterDisplay = (a, b) => {
+  const aUp = a === a.toUpperCase(), bUp = b === b.toUpperCase();
+  if (aUp !== bUp) return aUp ? b : a;
+  return b.length > a.length ? b : a;
+};
 
 export default function BrandSalesCard({ delay }) {
   const { data: raw = [] } = useBrandSales();
@@ -21,8 +39,10 @@ export default function BrandSalesCard({ delay }) {
   const agg = {};
   for (const r of raw) {
     if (!inRange(rangeB, r)) continue;
-    const brand = (r.brand || "").trim();
-    const a = (agg[brand] ||= { brand, revenue: 0, units: 0 });
+    const key = canonKey(r.brand);
+    if (HOUSE.has(key)) continue;                       // fuera marca propia/genérico
+    const a = (agg[key] ||= { key, display: (r.brand || "").trim(), revenue: 0, units: 0 });
+    a.display = betterDisplay(a.display, (r.brand || "").trim());
     a.revenue += Number(r.revenue) || 0;
     a.units += Number(r.units) || 0;
   }
@@ -30,12 +50,11 @@ export default function BrandSalesCard({ delay }) {
   const totalRev = all.reduce((s, b) => s + b.revenue, 0);
 
   const ranked = all
-    .filter((b) => !NOISE.has(b.brand))
     .sort((a, b) => b.revenue - a.revenue || b.units - a.units)
     .slice(0, 12)
     .map((b) => ({
-      name: b.brand.length > 22 ? b.brand.slice(0, 21) + "…" : b.brand,
-      full: b.brand,
+      name: b.display.length > 22 ? b.display.slice(0, 21) + "…" : b.display,
+      full: b.display,
       revenue: b.revenue,
       units: b.units,
       share: totalRev > 0 ? (b.revenue / totalRev) * 100 : 0,
@@ -57,7 +76,7 @@ export default function BrandSalesCard({ delay }) {
       answerTone={hasData ? "neutral" : "warn"}
       maturity={hasData ? "green" : "amber"}
       insight={hasData
-        ? `En ${cmp}, ${top.full} lidera con el ${top.share.toFixed(0)}% del revenue medido por GA4. Ranking por ingresos de artículo; unidades en el tooltip.`
+        ? `En ${cmp}, ${top.full} lidera con el ${top.share.toFixed(0)}% del revenue por fabricante medido por GA4. Ranking por ingresos de artículo; unidades en el tooltip. Excluye la marca propia (Barakaldo Vet / BVS Vet Shop) y agrupa variantes de la misma marca.`
         : "Aún no hay datos de ventas por marca para el período seleccionado (se pueblan desde GA4)."}
       actions={[
         { verb: "escalar", rationale: top ? `Refuerza surtido y promoción de las marcas que más pesan (empezando por ${top.full}).` : "Prioriza las marcas con mayor venta comprobada." },
