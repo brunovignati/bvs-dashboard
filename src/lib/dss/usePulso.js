@@ -104,14 +104,22 @@ export function usePulso() {
           groups[name].lastOrd = Math.max(groups[name].lastOrd, o);
           if (last7.has(o)) groups[name].recentSent += r.sent || 0;
         }
+        // 'parado' solo si el workflow venía enviando y dejó de hacerlo HACE POCO (≤30 días).
+        // Si lleva más de 30 días sin enviar es un workflow retirado/reemplazado (p. ej. los
+        // predecesores del carrito-push, muertos hace 500+ días), no una alerta accionable.
+        const STALL_MAX_DAYS = 30;
         wf.workflows = Object.values(groups)
-          .map(g => ({
-            name: g.name,
-            recentSent: g.recentSent,
-            stalled: g.distinctDays.size >= 8 && !last3.has(g.lastOrd),
-            daysSince: Math.max(0, Math.round((refDate - ordToDate(g.lastOrd)) / 86400000)),
-          }))
-          .sort((a, b) => Number(b.stalled) - Number(a.stalled) || b.recentSent - a.recentSent);
+          .map(g => {
+            const daysSince = Math.max(0, Math.round((refDate - ordToDate(g.lastOrd)) / 86400000));
+            return {
+              name: g.name,
+              recentSent: g.recentSent,
+              daysSince,
+              retired: daysSince > STALL_MAX_DAYS,
+              stalled: g.distinctDays.size >= 8 && !last3.has(g.lastOrd) && daysSince <= STALL_MAX_DAYS,
+            };
+          })
+          .sort((a, b) => Number(b.stalled) - Number(a.stalled) || a.daysSince - b.daysSince || b.recentSent - a.recentSent);
         wf.anyStalled = wf.workflows.some(w => w.stalled);
         if (wf.anyStalled) {
           const s = wf.workflows.find(w => w.stalled);

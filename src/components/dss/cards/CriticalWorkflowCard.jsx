@@ -25,7 +25,7 @@ export default function CriticalWorkflowCard({ workflows = [], anyStalled, hasDa
 
   // ── Vista B — ANTIGÜEDAD: días desde el último envío de cada workflow crítico. La vista A dice
   // si hay alguno parado; esta ordena todos por frescura (0 = envió hoy) con el umbral de 3 días. ──
-  const wfBars = workflows.slice(0, 8).map(w => ({ name: clip(w.name, 26), full: w.name, days: w.daysSince || 0, stalled: w.stalled }));
+  const wfBars = workflows.slice(0, 8).map(w => ({ name: clip(w.name, 26), full: w.name, days: w.daysSince || 0, stalled: w.stalled, retired: w.retired }));
   const altView = wfBars.length ? (
     <div className="h-56">
       <ResponsiveContainer width="100%" height="100%">
@@ -36,7 +36,7 @@ export default function CriticalWorkflowCard({ workflows = [], anyStalled, hasDa
           <Tooltip formatter={(v) => [`${v} día(s) sin enviar`, "Antigüedad"]} labelFormatter={(l, p) => p?.[0]?.payload?.full || l} labelStyle={{ fontSize: 10 }} />
           <ReferenceLine x={3} stroke="hsl(0,70%,60%)" strokeDasharray="4 3" label={{ value: "parado ≥3d", position: "top", fontSize: 8, fill: "hsl(0,60%,45%)" }} />
           <Bar dataKey="days" radius={[0, 4, 4, 0]}>
-            {wfBars.map((w, i) => <Cell key={i} fill={w.stalled ? "hsl(0,72%,52%)" : w.days >= 2 ? "hsl(37,42%,74%)" : "hsl(160,60%,42%)"} />)}
+            {wfBars.map((w, i) => <Cell key={i} fill={w.stalled ? "hsl(0,72%,52%)" : w.retired ? "hsl(220,9%,72%)" : w.days >= 2 ? "hsl(37,42%,74%)" : "hsl(160,60%,42%)"} />)}
           </Bar>
         </BarChart>
       </ResponsiveContainer>
@@ -57,15 +57,15 @@ export default function CriticalWorkflowCard({ workflows = [], anyStalled, hasDa
       delay={delay}
       altView={altView}
       viewLabels={{ a: "Estado", b: "Antigüedad" }}
-      note="Crítico = workflows de carrito y reactivación/reabastecimiento (D15/D08). Regla de 'parado': tiene historial de ≥8 días con envíos y 0 envíos en los últimos 3 días. Vista 'Antigüedad' = días desde el último envío por workflow (rojo = parado ≥3d). Madura con el histórico diario."
+      note="Crítico = workflows de carrito y reactivación/reabastecimiento (D15/D08). Regla de 'parado': historial de ≥8 días con envíos, 0 envíos en los últimos 3 días Y actividad en los últimos 30 días (si lleva más de 30 días sin enviar es un flujo RETIRADO/reemplazado, en gris, no una alerta). Vista 'Antigüedad' = días desde el último envío por workflow (rojo = parado, gris = retirado). Madura con el histórico diario."
     >
-      <p className="text-[10px] text-muted-foreground/70 mb-1.5">Regla: <span className="font-semibold text-foreground">parado</span> = ≥8 días de envío en su historial y sin ningún envío en los últimos 3 días.</p>
+      <p className="text-[10px] text-muted-foreground/70 mb-1.5">Regla: <span className="font-semibold text-foreground">parado</span> = ≥8 días de envío en su historial, sin envíos en los últimos 3 días y activo en los últimos 30. Más de 30 días sin enviar = <span className="font-semibold">retirado</span> (gris), no alerta.</p>
       <div className="space-y-1.5 mt-1">
         {workflows.slice(0, 5).map((w, i) => (
           <div key={i} className="flex items-center justify-between gap-2 text-sm">
             <span className="truncate text-foreground max-w-[65%]" title={w.name}>{w.name}</span>
-            <span className={`font-mono ${w.stalled ? "text-foreground font-semibold" : "text-muted-foreground"}`}>
-              {w.stalled ? "parado" : `${fmtNumber(w.recentSent)} env. 7d`}
+            <span className={`font-mono ${w.stalled ? "text-red-600 font-semibold" : "text-muted-foreground"}`}>
+              {w.stalled ? "parado" : w.retired ? `retirado · ${w.daysSince}d` : `${fmtNumber(w.recentSent)} env. 7d`}
             </span>
           </div>
         ))}
