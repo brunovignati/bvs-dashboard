@@ -39,6 +39,31 @@ export default function SocialContentCard({ delay }) {
   const best = top[0];
   const avgEng = items.length ? items.reduce((s, r) => s + r.engagement, 0) / items.length : 0;
 
+  // ── Vista B — engagement MEDIO por formato/red (Reels IG · Posts FB · Vídeos TK). La vista A
+  // es el ranking de piezas de una red; esta compara qué FORMATO resuena más en promedio. ──
+  const avgOf = (arr) => (arr.length ? arr.reduce((s, r) => s + r.engagement, 0) / arr.length : 0);
+  const FMTCOLOR = { ig: "hsl(30,72%,66%)", fb: "hsl(16,79%,57%)", tk: "hsl(220,9%,20%)" };
+  const fmtData = [
+    { id: "ig", name: "Reels (IG)", eng: avgOf(norm.ig), n: norm.ig.length },
+    { id: "fb", name: "Posts (FB)", eng: avgOf(norm.fb), n: norm.fb.length },
+    { id: "tk", name: "Vídeos (TK)", eng: avgOf(norm.tk), n: norm.tk.length },
+  ].filter(d => d.n > 0).sort((a, b) => b.eng - a.eng);
+  const altView = fmtData.length >= 1 ? (
+    <div className="h-56">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={fmtData} layout="vertical" margin={{ top: 4, right: 16, left: 4, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" horizontal={false} />
+          <XAxis type="number" tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} tickFormatter={v => v.toFixed(1)} />
+          <YAxis type="category" dataKey="name" width={90} tick={{ fontSize: 10, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} />
+          <Tooltip formatter={(v, n, p) => [`${Number(v).toFixed(1)} engagement medio · ${fmtNumber(p.payload.n)} piezas`, "Formato"]} labelStyle={{ fontSize: 10 }} />
+          <Bar dataKey="eng" radius={[0, 4, 4, 0]}>
+            {fmtData.map((d, i) => <Cell key={i} fill={FMTCOLOR[d.id] || "hsl(16,79%,57%)"} />)}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  ) : undefined;
+
   return (
     <EvidenceCard sources={["metricool"]}
       question="¿Qué contenido funciona en cada red?"
@@ -53,7 +78,9 @@ export default function SocialContentCard({ delay }) {
         { verb: "escalar", rationale: `Impulsa (o convierte en anuncio) las piezas con más ${cfg.secLabel.toLowerCase()}: son señal de valor real.` },
       ]}
       delay={delay}
-      note="Éxito = engagement (interacciones / alcance) de Metricool. Fuente: ig_reels / fb_posts / tk_videos. Top 6 por engagement."
+      altView={altView}
+      viewLabels={{ a: "Top posts", b: "Por formato" }}
+      note="Éxito = engagement (interacciones / alcance) de Metricool. Fuente: ig_reels / fb_posts / tk_videos. Top 6 por engagement. Vista 'Por formato' = engagement medio por red/formato (Reels IG · Posts FB · Vídeos TK), comparación entre redes."
     >
       <div className="flex gap-1 p-0.5 bg-muted/40 rounded-lg w-fit mb-3">
         {NETS.map(n => (

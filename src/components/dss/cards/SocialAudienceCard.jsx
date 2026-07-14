@@ -4,7 +4,7 @@
  * aporta Metricool: fb followers_acquired/followers_lost y tk new_followers.
  * Los seguidores viven SOLO aquí; el alcance/views vive en Marketing (sin duplicar).
  */
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { LineChart, Line, BarChart, Bar, Cell, ReferenceLine, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useIgDaily, useFbDaily, useTkDaily } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
@@ -61,6 +61,30 @@ export default function SocialAudienceCard({ delay }) {
     );
   }
 
+  // ── Vista B — crecimiento NETO (30 días) por red: quién suma y quién resta seguidores. La
+  // vista A muestra el nivel absoluto; esta muestra la dirección real de cada red. ──
+  const netData = [
+    { name: "Instagram", net: igNet },
+    { name: "Facebook", net: fbNet },
+    { name: "TikTok", net: tkNet },
+  ];
+  const altView = (
+    <div className="h-56">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={netData} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
+          <XAxis dataKey="name" tick={{ fontSize: 10, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} tickFormatter={v => `${v >= 0 ? "+" : ""}${fmtNumber(v)}`} />
+          <Tooltip formatter={(v) => [`${v >= 0 ? "+" : ""}${fmtNumber(v)} seguidores`, "Neto 30d"]} labelStyle={{ fontSize: 11 }} />
+          <ReferenceLine y={0} stroke="hsl(220,13%,70%)" />
+          <Bar dataKey="net" radius={[3, 3, 0, 0]}>
+            {netData.map((d, i) => <Cell key={i} fill={d.net >= 0 ? "hsl(160,60%,42%)" : "hsl(0,70%,55%)"} />)}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+
   return (
     <EvidenceCard sources={["metricool"]}
       question="¿Crece o se erosiona la base de audiencia social?"
@@ -73,7 +97,9 @@ export default function SocialAudienceCard({ delay }) {
         { verb: "mantener", rationale: "La audiencia social es un activo de captación: vigílala junto a la base de email/push." },
       ]}
       delay={delay}
-      note="Fuente: Metricool · followers por red + fb followers_acquired/lost y tk new_followers."
+      altView={altView}
+      viewLabels={{ a: "Nivel", b: "Crecimiento neto" }}
+      note="Fuente: Metricool · followers por red + fb followers_acquired/lost y tk new_followers. Vista 'Crecimiento neto' = altas menos bajas (30d) por red; verde suma, rojo resta."
     >
       <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">

@@ -4,7 +4,7 @@
  *   Instagram → views · Facebook → page_media_view · TikTok → account_views
  * (Los seguidores/base viven en CRM, no aquí, para no duplicar datos entre secciones.)
  */
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { LineChart, Line, BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useIgDaily, useFbDaily, useTkDaily } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
@@ -62,6 +62,26 @@ export default function SocialReachCard({ delay }) {
     );
   }
 
+  // ── Vista B — reparto del alcance POR RED (visualizaciones últimos 30 días). La vista A es la
+  // tendencia diaria; esta responde de un vistazo qué red concentra el alcance. ──
+  const NETCOLOR = { Instagram: "hsl(30,72%,66%)", Facebook: "hsl(16,79%,57%)", TikTok: "hsl(220,9%,20%)" };
+  const barData = totals.map(([name, v]) => ({ name, v }));
+  const altView = barData.length >= 1 ? (
+    <div className="h-56">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={barData} layout="vertical" margin={{ top: 4, right: 16, left: 4, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" horizontal={false} />
+          <XAxis type="number" tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} tickFormatter={v => fmtNumber(v)} />
+          <YAxis type="category" dataKey="name" width={80} tick={{ fontSize: 10, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} />
+          <Tooltip formatter={(v) => [fmtNumber(v), "Views 30d"]} labelStyle={{ fontSize: 11 }} />
+          <Bar dataKey="v" radius={[0, 4, 4, 0]}>
+            {barData.map((d, i) => <Cell key={i} fill={NETCOLOR[d.name] || "hsl(16,79%,57%)"} />)}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  ) : undefined;
+
   return (
     <EvidenceCard sources={["metricool"]}
       question="¿Cuánta notoriedad y alcance generan las redes?"
@@ -74,7 +94,9 @@ export default function SocialReachCard({ delay }) {
         { verb: "crear", rationale: "Si una red pierde visualizaciones, prueba un nuevo formato de contenido." },
       ]}
       delay={delay}
-      note="Fuente: Metricool · ig_daily.views / fb_daily.page_media_view / tk_daily.account_views."
+      altView={altView}
+      viewLabels={{ a: "Tendencia", b: "Por red" }}
+      note="Fuente: Metricool · ig_daily.views / fb_daily.page_media_view / tk_daily.account_views. Vista 'Por red' = visualizaciones totales de los últimos 30 días por plataforma."
     >
       <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">

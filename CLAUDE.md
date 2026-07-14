@@ -465,4 +465,40 @@ Action semanal (o ejecución manual). No intentar resolverlos con llamadas desde
 
 ---
 
+## 17. Patrón de segunda visualización (conmutador A/B en EvidenceCard)
+
+Muchas tarjetas ofrecen **dos lentes del mismo dato** con un conmutador arriba a la derecha.
+El patrón es único y vive en `EvidenceCard`:
+
+- Props: `altView` (JSX de la 2ª visualización) y `viewLabels={{ a, b }}` (etiquetas del toggle).
+- Si `altView` está definido, `EvidenceCard` pinta el conmutador y alterna
+  `{viewB && altView ? altView : children}`.
+- La preferencia se recuerda por tarjeta en `localStorage` con clave `bvs_vw_<slug-de-pregunta>`.
+
+**Reglas (aprendidas en las entregas 5–7):**
+1. **La vista B aporta información NUEVA**, no cosmética (p. ej. nivel↔crecimiento, importe↔peso,
+   embudo↔canales, serie↔desviación). Nunca dos gráficos que dicen lo mismo.
+2. **Ambas vistas usan el mismo periodo** del `ComparisonContext` (mismo `cutoff`/`inRange`).
+   Ninguna vista B calcula su propio rango. Excepción: tarjetas sin dimensión temporal
+   (`envios` en BestDay), que se documentan como agregado histórico.
+3. **Solo datos reales.** Antes de prometer un desglose, verificar que la columna existe y está
+   poblada (lección del embudo web y de "por canal/dispositivo" de GA4, que NO existe en
+   `ga4_daily`). Si el dato no está, se elige otra lente factible, no se inventa.
+4. Etiquetas de serie **únicas** para evitar colisiones de líneas/categorías.
+
+**Cobertura actual (tarjetas con vista B):** BrandSales, WebSticky, Reactivación, Temáticas,
+EmailScale, Push (rendimiento), MixCanal, VentasLínea, NoAtribuido, MarcaPropia,
+Adquisición/Retención, ValorCliente, SaludBase, RevenueEvolution, RevenueTarget, WebFunnel
+(embudo↔canales — 5 etapas GA4 reales), MarketingFunnel, CartSequence, CartWinner, Ga4Traffic
+(volumen↔calidad), WebConversion (conversión↔ingreso/sesión), BestDay (eficiencia↔volumen),
+PushChannelTrend (importe↔peso), SocialReach (tendencia↔por red), SocialAudience
+(nivel↔crecimiento neto), SocialContent (top posts↔por formato), RevenueDaily (serie↔desviación),
+ChannelDrop (variación↔reparto), CriticalWorkflow (estado↔antigüedad).
+
+Las tarjetas diarias (RevenueDaily, ChannelDrop, CriticalWorkflow) son de presentación y reciben
+sus datos ya calculados desde `usePulso` (`src/lib/dss/usePulso.js`); su vista B necesitó
+enriquecer ese hook (canal: `cur`/`base`; workflow: `daysSince`).
+
+---
+
 *Actualiza este archivo cuando cambie la arquitectura, las tablas, los workflows o las convenciones del proyecto.

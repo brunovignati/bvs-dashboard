@@ -67,7 +67,8 @@ export function usePulso() {
         const cur = last[c.key] || 0;
         const base = prior14.reduce((s, r) => s + (r[c.key] || 0), 0) / prior14.length;
         const delta = base > 0 ? ((cur - base) / base) * 100 : 0;
-        return { name: c.name, delta };
+        // cur = compras atribuidas del último día; base = media diaria de 14 días (para la vista 'Reparto').
+        return { name: c.name, delta, cur, base };
       });
       channelData.worst = channelData.channels.reduce((mn, c) => (c.delta < (mn?.delta ?? 999) ? c : mn), null);
       if (channelData.worst && channelData.worst.delta < -25) {
@@ -91,6 +92,9 @@ export function usePulso() {
         wf.hasData = true;
         const last7 = new Set(allDays.slice(-7));
         const last3 = new Set(allDays.slice(-3));
+        // Referencia temporal para 'días desde el último envío': el día más reciente con datos.
+        const ordToDate = (o) => new Date(Math.floor(o / 10000), Math.floor((o % 10000) / 100) - 1, o % 100);
+        const refDate = ordToDate(allDays[allDays.length - 1]);
         const groups = {};
         for (const r of crit) {
           const name = r.workflow || "—";
@@ -105,6 +109,7 @@ export function usePulso() {
             name: g.name,
             recentSent: g.recentSent,
             stalled: g.distinctDays.size >= 8 && !last3.has(g.lastOrd),
+            daysSince: Math.max(0, Math.round((refDate - ordToDate(g.lastOrd)) / 86400000)),
           }))
           .sort((a, b) => Number(b.stalled) - Number(a.stalled) || b.recentSent - a.recentSent);
         wf.anyStalled = wf.workflows.some(w => w.stalled);
