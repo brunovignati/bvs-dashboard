@@ -38,7 +38,10 @@ export default function WebStickyCard({ delay }) {
   // 12 meses hasta el corte del selector. Mismo dato (daily_sticky) y mismo cutoff. ──
   const topRev = Object.values(agg).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
   const topNames = topRev.map(p => p.name);
-  const labelByName = {}; topRev.forEach(p => { labelByName[p.name] = shortLabel(p.name); });
+  // Etiquetas cortas ÚNICAS (evita que dos nombres truncados iguales colisionen como misma
+  // serie en el gráfico de líneas).
+  const labelByName = {}; const usedLabels = new Set();
+  topRev.forEach((p, idx) => { let s = shortLabel(p.name); while (usedLabels.has(s)) s = `${s.replace(/…$/, "")} ·${idx + 1}`; usedLabels.add(s); labelByName[p.name] = s; });
   const byM = {};
   for (const r of data) {
     const k = r.year * 12 + r.month;

@@ -39,7 +39,9 @@ export default function ReactivationCard({ delay }) {
   // ── Vista B — evolución mensual del revenue de los 5 flujos top, últimos 12 meses hasta
   // el corte. Reconstruye desde email/push (con year/month) los mismos flujos del ranking. ──
   const topNames = agg.slice(0, 5).map(w => w.name);
-  const labelByName = {}; agg.slice(0, 5).forEach(w => { labelByName[w.name] = shortLabel(w.name); });
+  // Etiquetas cortas ÚNICAS (evita colisión de series con nombres truncados iguales).
+  const labelByName = {}; const usedLabels = new Set();
+  agg.slice(0, 5).forEach((w, idx) => { let s = shortLabel(w.name); while (usedLabels.has(s)) s = `${s.replace(/…$/, "")} ·${idx + 1}`; usedLabels.add(s); labelByName[w.name] = s; });
   const evoSrc = [
     ...email.filter(r => inPeriod(r) && matchName(r, RX)).map(r => ({ y: r.year, m: r.month, name: r.emailName || r.emailWorkflow, revenue: r.revenue || 0 })),
     ...push.filter(r => inPeriod(r) && matchName(r, RX)).map(r => ({ y: r.year, m: r.month, name: r.workflow, revenue: r.revenue || 0 })),

@@ -56,8 +56,14 @@ export default function EmailScaleCard({ delay }) {
 
   // ── Vista B — ranking por REVENUE absoluto de campaña. El scatter muestra eficiencia
   // (posicionamiento); este ranking muestra quién trae más euros. Mismo scope/periodo. ──
+  const _usedShort = new Set();
   const byRevBars = [...pts].sort((a, b) => b.revenue - a.revenue).slice(0, 8)
-    .map(p => ({ ...p, short: p.name.length > 26 ? p.name.slice(0, 25) + "…" : p.name }));
+    .map((p, idx) => {
+      let short = p.name.length > 26 ? p.name.slice(0, 25) + "…" : p.name;
+      while (_usedShort.has(short)) short = `${short.replace(/…$/, "")} ·${idx + 1}`;
+      _usedShort.add(short);
+      return { ...p, short };
+    });
   const altView = hasData ? (
     <div className="h-56">
       <ResponsiveContainer width="100%" height="100%">
