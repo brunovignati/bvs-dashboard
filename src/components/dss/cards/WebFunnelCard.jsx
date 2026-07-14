@@ -33,7 +33,7 @@ export default function WebFunnelCard({ delay }) {
 
   if (!hasData) {
     return (
-      <EvidenceCard sources={["ga4", "connectif"]}
+      <EvidenceCard sources={["ga4", "prestashop"]}
         question="¿Funciona el embudo del sitio? (tráfico → compra)"
         answer="Pendiente de datos"
         answerTone="neutral" maturity="amber"
@@ -52,7 +52,7 @@ export default function WebFunnelCard({ delay }) {
   const top = stages[0].v || 1;
 
   return (
-    <EvidenceCard sources={["ga4", "connectif"]}
+    <EvidenceCard sources={["ga4", "prestashop"]}
       question="¿Funciona el embudo del sitio? (tráfico → compra)"
       kpis={[
         { value: `${conv.toFixed(1)}%`, label: "Conversión web (compra/sesión)" },

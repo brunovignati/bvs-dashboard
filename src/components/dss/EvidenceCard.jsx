@@ -13,9 +13,10 @@ import { TrendingUp, TrendingDown, Minus, ChevronDown, ChevronUp } from "lucide-
 
 // ── Distintivos de fuente (inicial, en gris tenue para no robar atención) ──
 const SOURCES = {
-  connectif: { short: "C", title: "Connectif" },
-  ga4:       { short: "GA", title: "Google Analytics" },
-  metricool: { short: "M", title: "Metricool" },
+  connectif:  { short: "C", title: "Connectif" },
+  ga4:        { short: "GA", title: "Google Analytics" },
+  metricool:  { short: "M", title: "Metricool" },
+  prestashop: { short: "PS", title: "PrestaShop" },
 };
 function SourceBadges({ ids }) {
   if (!ids.length) return null;
