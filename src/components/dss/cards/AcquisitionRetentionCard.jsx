@@ -46,7 +46,7 @@ export default function AcquisitionRetentionCard({ delay }) {
       question="¿Dependemos de adquisición o de retención?"
       answer={hasData ? `${last.pctRec.toFixed(0)}% recurrentes` : "Sin datos"}
       answerTone={hasData ? (last.pctRec >= 60 ? "good" : last.pctRec >= 40 ? "warn" : "bad") : "neutral"}
-      context={hasData ? `${M[last.month]} ${last.year} · ${last.pctNew.toFixed(0)}% primerizos · tendencia de recurrencia ${trend >= 0 ? "+" : ""}${trend.toFixed(0)} pts desde el inicio` : undefined}
+      context={hasData ? `${last.name} · ${last.pctNew.toFixed(0)}% primerizos · tendencia de recurrencia ${trend >= 0 ? "+" : ""}${trend.toFixed(0)} pts desde el inicio` : undefined}
       maturity="green"
       actions={[
         { verb: "reasignar", rationale: hasData && last.pctRec < 50 ? "Alta dependencia de captación: refuerza retención (automatizaciones, CRM)." : "Base fiel: sostén la captación sin descuidar la fidelización." },
