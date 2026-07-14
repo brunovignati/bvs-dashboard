@@ -5,11 +5,14 @@
  * consumo por marca real (Connectif solo conoce "BVS Vet Shop"). Respeta el selector.
  * Matiz: GA4 mide la web (online, sujeto a consentimiento); direccional, no exacto contable.
  */
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useBrandSales } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
 import { fmtCurrency, fmtNumber } from "@/lib/dashboardData";
+
+const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+const EVO_COLORS = ["hsl(16,79%,57%)", "hsl(45,35%,46%)", "hsl(186,32%,42%)", "hsl(4,39%,55%)", "hsl(30,72%,66%)"];
 
 // Marca de la casa / genérico (no es fabricante) + valores vacíos: fuera del ranking de
 // marcas. Se comparan por su forma normalizada (mayúsculas, sin acentos/comillas).
@@ -64,6 +67,40 @@ export default function BrandSalesCard({ delay }) {
   const top = hasData ? ranked[0] : null;
   const cmp = labelRange(rangeB);
 
+  // ── Vista B — evolución mensual de las top-5 marcas (últimos 12 meses hasta el corte
+  // del selector). Misma fuente y mismo cutoff que la vista A → atada al periodo. ──
+  const cutoff = rangeB.end.year * 12 + rangeB.end.month;
+  const topFive = ranked.slice(0, 5);
+  const topKeys = topFive.map((b) => canonKey(b.full));
+  const dispByKey = {}; topFive.forEach((b) => { dispByKey[canonKey(b.full)] = b.full; });
+  const byMonth = {};
+  for (const r of raw) {
+    const k = r.year * 12 + r.month;
+    if (k > cutoff) continue;
+    const ck = canonKey(r.brand);
+    if (!topKeys.includes(ck)) continue;
+    (byMonth[k] ||= { k, year: r.year, month: r.month });
+    byMonth[k][ck] = (byMonth[k][ck] || 0) + (Number(r.revenue) || 0);
+  }
+  const evo = Object.values(byMonth).sort((a, b) => a.k - b.k).slice(-12)
+    .map((m) => { const o = { name: `${M[m.month]} ${String(m.year).slice(2)}` }; topKeys.forEach((ck) => { o[dispByKey[ck]] = m[ck] || 0; }); return o; });
+  const hasEvo = evo.length >= 2 && topFive.length >= 1;
+
+  const altView = hasEvo ? (
+    <div style={{ height: 260 }}>
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={evo} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
+          <XAxis dataKey="name" tick={{ fontSize: 9, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} interval={Math.max(0, Math.floor(evo.length / 8))} />
+          <YAxis tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} tickFormatter={(v) => `€${(v / 1000).toFixed(0)}K`} />
+          <Tooltip formatter={(v, n) => [fmtCurrency(v), n]} labelStyle={{ fontSize: 10 }} />
+          <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
+          {topFive.map((b, i) => <Line key={b.full} type="monotone" dataKey={b.full} stroke={EVO_COLORS[i % EVO_COLORS.length]} strokeWidth={2} dot={false} />)}
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  ) : undefined;
+
   return (
     <EvidenceCard sources={["ga4"]}
       question="¿Qué marcas venden más? (consumo por marca)"
@@ -83,7 +120,9 @@ export default function BrandSalesCard({ delay }) {
         { verb: "vigilar", rationale: "Compara el peso de cada marca entre periodos para detectar las que ganan o pierden tracción." },
       ]}
       delay={delay}
-      note="Fuente: Google Analytics 4 (dimensión item_brand · itemRevenue e itemsPurchased), agregado por marca y mes. Mide ventas de la web (online, sujeto a consentimiento/adblock): medida direccional del consumo por marca, no cifra contable exacta. El total exacto + retail llegará vía PrestaShop cuando haya acceso."
+      altView={altView}
+      viewLabels={{ a: "Ranking", b: "Evolución" }}
+      note="Fuente: Google Analytics 4 (dimensión item_brand · itemRevenue e itemsPurchased), agregado por marca y mes. Mide ventas de la web (online, sujeto a consentimiento/adblock): medida direccional del consumo por marca, no cifra contable exacta. El total exacto + retail llegará vía PrestaShop cuando haya acceso. Vista 'Evolución' = revenue mensual de las 5 marcas líderes, últimos 12 meses hasta el fin del periodo."
     >
       {hasData && (
         <div style={{ height: Math.max(180, ranked.length * 26 + 30) }}>

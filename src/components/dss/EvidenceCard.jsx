@@ -87,12 +87,18 @@ export default function EvidenceCard({
   actions = [],
   note,
   children,
+  altView,                // 2ª visualización opcional (vista B). Si se define, aparece el conmutador.
+  viewLabels = { a: "Resumen", b: "Evolución" },
   status,
   sources: sourcesProp,   // ['connectif'|'ga4'|'metricool'] — por defecto Connectif
   delay = 0,
 }) {
   const [showNote, setShowNote] = useState(false);
   const [showAction, setShowAction] = useState(false);
+  // Conmutador de vista (A/B). Preferencia recordada por tarjeta (clave = pregunta).
+  const vkey = "bvs_vw_" + String(question || "").replace(/[^a-zA-Z0-9]+/g, "_").slice(0, 48);
+  const [viewB, setViewB] = useState(() => { try { return localStorage.getItem(vkey) === "b"; } catch { return false; } });
+  const setView = (b) => { setViewB(b); try { localStorage.setItem(vkey, b ? "b" : "a"); } catch { /* noop */ } };
   const statusPill = status
     ? status
     : severity ? { tone: "bad", label: "En riesgo" }
@@ -152,8 +158,26 @@ export default function EvidenceCard({
       ) : null}
       {context && <p className="text-xs text-muted-foreground mt-1.5">{context}</p>}
 
-      {/* 3. Visualización */}
-      {children && <div className="mt-4">{children}</div>}
+      {/* 3. Visualización (con conmutador A/B si hay 2ª vista) */}
+      {(children || altView) && (
+        <div className="mt-4">
+          {altView && (
+            <div className="flex justify-end mb-2">
+              <div className="inline-flex rounded-lg border border-border overflow-hidden" role="tablist" aria-label="Cambiar visualización">
+                <button type="button" role="tab" aria-selected={!viewB} onClick={() => setView(false)}
+                  className={`px-2.5 py-0.5 text-[10px] font-medium transition-colors ${!viewB ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}>
+                  {viewLabels.a}
+                </button>
+                <button type="button" role="tab" aria-selected={viewB} onClick={() => setView(true)}
+                  className={`px-2.5 py-0.5 text-[10px] font-medium transition-colors border-l border-border ${viewB ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground"}`}>
+                  {viewLabels.b}
+                </button>
+              </div>
+            </div>
+          )}
+          {viewB && altView ? altView : children}
+        </div>
+      )}
 
       {/* 4. Acción — oculta por defecto; se revela con el ojo */}
       {rec && (
