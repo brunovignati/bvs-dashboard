@@ -1,18 +1,18 @@
 /**
- * WebFunnelCard (Marketing · síntesis) — embudo web con la COMPRA desde la fuente de verdad.
- *   Sesiones (GA4) → Compra web (PrestaShop) · Revenue web (PrestaShop)
- * Compra y revenue = pedidos REALES de PrestaShop (prestashop_monthly), canal WEB (excluye
- * Amazon y TPV/tienda física). Sesiones = GA4. Respeta el periodo.
+ * WebFunnelCard (Marketing · síntesis) — embudo web COMPLETO de comportamiento (GA4).
+ *   Sesiones → Vistas de producto → Añadir al carrito → Checkout → Compra
+ * Las 5 etapas salen de GA4 (ga4_daily: sessions, item_views, add_to_carts, checkouts,
+ * ecommerce_purchases), sumadas SOLO sobre los días con datos de embudo → cada etapa es un
+ * subconjunto real de la anterior y las tasas entre pasos son válidas (monotónicas).
+ * El dinero de verdad (revenue web y peso sobre la tienda) viene de PrestaShop
+ * (prestashop_monthly, pedidos reales canal web), porque GA4 mide comportamiento (infra-cuenta
+ * compras por consentimiento/atribución) mientras PrestaShop es la caja real.
  *
- * Honestidad de datos:
- *  - Las etapas intermedias (carrito/checkout) NO se dibujan: PrestaShop purga carritos
- *    antiguos y los checkouts de GA4 están infra-contados → embudo imposible.
- *  - GA4 (ga4_daily) solo tiene histórico reciente. Si el periodo seleccionado empieza ANTES
- *    de la cobertura de GA4, las sesiones estarían truncadas y la conversión saldría inflada:
- *    en ese caso se ocultan sesiones/conversión y se muestran solo pedidos y revenue web
- *    reales de PrestaShop (fiables para cualquier periodo).
+ * Cobertura: las etapas intermedias de GA4 existen desde may-2026. Si el periodo no tiene datos
+ * de embudo, se muestra el modo honesto reducido (pedidos y revenue web reales de PrestaShop).
  */
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { ChevronDown } from "lucide-react";
 import EvidenceCard from "../EvidenceCard";
 import { useGa4Daily, usePrestashopMonthly } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
@@ -26,28 +26,27 @@ export default function WebFunnelCard({ delay }) {
   const { data: ps = [] } = usePrestashopMonthly();
   const { rangeB, inRange, labelRange } = useComparison();
 
-  const sumGa = (f) => ga.reduce((s, g) => s + (inRange(rangeB, g) ? (Number(g[f]) || 0) : 0), 0);
   const sumPs = (f) => ps.reduce((s, r) => s + (inRange(rangeB, r) ? (Number(r[f]) || 0) : 0), 0);
-
-  const sessions = sumGa("sessions");
-  const ordersWeb = sumPs("orders_web");
   const revenueWeb = sumPs("revenue_web");
+  const ordersWeb = sumPs("orders_web");
   const ordersTotal = sumPs("orders_total");
-
-  // ¿El periodo está dentro de la cobertura de GA4? (si empieza antes, sesiones truncadas)
-  const ga4MinYm = ga.length ? Math.min(...ga.map(g => g.year * 12 + g.month)) : Infinity;
-  const periodStartYm = rangeB.start.year * 12 + rangeB.start.month;
-  const ga4Covered = periodStartYm >= ga4MinYm;
-  const ga4MinLabel = isFinite(ga4MinYm) ? `${M[((ga4MinYm - 1) % 12) + 1]} ${Math.floor((ga4MinYm - 1) / 12)}` : "—";
-
-  const hasOrders = ordersWeb > 0;
-  const convValid = ga4Covered && sessions > 0 && hasOrders;
-  const conv = sessions ? (ordersWeb / sessions) * 100 : 0;
   const webShare = ordersTotal ? (ordersWeb / ordersTotal) * 100 : 0;
   const cmp = labelRange(rangeB);
 
-  // ── Vista B — reparto de pedidos por canal (web/Amazon/TPV) en el tiempo. Dato completo de
-  // PrestaShop (sin límite de GA4). Revela cuánto pesa la web frente a marketplace y tienda. ──
+  // ── Embudo GA4: sumar SOLO días con datos de embudo (item_views no nulo) para que las 5
+  // etapas cubran el mismo conjunto de días y las tasas sean coherentes. ──
+  const fRows = ga.filter(g => inRange(rangeB, g) && g.item_views != null);
+  const fv = (f) => fRows.reduce((s, g) => s + (Number(g[f]) || 0), 0);
+  const sessions = fv("sessions");
+  const itemViews = fv("item_views");
+  const addToCarts = fv("add_to_carts");
+  const checkouts = fv("checkouts");
+  const buys = fv("ecommerce_purchases");
+  const funnelValid = fRows.length > 0 && sessions > 0 && itemViews > 0 && addToCarts > 0 && checkouts > 0 && buys > 0;
+
+  const conv = sessions ? (buys / sessions) * 100 : 0;
+
+  // ── Vista B — reparto de pedidos por canal (web/Amazon/TPV) en el tiempo (PrestaShop). ──
   const cutoff = rangeB.end.year * 12 + rangeB.end.month;
   const chRows = ps.filter(r => (r.year * 12 + r.month) <= cutoff)
     .sort((a, b) => (a.year * 12 + a.month) - (b.year * 12 + b.month)).slice(-12)
@@ -70,75 +69,92 @@ export default function WebFunnelCard({ delay }) {
     </div>
   ) : undefined;
 
-  if (!hasOrders) {
+  // ── Modo reducido honesto: sin datos de embudo GA4, mostrar solo lo real de PrestaShop. ──
+  if (!funnelValid) {
+    if (ordersWeb <= 0) {
+      return (
+        <EvidenceCard sources={["ga4", "prestashop"]}
+          question="¿Funciona el embudo del sitio? (tráfico → compra)"
+          answer="Pendiente de datos" answerTone="neutral" maturity="amber"
+          actions={[{ verb: "investigar", rationale: "Falta el embudo GA4 (item_views/add_to_carts/checkouts) y/o pedidos web de PrestaShop para el periodo." }]}
+          delay={delay} altView={altView} viewLabels={{ a: "Embudo", b: "Canales" }}
+          note="Embudo: GA4 · ga4_daily. Revenue/pedidos web: PrestaShop · prestashop_monthly." />
+      );
+    }
     return (
       <EvidenceCard sources={["ga4", "prestashop"]}
         question="¿Funciona el embudo del sitio? (tráfico → compra)"
-        answer="Pendiente de datos"
-        answerTone="neutral" maturity="amber"
-        actions={[{ verb: "investigar", rationale: "Necesita pedidos web de PrestaShop (prestashop_monthly) para el periodo." }]}
-        delay={delay}
-        note="Compra/revenue web: PrestaShop · prestashop_monthly (pedidos reales, canal web). Sesiones: GA4 · ga4_daily."
-      />
+        kpis={[
+          { value: fmtNumber(ordersWeb), label: `Pedidos web · ${cmp}` },
+          { value: fmtCurrency(revenueWeb), label: "Revenue web" },
+          { value: `${webShare.toFixed(0)}%`, label: "de los pedidos de la tienda" },
+        ]}
+        maturity="green"
+        insight={`Pedidos y revenue web REALES de PrestaShop. El embudo de comportamiento (sesiones→vistas→carrito→checkout→compra) solo existe en GA4 desde may-2026; elige un periodo dentro de esa ventana para ver las 5 etapas. La web es el ${webShare.toFixed(0)}% de los pedidos totales.`}
+        actions={[{ verb: "investigar", rationale: "Selecciona un periodo con cobertura de GA4 (desde may-2026) para ver dónde se pierde el tráfico dentro del sitio." }]}
+        delay={delay} altView={altView} viewLabels={{ a: "Embudo", b: "Canales" }}
+        note="Embudo GA4 (ga4_daily) disponible desde may-2026. Revenue/pedidos web: PrestaShop · prestashop_monthly (pedidos reales, canal web)." />
     );
   }
 
   const stages = [
-    { key: "ses", label: "Sesiones (web)", v: sessions },
-    { key: "buy", label: "Compra web (PrestaShop)", v: ordersWeb },
+    { key: "ses", label: "Sesiones", v: sessions },
+    { key: "view", label: "Vistas de producto", v: itemViews },
+    { key: "cart", label: "Añadir al carrito", v: addToCarts },
+    { key: "chk", label: "Checkout iniciado", v: checkouts },
+    { key: "buy", label: "Compra", v: buys },
   ];
-  const top = sessions || 1;
+  const maxV = sessions || 1;
+  const steps = stages.slice(1).map((st, i) => ({
+    label: `${st.label.toLowerCase()} / ${stages[i].label.toLowerCase()}`,
+    from: stages[i].label, to: st.label,
+    rate: stages[i].v ? (st.v / stages[i].v) * 100 : 0,
+  }));
+  const worst = steps.reduce((m, s) => (s.rate < m.rate ? s : m), steps[0]);
+  const worstShort = { "Vistas de producto": "ver producto", "Añadir al carrito": "carrito", "Checkout iniciado": "checkout", "Compra": "compra" }[worst.to] || worst.to;
 
   return (
     <EvidenceCard sources={["ga4", "prestashop"]}
       question="¿Funciona el embudo del sitio? (tráfico → compra)"
-      kpis={convValid ? [
+      kpis={[
         { value: `${conv.toFixed(1)}%`, label: "Conversión web (compra/sesión)" },
         { value: fmtCurrency(revenueWeb), label: `Revenue web · ${cmp}` },
         { value: `${webShare.toFixed(0)}%`, label: "de los pedidos de la tienda" },
-      ] : [
-        { value: fmtNumber(ordersWeb), label: `Pedidos web · ${cmp}` },
-        { value: fmtCurrency(revenueWeb), label: "Revenue web" },
-        { value: `${webShare.toFixed(0)}%`, label: "de los pedidos de la tienda" },
       ]}
       maturity="green"
-      insight={convValid
-        ? `De ${fmtNumber(sessions)} sesiones web, ${fmtNumber(ordersWeb)} acaban en compra (${conv.toFixed(1)}%). Compra y revenue son pedidos REALES de PrestaShop (canal web), no una estimación. Ojo: la web es solo el ${webShare.toFixed(0)}% de los pedidos totales de la tienda — el resto es Amazon y tienda física (TPV).`
-        : `Pedidos y revenue web REALES de PrestaShop. La conversión sesión→compra no se muestra en este periodo porque GA4 solo tiene sesiones desde ${ga4MinLabel}; selecciona un periodo dentro de esa ventana para verla. La web es el ${webShare.toFixed(0)}% de los pedidos totales de la tienda.`}
+      insight={`Embudo de comportamiento web (GA4), 5 etapas encadenadas: de ${fmtNumber(sessions)} sesiones, ${fmtNumber(buys)} acaban en compra (${conv.toFixed(1)}%). El mayor descarte está en el paso a «${worstShort}» (${worst.rate.toFixed(1)}% pasa). El revenue web (${fmtCurrency(revenueWeb)}) es real de PrestaShop; la web pesa el ${webShare.toFixed(0)}% de los pedidos totales de la tienda.`}
       actions={[
-        { verb: "investigar", rationale: "La conversión sesión→compra es el número clave; para ver dónde se pierde dentro del sitio (carrito/checkout) haría falta instrumentar esos eventos en GA4, hoy no fiables." },
+        { verb: "priorizar", rationale: `Ataca el cuello de botella: solo el ${worst.rate.toFixed(1)}% pasa de «${worst.from.toLowerCase()}» a «${worst.to.toLowerCase()}». Ahí está la mayor fuga del sitio.` },
+        { verb: "investigar", rationale: "Compara las tasas de cada paso con las de campañas/promos para ver qué mejora la conversión web." },
       ]}
       delay={delay}
       altView={altView}
       viewLabels={{ a: "Embudo", b: "Canales" }}
-      note={`Sesiones: GA4 · ga4_daily (histórico desde ${ga4MinLabel}). Compra web y revenue web: PrestaShop · prestashop_monthly (pedidos reales valid=1, excluyendo Amazon y TPV). La conversión solo se calcula si el periodo cae dentro de la cobertura de GA4; en periodos anteriores se muestran solo pedidos y revenue web (siempre fiables). Etapas de carrito/checkout omitidas por falta de dato fiable.`}
+      note="5 etapas de GA4 · ga4_daily (sessions, item_views, add_to_carts, checkouts, ecommerce_purchases), sumadas solo sobre días con datos de embudo (desde may-2026) para tasas válidas. La compra del embudo es la de GA4 (comportamiento). Revenue web y % sobre la tienda: PrestaShop · prestashop_monthly (caja real, canal web). Vista 'Canales' = reparto de pedidos web/Amazon/TPV mes a mes (PrestaShop)."
     >
-      {convValid ? (
-        <div className="space-y-2 mt-1">
-          {stages.map((s, i) => {
-            const pct = (s.v / top) * 100;
-            const step = i === 0 ? null : stages[i - 1].v ? (s.v / stages[i - 1].v) * 100 : 0;
-            return (
-              <div key={s.key} className="flex items-center gap-3">
-                <span className="w-44 shrink-0 text-xs text-muted-foreground">{s.label}</span>
-                <div className="flex-1 h-6 bg-muted/40 rounded-md overflow-hidden">
-                  <div className="h-full bg-primary/70 rounded-md flex items-center justify-end px-2" style={{ width: `${Math.max(pct, 6)}%` }}>
-                    <span className="text-[11px] font-semibold text-primary-foreground">{fmtNumber(s.v)}</span>
-                  </div>
-                </div>
-                <span className="w-14 shrink-0 text-right text-[11px] font-mono text-muted-foreground">
-                  {step == null ? "—" : `${step.toFixed(1)}%`}
+      <div className="space-y-1 mt-1">
+        {stages.map((st, i) => (
+          <div key={st.key}>
+            <div className="flex items-baseline justify-between text-xs mb-0.5">
+              <span className="text-muted-foreground">{st.label}</span>
+              <span className="font-mono font-semibold text-foreground">{fmtNumber(st.v)}</span>
+            </div>
+            <div className="h-2.5 rounded bg-muted/50 overflow-hidden">
+              <div className="h-full rounded bg-primary/80" style={{ width: `${Math.max(1.5, (st.v / maxV) * 100)}%` }} />
+            </div>
+            {i < steps.length && (
+              <div className="flex items-center justify-center gap-1.5 text-[10px] py-0.5">
+                <ChevronDown className={`w-3.5 h-3.5 shrink-0 ${steps[i] === worst ? "text-red-500" : "text-muted-foreground"}`} />
+                <span className={`font-medium ${steps[i] === worst ? "text-red-600" : "text-muted-foreground"}`}>
+                  {steps[i].rate.toFixed(1)}% pasa a {steps[i].to.toLowerCase()}
+                  {steps[i] === worst && <span className="font-semibold"> · cuello de botella</span>}
                 </span>
               </div>
-            );
-          })}
-          <p className="text-[10px] text-muted-foreground/70 pt-1">Sesiones (GA4) → Compra web (PrestaShop, dato real). Columna derecha = conversión.</p>
-        </div>
-      ) : (
-        <p className="text-xs text-muted-foreground mt-1">
-          Sesiones/conversión no disponibles para este periodo (GA4 solo cubre desde {ga4MinLabel}). Arriba, pedidos y revenue web reales de PrestaShop para el periodo seleccionado.
-        </p>
-      )}
+            )}
+          </div>
+        ))}
+        <p className="text-[10px] text-muted-foreground/70 pt-1">Comportamiento GA4 · {cmp}. Sesiones → vistas de producto → carrito → checkout → compra. Cada tasa = paso siguiente / paso anterior.</p>
+      </div>
     </EvidenceCard>
   );
 }
