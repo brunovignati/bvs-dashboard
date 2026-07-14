@@ -5,11 +5,25 @@
  * y rompe la redundancia visual con el scatter de email.
  */
 import { useState } from "react";
+import { ScatterChart, Scatter, XAxis, YAxis, ZAxis, CartesianGrid, Tooltip, Cell, ResponsiveContainer, ReferenceLine } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { usePushCampaigns } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
 import { latestMonthRows, wilson } from "@/lib/dss/dssUtils";
 import { fmtCurrency, fmtNumber } from "@/lib/dashboardData";
+
+const ScatterTip = ({ active, payload }) => {
+  if (!active || !payload?.length) return null;
+  const d = payload[0].payload;
+  return (
+    <div className="bg-card/95 backdrop-blur border border-border rounded-lg p-2.5 shadow-xl max-w-56">
+      <p className="text-xs font-semibold mb-1 line-clamp-2">{d.name}</p>
+      <p className="text-[11px] text-muted-foreground">Conversión: <span className="font-mono text-orange-600">{d.x.toFixed(2)}%</span></p>
+      <p className="text-[11px] text-muted-foreground">Revenue: <span className="font-mono">{fmtCurrency(d.y)}</span></p>
+      <p className="text-[11px] text-muted-foreground">Envíos: <span className="font-mono">{fmtNumber(d.sent)}</span></p>
+    </div>
+  );
+};
 
 function Spark({ values }) {
   if (!values || values.length < 2) return <span className="text-[10px] text-muted-foreground/50">—</span>;
@@ -58,6 +72,29 @@ export default function PushPerformanceCard({ delay }) {
   const top = byRev.slice(0, 3);
   const weak = list.filter(p => p.sent > 300 && p.conv < 0.3).slice(0, 3);
 
+  // ── Vista B — dispersión conversión vs revenue (burbuja = envíos): separa las que
+  // ENGANCHAN (alta conversión) de las que VENDEN (alto revenue). Mismo scope/periodo. ──
+  const scatterData = byRev.map(w => ({ name: w.name, x: w.conv, y: w.revenue, sent: w.sent, z: Math.max(50, Math.min(500, (w.sent || 0) / 40)) }));
+  const altView = hasData ? (
+    <div className="h-56">
+      <ResponsiveContainer width="100%" height="100%">
+        <ScatterChart margin={{ top: 10, right: 12, bottom: 22, left: 6 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" />
+          <XAxis type="number" dataKey="x" name="Conversión" tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} tickFormatter={v => `${v.toFixed(1)}%`}
+            label={{ value: "Conversión (compras/envíos)", position: "insideBottom", offset: -12, fontSize: 9, fill: "hsl(32,7%,48%)" }} />
+          <YAxis type="number" dataKey="y" name="Revenue" tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} tickFormatter={v => `€${(v / 1000).toFixed(0)}K`}
+            label={{ value: "Revenue", angle: -90, position: "insideLeft", offset: 16, fontSize: 9, fill: "hsl(32,7%,48%)" }} />
+          <ZAxis type="number" dataKey="z" range={[40, 400]} />
+          <Tooltip content={<ScatterTip />} />
+          {avgConv > 0 && <ReferenceLine x={avgConv} stroke="hsl(220,13%,75%)" strokeDasharray="4 4" />}
+          <Scatter data={scatterData}>
+            {scatterData.map((p, i) => <Cell key={i} fill={p.x >= avgConv ? "hsl(16,79%,57%)" : "hsl(220,13%,65%)"} fillOpacity={0.8} />)}
+          </Scatter>
+        </ScatterChart>
+      </ResponsiveContainer>
+    </div>
+  ) : undefined;
+
   list = [...list].sort((a, b) => (a[sort.key] < b[sort.key] ? 1 : a[sort.key] > b[sort.key] ? -1 : 0) * sort.dir);
   const th = (key, label, align = "text-right") => (
     <th className={`${align} font-semibold text-muted-foreground cursor-pointer select-none py-1 px-2 whitespace-nowrap`}
@@ -78,7 +115,9 @@ export default function PushPerformanceCard({ delay }) {
         { verb: "detener", rationale: weak.length ? `Volumen alto y conversión <0,3%: ${weak.map(w => w.name).slice(0, 2).join(", ")}.` : "Retira las de conversión persistentemente baja." },
       ] : [{ verb: "investigar", rationale: "Aún no hay suficientes campañas push con volumen." }]}
       delay={delay}
-      note="Conversión = compras / envíos por workflow push · ± = IC 95% de Wilson · sparkline = tendencia mensual (Connectif · push_campaigns)."
+      altView={altView}
+      viewLabels={{ a: "Tabla", b: "Dispersión" }}
+      note="Conversión = compras / envíos por workflow push · ± = IC 95% de Wilson · sparkline = tendencia mensual (Connectif · push_campaigns). Vista 'Dispersión' = conversión vs revenue (burbuja = envíos): separa las que enganchan de las que venden."
     >
       {hasData && (
         <div className="overflow-x-auto -mx-1">

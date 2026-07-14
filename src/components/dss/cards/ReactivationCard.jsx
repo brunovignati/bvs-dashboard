@@ -1,4 +1,4 @@
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useEmailCampaigns, usePushCampaigns } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
@@ -6,6 +6,9 @@ import { matchName } from "@/lib/dss/dssUtils";
 import { fmtCurrency } from "@/lib/dashboardData";
 
 const RX = /reactiv|reabast|recuper|winback|volver|te echamos/i;
+const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+const EVO_COLORS = ["hsl(16,79%,57%)", "hsl(45,35%,46%)", "hsl(186,32%,42%)", "hsl(4,39%,55%)", "hsl(30,72%,66%)"];
+const shortLabel = (n) => (n && n.length > 18 ? n.slice(0, 17) + "…" : n);
 
 export default function ReactivationCard({ delay }) {
   const { data: email = [] } = useEmailCampaigns();
@@ -33,6 +36,39 @@ export default function ReactivationCard({ delay }) {
   const hasData = agg.length >= 2;
   const total = agg.reduce((s, w) => s + w.revenue, 0);
 
+  // ── Vista B — evolución mensual del revenue de los 5 flujos top, últimos 12 meses hasta
+  // el corte. Reconstruye desde email/push (con year/month) los mismos flujos del ranking. ──
+  const topNames = agg.slice(0, 5).map(w => w.name);
+  const labelByName = {}; agg.slice(0, 5).forEach(w => { labelByName[w.name] = shortLabel(w.name); });
+  const evoSrc = [
+    ...email.filter(r => inPeriod(r) && matchName(r, RX)).map(r => ({ y: r.year, m: r.month, name: r.emailName || r.emailWorkflow, revenue: r.revenue || 0 })),
+    ...push.filter(r => inPeriod(r) && matchName(r, RX)).map(r => ({ y: r.year, m: r.month, name: r.workflow, revenue: r.revenue || 0 })),
+  ].filter(r => r.name && topNames.includes(r.name));
+  const byM = {};
+  for (const r of evoSrc) {
+    const k = r.y * 12 + r.m;
+    (byM[k] ||= { k, year: r.y, month: r.m });
+    byM[k][r.name] = (byM[k][r.name] || 0) + r.revenue;
+  }
+  const evo = Object.values(byM).sort((a, b) => a.k - b.k).slice(-12)
+    .map(m => { const o = { name: `${M[m.month]} ${String(m.year).slice(2)}` }; topNames.forEach(n => { o[labelByName[n]] = m[n] || 0; }); return o; });
+  const hasEvo = evo.length >= 2 && topNames.length >= 1;
+
+  const altView = hasEvo ? (
+    <div className="h-56">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={evo} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
+          <XAxis dataKey="name" tick={{ fontSize: 9, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} interval={Math.max(0, Math.floor(evo.length / 8))} />
+          <YAxis tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} tickFormatter={v => `€${(v / 1000).toFixed(0)}K`} />
+          <Tooltip formatter={(v, n) => [fmtCurrency(v), n]} labelStyle={{ fontSize: 10 }} />
+          <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 9 }} />
+          {agg.slice(0, 5).map((w, i) => <Line key={w.name} type="monotone" dataKey={labelByName[w.name]} stroke={EVO_COLORS[i % EVO_COLORS.length]} strokeWidth={2} dot={false} />)}
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  ) : undefined;
+
   return (
     <EvidenceCard sources={["connectif"]}
       question="¿Qué workflows de reactivación / reabastecimiento rinden?"
@@ -46,7 +82,9 @@ export default function ReactivationCard({ delay }) {
         ...(weak.length ? [{ verb: "detener", rationale: `Bajo retorno: ${weak.slice(0,2).map(w => w.name).join(", ")}.` }] : []),
       ] : [{ verb: "crear", rationale: "Si no hay flujos de reactivación activos, considera crear una secuencia 30/60/90 días." }]}
       delay={delay}
-      note="Filtro por nombre (reactivación/reabastecimiento/recuperación) sobre D04 + D12."
+      altView={altView}
+      viewLabels={{ a: "Ranking", b: "Evolución" }}
+      note="Filtro por nombre (reactivación/reabastecimiento/recuperación) sobre D04 + D12. Vista 'Evolución' = revenue mensual de los 5 flujos top, últimos 12 meses hasta el fin del periodo."
     >
       {hasData && (
         <div className="h-56">

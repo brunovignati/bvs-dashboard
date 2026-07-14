@@ -1,4 +1,4 @@
-import { ScatterChart, Scatter, XAxis, YAxis, ZAxis, CartesianGrid, Tooltip, Cell, ResponsiveContainer, ReferenceLine } from "recharts";
+import { ScatterChart, Scatter, BarChart, Bar, XAxis, YAxis, ZAxis, CartesianGrid, Tooltip, Cell, ResponsiveContainer, ReferenceLine } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useEmailCampaigns } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
@@ -54,6 +54,26 @@ export default function EmailScaleCard({ delay }) {
 
   const hasData = pts.length >= 3;
 
+  // ── Vista B — ranking por REVENUE absoluto de campaña. El scatter muestra eficiencia
+  // (posicionamiento); este ranking muestra quién trae más euros. Mismo scope/periodo. ──
+  const byRevBars = [...pts].sort((a, b) => b.revenue - a.revenue).slice(0, 8)
+    .map(p => ({ ...p, short: p.name.length > 26 ? p.name.slice(0, 25) + "…" : p.name }));
+  const altView = hasData ? (
+    <div className="h-56">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={byRevBars} layout="vertical" margin={{ top: 4, right: 16, left: 4, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" horizontal={false} />
+          <XAxis type="number" tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} tickFormatter={v => `€${(v / 1000).toFixed(0)}K`} />
+          <YAxis type="category" dataKey="short" width={150} tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} />
+          <Tooltip formatter={(v, n, p) => [`${fmtCurrency(v)} · €${(p?.payload?.rpm || 0).toFixed(1)}/1.000env`, "Revenue · Eficiencia"]} labelFormatter={(l, p) => p?.[0]?.payload?.name || l} labelStyle={{ fontSize: 10 }} />
+          <Bar dataKey="revenue" radius={[0, 4, 4, 0]}>
+            {byRevBars.map((p, i) => <Cell key={i} fill={i === 0 ? "hsl(30,72%,66%)" : "hsl(16,79%,57%)"} />)}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  ) : undefined;
+
   return (
     <EvidenceCard sources={["connectif"]}
       question="¿Rinde el email y qué campañas escalo?"
@@ -72,7 +92,9 @@ export default function EmailScaleCard({ delay }) {
         { verb: "detener", rationale: bottom.length ? `Bajo retorno con volumen alto: ${bottom.map(b => b.name).slice(0,2).join(", ")}.` : "Retira las de RPMil bajo persistente." },
       ] : [{ verb: "investigar", rationale: "Aún no hay suficientes campañas con volumen para decidir." }]}
       delay={delay}
-      note="Apertura = opens/enviados · CTR = clics/enviados (± = IC 95% de Wilson) · Revenue/1.000 env. sobre email_campaigns."
+      altView={altView}
+      viewLabels={{ a: "Dispersión", b: "Ranking €" }}
+      note="Apertura = opens/enviados · CTR = clics/enviados (± = IC 95% de Wilson) · Revenue/1.000 env. sobre email_campaigns. Vista 'Ranking €' = campañas ordenadas por revenue absoluto del periodo (eficiencia en el tooltip)."
     >
       {hasData && (
         <div className="h-56">
