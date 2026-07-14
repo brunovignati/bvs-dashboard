@@ -53,19 +53,46 @@ export default function Ga4TrafficCard({ delay }) {
   const avgBounce = rows.reduce((s, r) => s + r.bounce, 0) / rows.length;
   const bouncePct = avgBounce > 1 ? avgBounce : avgBounce * 100; // GA4 devuelve ratio 0-1
 
+  // ── Vista B — CALIDAD de la visita (no volumen): páginas por sesión y % de rebote día a día.
+  // Revela si el tráfico que llega es de calidad, más allá de cuánto es. Mismo rango/corte. ──
+  const quality = rows.map(r => ({
+    name: r.name,
+    "Páginas/sesión": r.Sesiones ? r["Páginas vistas"] / r.Sesiones : 0,
+    "Rebote %": r.bounce > 1 ? r.bounce : r.bounce * 100,
+  }));
+  const avgPps = quality.reduce((s, r) => s + r["Páginas/sesión"], 0) / (quality.length || 1);
+  const altView = quality.length >= 2 ? (
+    <div className="h-56">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={quality} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
+          <XAxis dataKey="name" tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} interval={Math.max(0, Math.floor(quality.length / 8))} />
+          <YAxis yAxisId="pps" tick={{ fontSize: 8, fill: "hsl(16,60%,45%)" }} axisLine={false} tickLine={false} tickFormatter={v => v.toFixed(1)} />
+          <YAxis yAxisId="b" orientation="right" domain={[0, 100]} tick={{ fontSize: 8, fill: "hsl(186,32%,42%)" }} axisLine={false} tickLine={false} tickFormatter={v => `${v.toFixed(0)}%`} />
+          <Tooltip formatter={(v, n) => [n === "Rebote %" ? `${Number(v).toFixed(0)}%` : Number(v).toFixed(2), n]} labelStyle={{ fontSize: 11 }} />
+          <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
+          <Line yAxisId="pps" type="monotone" dataKey="Páginas/sesión" stroke="hsl(16,79%,57%)" strokeWidth={2.2} dot={false} />
+          <Line yAxisId="b" type="monotone" dataKey="Rebote %" stroke="hsl(186,32%,42%)" strokeWidth={1.8} dot={false} strokeDasharray="5 3" />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  ) : undefined;
+
   return (
     <EvidenceCard sources={["ga4"]}
       question="¿Cuánto tráfico web llega y cómo se comporta?"
       answer={`${fmtNumber(last.Sesiones)} sesiones/día`}
       answerTone="neutral"
-      context={`${fmtNumber(last.Usuarios)} usuarios y ${fmtNumber(last["Páginas vistas"])} páginas vistas el último día · rebote medio ${bouncePct.toFixed(0)}%${sesTrend != null ? ` · sesiones ${sesTrend >= 0 ? "+" : ""}${sesTrend.toFixed(0)}% en el rango` : ""}.`}
+      context={`${fmtNumber(last.Usuarios)} usuarios y ${fmtNumber(last["Páginas vistas"])} páginas vistas el último día · rebote medio ${bouncePct.toFixed(0)}% · ${avgPps.toFixed(1)} pág./sesión${sesTrend != null ? ` · sesiones ${sesTrend >= 0 ? "+" : ""}${sesTrend.toFixed(0)}% en el rango` : ""}.`}
       maturity="amber"
       actions={[
         { verb: "investigar", rationale: "Cruza los picos de tráfico con los envíos de Email/Push para ver qué canal atrae visitas." },
         { verb: "crear", rationale: bouncePct >= 60 ? "Rebote alto: revisa velocidad y relevancia de la landing." : "Si el tráfico sube pero no la venta, revisa la conversión on-site (sticky/contenido web)." },
       ]}
       delay={delay}
-      note="Fuente: GA4 · ga4_daily (sessions, users, pageviews, bounce_rate). Histórico corto: madura con el tiempo."
+      altView={altView}
+      viewLabels={{ a: "Volumen", b: "Calidad" }}
+      note="Fuente: GA4 · ga4_daily (sessions, users, pageviews, bounce_rate). Vista 'Calidad' = páginas por sesión y % de rebote (calidad de la visita, no volumen). GA4 no trae desglose por canal/dispositivo en esta tabla. Histórico corto: madura con el tiempo."
     >
       <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">

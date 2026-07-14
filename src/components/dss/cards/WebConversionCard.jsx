@@ -42,6 +42,7 @@ export default function WebConversionCard({ delay }) {
         name: `${g.day} ${M[g.month]}`,
         sessions, orders: d.orders, revenue: d.revenue,
         convper100: sessions ? (d.orders / sessions) * 100 : 0,
+        rps: sessions ? d.revenue / sessions : 0,
       };
     })
     .slice(-60);
@@ -70,6 +71,22 @@ export default function WebConversionCard({ delay }) {
   const rps = sumSes ? sumRev / sumSes : 0;
   const win = `${rows[0].name}–${rows[rows.length - 1].name}`;
 
+  // ── Vista B — MONETIZACIÓN de la visita: ingreso por sesión (€/sesión) día a día. La vista A
+  // cuenta pedidos; esta mide el dinero que deja cada visita. Mismos días/corte. ──
+  const altView = (
+    <div className={CHART_H}>
+      <ResponsiveContainer width="100%" height="100%">
+        <ComposedChart data={rows} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
+          <CartesianGrid {...GRID} />
+          <XAxis dataKey="name" {...AXIS} interval={Math.max(0, Math.floor(rows.length / 8))} />
+          <YAxis {...AXIS} tickFormatter={(v) => `€${v.toFixed(1)}`} />
+          <Tooltip {...TIP} formatter={(v) => [`${fmtCurrency(v)}/sesión`, "Ingreso/sesión"]} />
+          <Line type="monotone" dataKey="rps" name="Ingreso/sesión" stroke={PRIMARY} strokeWidth={2.2} dot={false} />
+        </ComposedChart>
+      </ResponsiveContainer>
+    </div>
+  );
+
   return (
     <EvidenceCard sources={["connectif", "ga4"]}
       question="¿Convierte el tráfico web?"
@@ -83,7 +100,9 @@ export default function WebConversionCard({ delay }) {
         { verb: "investigar", rationale: "Si la conversión cae con tráfico estable, revisa velocidad, ficha de producto y checkout; si sube, escala la captación que funciona." },
       ]}
       delay={delay}
-      note="Aproximación: sesiones = web (GA4 · ga4_daily); pedidos y revenue = todos los canales (Connectif · daily_revenue). Útil como tendencia y eficiencia, no como conversión exacta del checkout (incluye pedidos no-web). Últimos 60 días con dato de GA4."
+      altView={altView}
+      viewLabels={{ a: "Conversión", b: "Ingreso/sesión" }}
+      note="Aproximación: sesiones = web (GA4 · ga4_daily); pedidos y revenue = todos los canales (Connectif · daily_revenue). Útil como tendencia y eficiencia, no como conversión exacta del checkout (incluye pedidos no-web). Vista 'Ingreso/sesión' = revenue diario / sesiones. Últimos 60 días con dato de GA4."
     >
       <div className={CHART_H}>
         <ResponsiveContainer width="100%" height="100%">

@@ -1,7 +1,7 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useEnvios } from "@/lib/useEntities";
-import { fmtCurrency } from "@/lib/dashboardData";
+import { fmtCurrency, fmtNumber } from "@/lib/dashboardData";
 
 const DAYS = ["", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 const DAYS_FULL = ["", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
@@ -17,6 +17,25 @@ export default function BestDayCard({ delay }) {
   }));
   const hasData = rows.length >= 3 && rows.some(r=>r.sent>0);
   const best = hasData ? [...rows].sort((a,b)=>b.rpm-a.rpm)[0] : null;
+  const topVol = hasData ? [...rows].sort((a,b)=>b.sent-a.sent)[0] : null;
+
+  // ── Vista B — VOLUMEN: cuántos envíos se hacen cada día. Cruzado con la eficiencia (vista A)
+  // revela si concentras el volumen en los días que más rinden o en los de costumbre. ──
+  const altView = hasData ? (
+    <div className="h-56">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={rows} margin={{ top:5, right:8, left:4, bottom:0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
+          <XAxis dataKey="name" tick={{ fontSize:9, fill:"hsl(32,7%,48%)" }} axisLine={false} tickLine={false} />
+          <YAxis tick={{ fontSize:8, fill:"hsl(32,7%,48%)" }} axisLine={false} tickLine={false} tickFormatter={v=>fmtNumber(v)} />
+          <Tooltip formatter={(v)=>[fmtNumber(v),"Envíos"]} labelStyle={{ fontSize:11 }} />
+          <Bar dataKey="sent" radius={[3,3,0,0]}>
+            {rows.map((r,i)=><Cell key={i} fill={best&&r.name===best.name?"hsl(30,72%,66%)":"hsl(16,79%,57%)"} />)}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  ) : undefined;
 
   return (
     <EvidenceCard sources={["connectif"]}
@@ -30,7 +49,9 @@ export default function BestDayCard({ delay }) {
         { verb: "crear", rationale: "Prueba mover una campaña al mejor día y compara el resultado la semana siguiente." },
       ]}
       delay={delay}
-      note="Fuente: Connectif · envios (agregado histórico por día de la semana). RPMil = revenue / envíos × 1.000."
+      altView={altView}
+      viewLabels={{ a: "Eficiencia", b: "Volumen" }}
+      note={`Fuente: Connectif · envios (agregado histórico por día de la semana, sin dimensión temporal). RPMil = revenue / envíos × 1.000. Vista 'Volumen' = nº de envíos por día (barra dorada = día más eficiente).${hasData && best && topVol && best.name !== topVol.name ? ` Ojo: el día más eficiente (${best.full}) no es el de más volumen (${topVol.full}).` : ""}`}
     >
       {hasData && (
         <div className="h-56">

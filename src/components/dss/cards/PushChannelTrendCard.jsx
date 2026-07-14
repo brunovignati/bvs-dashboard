@@ -6,7 +6,7 @@
  */
 import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import EvidenceCard from "../EvidenceCard";
-import { useRendimientoPush, useVentasPush } from "@/lib/useEntities";
+import { useRendimientoPush, useVentasPush, useDailyRevenue } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
 import { fmtCurrency } from "@/lib/dashboardData";
 import { CHART_H, GRID, AXIS, TIP } from "@/lib/dss/chartTheme";
@@ -16,6 +16,7 @@ const M = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "O
 export default function PushChannelTrendCard({ delay }) {
   const { data: rend = [] } = useRendimientoPush();
   const { data: ventas = [] } = useVentasPush();
+  const { data: dailyRev = [] } = useDailyRevenue();
   const { rangeB } = useComparison();
   const cutoff = rangeB.end.year * 12 + rangeB.end.month;
 
@@ -43,6 +44,29 @@ export default function PushChannelTrendCard({ delay }) {
   const prev = rows.length >= 2 ? rows[rows.length - 2] : null;
   const revTrend = prev && prev.revenue > 0 ? ((last.revenue - prev.revenue) / prev.revenue) * 100 : null;
 
+  // ── Vista B — PESO del push sobre el revenue TOTAL del negocio, mes a mes. La vista A muestra
+  // el importe; esta muestra cuánto pesa el push en el total (relevancia real del canal). ──
+  const totByM = {};
+  for (const r of dailyRev) { const k = r.year * 12 + r.month; if (k > cutoff) continue; totByM[k] = (totByM[k] || 0) + (r.revenue || 0); }
+  const pesoRows = Object.values(byM).sort((a, b) => a.k - b.k).slice(-18).map(m => ({
+    name: `${M[m.month]} ${String(m.year).slice(2)}`,
+    pct: totByM[m.k] ? ((m.revenue || 0) / totByM[m.k]) * 100 : 0,
+  }));
+  const hasPeso = pesoRows.length >= 2 && pesoRows.some(r => r.pct > 0);
+  const altView = hasPeso ? (
+    <div className={CHART_H}>
+      <ResponsiveContainer width="100%" height="100%">
+        <ComposedChart data={pesoRows} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
+          <CartesianGrid {...GRID} />
+          <XAxis dataKey="name" {...AXIS} interval={Math.max(0, Math.floor(pesoRows.length / 8))} />
+          <YAxis {...AXIS} tickFormatter={v => `${v.toFixed(1)}%`} />
+          <Tooltip {...TIP} formatter={(v) => [`${Number(v).toFixed(2)}%`, "Push / total"]} />
+          <Line type="monotone" dataKey="pct" name="Push / total" stroke="hsl(16,79%,57%)" strokeWidth={2.2} dot={false} />
+        </ComposedChart>
+      </ResponsiveContainer>
+    </div>
+  ) : undefined;
+
   return (
     <EvidenceCard sources={["connectif"]}
       question="¿Cuánto aporta el push como canal y cómo evoluciona?"
@@ -55,7 +79,9 @@ export default function PushChannelTrendCard({ delay }) {
         { verb: "investigar", rationale: "Si el revenue cae con envíos estables, revisa segmentación y relevancia de las notificaciones." },
       ]}
       delay={delay}
-      note="Fuente: Connectif · rendimiento_push (envíos, compras atribuidas) + ventas_push (revenue). Conversión = compras atribuidas / envíos."
+      altView={altView}
+      viewLabels={{ a: "Importe", b: "Peso" }}
+      note="Fuente: Connectif · rendimiento_push (envíos, compras atribuidas) + ventas_push (revenue). Conversión = compras atribuidas / envíos. Vista 'Peso' = revenue de push como % del revenue total del negocio (daily_revenue) mes a mes."
     >
       <div className={CHART_H}>
         <ResponsiveContainer width="100%" height="100%">
