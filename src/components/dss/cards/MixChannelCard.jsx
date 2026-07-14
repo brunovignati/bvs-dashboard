@@ -32,6 +32,27 @@ export default function MixChannelCard({ delay }) {
   const lastAttr = hasData ? last.Email+last.Push+last.Web+last.SMS : 0;
   const topPct = top && lastAttr>0 ? (top[1]/lastAttr)*100 : 0;
 
+  // ── Vista B — mismo apilado pero en ABSOLUTO (nº de compras): revela si el total crece
+  // o solo cambia el reparto. Mismos datos/periodo que la vista de cuota. ──
+  const altView = hasData ? (
+    <div className={CHART_H}>
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={rows} margin={{ top:5, right:8, left:4, bottom:0 }}>
+          <CartesianGrid {...GRID} />
+          <XAxis dataKey="name" {...AXIS} interval={Math.max(1,Math.floor(rows.length/8))} />
+          <YAxis {...AXIS} />
+          <Tooltip formatter={(v,n)=>[Math.round(v),n]} {...TIP} />
+          <Legend {...LEGEND} />
+          <Area type="monotone" dataKey="Email" stackId="1" stroke={SERIES[0]} fill={SERIES[0]} fillOpacity={STACK_FILL_OPACITY} />
+          <Area type="monotone" dataKey="Push" stackId="1" stroke={SERIES[1]} fill={SERIES[1]} fillOpacity={STACK_FILL_OPACITY} />
+          <Area type="monotone" dataKey="Web" stackId="1" stroke={SERIES[2]} fill={SERIES[2]} fillOpacity={STACK_FILL_OPACITY} />
+          <Area type="monotone" dataKey="SMS" stackId="1" stroke={SERIES[3]} fill={SERIES[3]} fillOpacity={STACK_FILL_OPACITY} />
+          <Area type="monotone" dataKey="No atribuido" stackId="1" stroke={SERIES[4]} fill={SERIES[4]} fillOpacity={STACK_FILL_OPACITY} />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  ) : undefined;
+
   return (
     <EvidenceCard sources={["connectif"]}
       question="¿De dónde viene cada euro (mix de canal)?"
@@ -46,7 +67,9 @@ export default function MixChannelCard({ delay }) {
         { verb: "reasignar", rationale: "Si un canal gana peso de forma sostenida, refuérzalo; si otro se apaga, revísalo." },
       ]}
       delay={delay}
-      note="Atribución de marketing por canal (Email/Push/Web/SMS) — dimensión distinta del canal de venta (online/retail/omnicanal). Compras atribuidas (Connectif · daily_revenue). No atribuido = total − Σ atribuido."
+      altView={altView}
+      viewLabels={{ a: "Cuota", b: "Absoluto" }}
+      note="Atribución de marketing por canal (Email/Push/Web/SMS) — dimensión distinta del canal de venta (online/retail/omnicanal). Compras atribuidas (Connectif · daily_revenue). No atribuido = total − Σ atribuido. Vista 'Absoluto' = nº de compras apiladas (ve si el total crece o solo cambia el reparto)."
     >
       {hasData && (
         <div className={CHART_H}>

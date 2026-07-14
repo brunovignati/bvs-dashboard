@@ -1,4 +1,4 @@
-import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { AreaChart, Area, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { MATURITY, upToCutoff } from "@/lib/dss/dssUtils";
 import { useDailyRevenue, useGa4Daily } from "@/lib/useEntities";
@@ -30,6 +30,22 @@ export default function UnattributedRevenueCard({ delay }) {
   }).slice(-18);
   const hasData = rows.length >= 2;
   const last = rows[rows.length-1];
+
+  // ── Vista B — % no atribuido en el tiempo: ¿mejora la atribución? La proporción, no el
+  // volumen. Mismo dato/periodo (pct ya calculado por mes). ──
+  const altView = hasData ? (
+    <div className={CHART_H}>
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={rows} margin={{ top:5, right:8, left:4, bottom:0 }}>
+          <CartesianGrid {...GRID} />
+          <XAxis dataKey="name" {...AXIS} interval={Math.max(1,Math.floor(rows.length/8))} />
+          <YAxis {...AXIS} domain={[0,100]} tickFormatter={v=>`${v.toFixed(0)}%`} />
+          <Tooltip formatter={(v)=>[`${Number(v).toFixed(1)}%`,"No atribuido"]} {...TIP} />
+          <Line type="monotone" dataKey="pct" name="% sin atribuir" stroke={SERIES[4]} strokeWidth={2} dot={false} />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  ) : undefined;
 
   // GA4: ¿hay columnas de fuente/canal para explicar el no atribuido?
   const ga4Sample = ga4[ga4.length-1] || {};
