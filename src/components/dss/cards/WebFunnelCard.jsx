@@ -44,9 +44,12 @@ export default function WebFunnelCard({ delay }) {
     );
   }
 
+  // Solo 2 etapas fiables: Sesiones (GA4) → Compra web (PrestaShop). La etapa intermedia de
+  // checkout de GA4 se omite: solo tiene ~60 días de histórico y está infra-contada frente a
+  // los pedidos reales de PrestaShop, lo que produciría un paso >100% (compra > checkout) en
+  // periodos largos. Sesiones → Compra web es siempre monótona y honesta.
   const stages = [
     { key: "ses", label: "Sesiones (web)", v: sessions, show: sessions > 0 },
-    { key: "checkout", label: "Checkout iniciado", v: checkouts, show: checkouts > 0 },
     { key: "buy", label: "Compra web (PrestaShop)", v: ordersWeb, show: ordersWeb > 0 },
   ].filter(s => s.show);
   const top = stages[0].v || 1;
@@ -60,14 +63,12 @@ export default function WebFunnelCard({ delay }) {
         { value: `${webShare.toFixed(0)}%`, label: "de los pedidos de la tienda" },
       ]}
       maturity="green"
-      insight={`De ${fmtNumber(sessions)} sesiones web, ${fmtNumber(ordersWeb)} acaban en compra (${conv.toFixed(1)}%). La compra y el revenue son pedidos REALES de PrestaShop (canal web). Ojo: la web es solo el ${webShare.toFixed(0)}% de los pedidos totales de la tienda — el resto es Amazon y tienda física (TPV).`}
+      insight={`De ${fmtNumber(sessions)} sesiones web, ${fmtNumber(ordersWeb)} acaban en compra (${conv.toFixed(1)}%). La compra y el revenue son pedidos REALES de PrestaShop (canal web), no una estimación. Ojo: la web es solo el ${webShare.toFixed(0)}% de los pedidos totales de la tienda — el resto es Amazon y tienda física (TPV).`}
       actions={[
-        { verb: "investigar", rationale: checkouts > 0
-          ? "Mira la caída sesión→checkout→compra: si se pierde en checkout, revisa gastos de envío y fricción de pago."
-          : "Para ver dónde se pierde la venta dentro del sitio, instrumenta en GA4 los eventos de carrito y checkout." },
+        { verb: "investigar", rationale: "La conversión sesión→compra es el número clave; para ver dónde se pierde dentro del sitio (carrito/checkout) haría falta instrumentar esos eventos en GA4, hoy no fiables." },
       ]}
       delay={delay}
-      note="Sesiones y checkout: GA4 · ga4_daily. Compra web y revenue web: PrestaShop · prestashop_monthly (pedidos reales con valid=1, excluyendo Amazon y TPV). Ventana = periodo seleccionado. La etapa de carrito no se dibuja: PrestaShop purga carritos antiguos y GA4 no instrumenta add-to-cart, así que no es fiable."
+      note="Sesiones: GA4 · ga4_daily. Compra web y revenue web: PrestaShop · prestashop_monthly (pedidos reales con valid=1, excluyendo Amazon y TPV). Ventana = periodo seleccionado. Solo 2 etapas: las intermedias (carrito/checkout) no se dibujan — PrestaShop purga carritos antiguos y los checkouts de GA4 están infra-contados, lo que daría un embudo imposible."
     >
       <div className="space-y-2 mt-1">
         {stages.map((s, i) => {
