@@ -1,4 +1,4 @@
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine } from "recharts";
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, ReferenceLine, Legend } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useDailyRevenue } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
@@ -36,6 +36,29 @@ export default function RevenueEvolutionCard({ delay }) {
   const chart = months.slice(-18);
   const avgRev = chart.length ? chart.reduce((s, m) => s + m.revenue, 0) / chart.length : 0;
 
+  // ── Vista B — superposición interanual: este año vs el mismo mes del año anterior. Revela
+  // estacionalidad y crecimiento real (no solo mes-a-mes). Mismo dato/corte. ──
+  const revByK = {}; months.forEach(m => { revByK[m.k] = m.revenue; });
+  const overlay = months.slice(-12).map(m => ({
+    name: M[m.month], actual: m.revenue, anterior: revByK[m.k - 12] ?? null,
+  }));
+  const hasOverlay = overlay.some(o => o.anterior != null);
+  const altView = hasOverlay ? (
+    <div className={CHART_H}>
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={overlay} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
+          <CartesianGrid {...GRID} />
+          <XAxis dataKey="name" {...AXIS} />
+          <YAxis {...AXIS} tickFormatter={v => `€${(v / 1000).toFixed(0)}K`} />
+          <Tooltip formatter={(v, n) => [v == null ? "—" : fmtCurrency(v), n]} {...TIP} />
+          <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
+          <Line type="monotone" dataKey="actual" name={`${last.year}`} stroke="hsl(16,79%,57%)" strokeWidth={2.4} dot={false} connectNulls />
+          <Line type="monotone" dataKey="anterior" name={`${last.year - 1}`} stroke="hsl(220,13%,65%)" strokeWidth={1.8} dot={false} strokeDasharray="5 3" connectNulls />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  ) : undefined;
+
   return (
     <EvidenceCard sources={["connectif"]}
       question="¿Cómo evoluciona el revenue mes a mes?"
@@ -52,7 +75,9 @@ export default function RevenueEvolutionCard({ delay }) {
         { verb: "vigilar", rationale: mom != null && mom < 0 ? "Confirma la caída y baja a Growth › Revenue para ver la palanca responsable." : "Tendencia sana; mantén el ritmo y revisa la palanca en Growth › Revenue." },
       ]}
       delay={delay}
-      note="Tendencia mensual del revenue del negocio (Connectif · daily_revenue) hasta el último mes cerrado — el mes en curso incompleto se excluye. El desglose por pedidos y ticket vive en Growth › Revenue para no duplicarlo aquí."
+      altView={altView}
+      viewLabels={{ a: "Barras", b: "Interanual" }}
+      note="Tendencia mensual del revenue del negocio (Connectif · daily_revenue) hasta el último mes cerrado — el mes en curso incompleto se excluye. El desglose por pedidos y ticket vive en Growth › Revenue para no duplicarlo aquí. Vista 'Interanual' = mismos meses de este año vs el anterior."
     >
       {hasData && (
         <div className={CHART_H}>

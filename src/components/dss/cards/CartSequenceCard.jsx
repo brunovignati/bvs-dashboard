@@ -4,12 +4,14 @@
  * complementario al agregado que ya usa CartWinnerCard (cart_abandonment). Permite ver
  * qué paso de la cadena aporta más revenue y con qué conversión.
  */
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useCarrito } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
 import { latestMonthRows } from "@/lib/dss/dssUtils";
 import { fmtCurrency, fmtNumber } from "@/lib/dashboardData";
+
+const MO = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
 const clip = (s, n) => { s = String(s || "").replace(/\s+/g, " ").trim(); return s.length > n ? s.slice(0, n) + "…" : s; };
 
@@ -32,6 +34,31 @@ export default function CartSequenceCard({ delay }) {
   const best = hasData ? rows[0] : null;
   const totalRev = rows.reduce((s, r) => s + r.revenue, 0);
 
+  // ── Vista B — evolución mensual del revenue recuperado por la secuencia de carrito
+  // (últimos 12 meses hasta el corte). ¿Recupera cada vez más o menos? ──
+  const byMonth = {};
+  for (const r of data) {
+    const k = r.year * 12 + r.month;
+    if (k > cutoff || !r.emailName) continue;
+    (byMonth[k] ||= { k, year: r.year, month: r.month, revenue: 0, purchases: 0 });
+    byMonth[k].revenue += r.revenue || 0; byMonth[k].purchases += r.purchases || 0;
+  }
+  const evo = Object.values(byMonth).sort((a, b) => a.k - b.k).slice(-12)
+    .map(m => ({ name: `${MO[m.month]} ${String(m.year).slice(2)}`, revenue: m.revenue }));
+  const altView = evo.length >= 2 ? (
+    <div className="h-56">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={evo} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
+          <XAxis dataKey="name" tick={{ fontSize: 9, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} interval={Math.max(0, Math.floor(evo.length / 8))} />
+          <YAxis tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} tickFormatter={v => `€${(v / 1000).toFixed(0)}K`} />
+          <Tooltip formatter={(v) => [fmtCurrency(v), "Recuperado"]} labelStyle={{ fontSize: 10 }} />
+          <Line type="monotone" dataKey="revenue" name="Recuperado" stroke="hsl(16,79%,57%)" strokeWidth={2.4} dot={false} />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  ) : undefined;
+
   if (!hasData) {
     return (
       <EvidenceCard sources={["connectif"]} question="¿Qué email de la secuencia de carrito recupera más?" answer="Sin datos suficientes"
@@ -53,7 +80,9 @@ export default function CartSequenceCard({ delay }) {
         { verb: "investigar", rationale: "Si un paso de la cadena convierte muy poco, revisa el timing o fúndelo con el anterior." },
       ]}
       delay={delay}
-      note="Fuente: Connectif · carrito. Detalle por email de la secuencia (complementa el agregado de CartWinner)."
+      altView={altView}
+      viewLabels={{ a: "Por email", b: "Evolución" }}
+      note="Fuente: Connectif · carrito. Detalle por email de la secuencia (complementa el agregado de CartWinner). Vista 'Evolución' = revenue recuperado por la secuencia mes a mes."
     >
       <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">

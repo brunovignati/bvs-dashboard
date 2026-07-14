@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, Legend } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useDailyRevenue } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
@@ -99,9 +100,43 @@ export default function RevenueTargetCard({ delay }) {
     : (onTrack ? "Mantén la inversión y el calendario promocional que funcionan."
                : "Refuerza campañas/promoción para cerrar la brecha antes de fin de período.");
 
+  // ── Vista B — burn-up: revenue ACUMULADO día a día del periodo vs el ritmo necesario para
+  // el objetivo. Si la línea real va por encima del ritmo, se cumple. Mismo periodo/objetivo. ──
+  const monthOffset = {};
+  { let off = 0; for (const m of months) { monthOffset[m] = off; off += dim(refY, m); } }
+  const dayAgg = {};
+  for (const r of data) {
+    if (r.year !== refY || !months.includes(r.month)) continue;
+    const dn = monthOffset[r.month] + (r.day || 0);
+    dayAgg[dn] = (dayAgg[dn] || 0) + (r.revenue || 0);
+  }
+  let cumB = 0; const burn = [];
+  for (let dn = 1; dn <= daysElapsed; dn++) {
+    cumB += dayAgg[dn] || 0;
+    burn.push({ dn, acumulado: cumB, ritmo: target > 0 ? (target * dn) / daysInPeriod : null });
+  }
+  const altView = (hasData && burn.length >= 2) ? (
+    <div className="h-56">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={burn} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
+          <XAxis dataKey="dn" tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} tickFormatter={v => `d${v}`} interval={Math.max(0, Math.floor(burn.length / 8))} />
+          <YAxis tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} tickFormatter={v => `€${(v / 1000).toFixed(0)}K`} />
+          <Tooltip formatter={(v, n) => [v == null ? "—" : fmtCurrency(v), n]} labelFormatter={l => `Día ${l}/${daysInPeriod}`} labelStyle={{ fontSize: 10 }} />
+          {target > 0 && <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />}
+          {target > 0 && <ReferenceLine y={target} stroke="hsl(220,13%,70%)" strokeDasharray="4 3" label={{ value: "objetivo", position: "insideTopRight", fontSize: 9, fill: "hsl(215,16%,45%)" }} />}
+          <Line type="monotone" dataKey="acumulado" name="Acumulado" stroke="hsl(16,79%,57%)" strokeWidth={2.4} dot={false} />
+          {target > 0 && <Line type="monotone" dataKey="ritmo" name="Ritmo objetivo" stroke="hsl(220,13%,60%)" strokeWidth={1.6} dot={false} strokeDasharray="5 3" />}
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  ) : undefined;
+
   return (
     <EvidenceCard sources={["connectif"]}
       question="¿Voy camino de cumplir el objetivo de revenue?"
+      altView={altView}
+      viewLabels={{ a: "Indicador", b: "Ritmo" }}
       kpis={kpis}
       answer={!hasData ? "Sin datos para el período seleccionado" : undefined}
       status={hasData && target > 0 ? (onTrack ? { tone: "good", label: "En objetivo" } : { tone: "bad", label: "En riesgo" }) : undefined}

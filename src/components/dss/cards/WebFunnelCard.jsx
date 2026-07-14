@@ -12,10 +12,12 @@
  *    en ese caso se ocultan sesiones/conversión y se muestran solo pedidos y revenue web
  *    reales de PrestaShop (fiables para cualquier periodo).
  */
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useGa4Daily, usePrestashopMonthly } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
 import { fmtNumber, fmtCurrency } from "@/lib/dashboardData";
+const CH = ["hsl(16,79%,57%)", "hsl(45,35%,46%)", "hsl(186,32%,42%)"];
 
 const M = ["", "ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
 
@@ -43,6 +45,30 @@ export default function WebFunnelCard({ delay }) {
   const conv = sessions ? (ordersWeb / sessions) * 100 : 0;
   const webShare = ordersTotal ? (ordersWeb / ordersTotal) * 100 : 0;
   const cmp = labelRange(rangeB);
+
+  // ── Vista B — reparto de pedidos por canal (web/Amazon/TPV) en el tiempo. Dato completo de
+  // PrestaShop (sin límite de GA4). Revela cuánto pesa la web frente a marketplace y tienda. ──
+  const cutoff = rangeB.end.year * 12 + rangeB.end.month;
+  const chRows = ps.filter(r => (r.year * 12 + r.month) <= cutoff)
+    .sort((a, b) => (a.year * 12 + a.month) - (b.year * 12 + b.month)).slice(-12)
+    .map(r => ({ name: `${["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"][r.month]} ${String(r.year).slice(2)}`,
+      Web: Number(r.orders_web) || 0, Amazon: Number(r.orders_amazon) || 0, "Tienda (TPV)": Number(r.orders_tpv) || 0 }));
+  const altView = chRows.length >= 2 ? (
+    <div className="h-56">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={chRows} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
+          <XAxis dataKey="name" tick={{ fontSize: 9, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} interval={Math.max(0, Math.floor(chRows.length / 8))} />
+          <YAxis tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} tickFormatter={v => `${(v / 1000).toFixed(0)}K`} />
+          <Tooltip formatter={(v, n) => [fmtNumber(v), n]} labelStyle={{ fontSize: 10 }} />
+          <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
+          <Bar dataKey="Web" stackId="1" fill={CH[0]} maxBarSize={30} />
+          <Bar dataKey="Amazon" stackId="1" fill={CH[1]} maxBarSize={30} />
+          <Bar dataKey="Tienda (TPV)" stackId="1" fill={CH[2]} radius={[3, 3, 0, 0]} maxBarSize={30} />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  ) : undefined;
 
   if (!hasOrders) {
     return (
@@ -83,6 +109,8 @@ export default function WebFunnelCard({ delay }) {
         { verb: "investigar", rationale: "La conversión sesión→compra es el número clave; para ver dónde se pierde dentro del sitio (carrito/checkout) haría falta instrumentar esos eventos en GA4, hoy no fiables." },
       ]}
       delay={delay}
+      altView={altView}
+      viewLabels={{ a: "Embudo", b: "Canales" }}
       note={`Sesiones: GA4 · ga4_daily (histórico desde ${ga4MinLabel}). Compra web y revenue web: PrestaShop · prestashop_monthly (pedidos reales valid=1, excluyendo Amazon y TPV). La conversión solo se calcula si el periodo cae dentro de la cobertura de GA4; en periodos anteriores se muestran solo pedidos y revenue web (siempre fiables). Etapas de carrito/checkout omitidas por falta de dato fiable.`}
     >
       {convValid ? (

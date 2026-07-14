@@ -1,10 +1,15 @@
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useCartAbandonment } from "@/lib/useEntities";
+import { useComparison } from "@/lib/ComparisonContext";
 import { fmtCurrency, fmtNumber } from "@/lib/dashboardData";
+
+const MO = ["", "Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
 
 export default function CartWinnerCard({ delay }) {
   const { data = [] } = useCartAbandonment();
+  const { rangeB } = useComparison();
+  const cutoff = rangeB.end.year * 12 + rangeB.end.month;
   const rows = data.filter(r => r.emailName);
 
   // Agregar por plantilla/workflow de carrito a lo largo del histórico
@@ -23,6 +28,31 @@ export default function CartWinnerCard({ delay }) {
   const hasData = agg.length >= 2;
   const totalRecovered = agg.reduce((s, w) => s + w.revenue, 0);
 
+  // ── Vista B — evolución mensual del revenue recuperado por carrito (últimos 12 meses
+  // hasta el corte). ¿Los flujos de carrito recuperan cada vez más? ──
+  const byMonth = {};
+  for (const r of rows) {
+    const k = r.year * 12 + r.month;
+    if (k > cutoff) continue;
+    (byMonth[k] ||= { k, year: r.year, month: r.month, revenue: 0 });
+    byMonth[k].revenue += r.revenue || 0;
+  }
+  const evo = Object.values(byMonth).sort((a, b) => a.k - b.k).slice(-12)
+    .map(m => ({ name: `${MO[m.month]} ${String(m.year).slice(2)}`, revenue: m.revenue }));
+  const altView = evo.length >= 2 ? (
+    <div className="h-56">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={evo} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
+          <XAxis dataKey="name" tick={{ fontSize: 9, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} interval={Math.max(0, Math.floor(evo.length / 8))} />
+          <YAxis tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} tickFormatter={v => `€${(v / 1000).toFixed(0)}K`} />
+          <Tooltip formatter={(v) => [fmtCurrency(v), "Recuperado"]} labelStyle={{ fontSize: 10 }} />
+          <Line type="monotone" dataKey="revenue" name="Recuperado" stroke="hsl(16,79%,57%)" strokeWidth={2.4} dot={false} />
+        </LineChart>
+      </ResponsiveContainer>
+    </div>
+  ) : undefined;
+
   const actions = hasData ? [
     { verb: "escalar", rationale: winner ? `Mayor revenue recuperado: "${winner.name}".` : "Prioriza el flujo con más revenue recuperado." },
     ...(abVariants.length >= 2
@@ -40,7 +70,9 @@ export default function CartWinnerCard({ delay }) {
       maturity="green"
       actions={actions}
       delay={delay}
-      note="Revenue recuperado agregado por plantilla de carrito (D05/D06). A/B detectado por nombre."
+      altView={altView}
+      viewLabels={{ a: "Ranking", b: "Evolución" }}
+      note="Revenue recuperado agregado por plantilla de carrito (D05/D06). A/B detectado por nombre. Vista 'Evolución' = revenue recuperado por carrito mes a mes (hasta el fin del periodo)."
     >
       {hasData && (
         <div className="h-56">
