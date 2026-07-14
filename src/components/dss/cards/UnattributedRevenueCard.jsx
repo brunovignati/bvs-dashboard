@@ -41,7 +41,7 @@ export default function UnattributedRevenueCard({ delay }) {
           <XAxis dataKey="name" {...AXIS} interval={Math.max(1,Math.floor(rows.length/8))} />
           <YAxis {...AXIS} domain={[0,100]} tickFormatter={v=>`${v.toFixed(0)}%`} />
           <Tooltip formatter={(v)=>[`${Number(v).toFixed(1)}%`,"No atribuido"]} {...TIP} />
-          <Line type="monotone" dataKey="pct" name="% sin atribuir" stroke={SERIES[4]} strokeWidth={2} dot={false} />
+          <Line type="monotone" dataKey="pct" name="% sin atribuir" stroke="hsl(16,79%,57%)" strokeWidth={2.5} dot={false} />
         </LineChart>
       </ResponsiveContainer>
     </div>
