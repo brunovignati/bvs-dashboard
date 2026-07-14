@@ -68,7 +68,9 @@ export default function UnattributedRevenueCard({ delay }) {
         { verb: "investigar", rationale: "Un no atribuido alto sugiere instrumentar mejor el tracking o que el peso orgánico/directo es grande (bueno si es marca fuerte)." },
       ]}
       delay={delay}
-      note="Principal: Connectif · daily_revenue. Explicativa: GA4 · ga4_daily (desglose de fuentes)."
+      altView={altView}
+      viewLabels={{ a: "Compras", b: "% sin atribuir" }}
+      note="Principal: Connectif · daily_revenue. Explicativa: GA4 · ga4_daily (desglose de fuentes). Vista '% sin atribuir' = proporción de compras no atribuidas en el tiempo (¿mejora la atribución?)."
     >
       {hasData && (
         <div className={CHART_H}>
