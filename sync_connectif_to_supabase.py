@@ -667,7 +667,12 @@ def upsert_supabase(table, records, batch_size=100):
 REPORT_MAP = [
     ("monthly_metrics",  ["nutrace", "compras mensual"],                    t_monthly_metrics),
     ("email_campaigns",  ["tricas looker", "audit newsletters"],                      t_email_campaigns),
-    ("cart_abandonment", ["carritos abandonados", "carrito abandon"],       t_cart_abandonment),
+    # cart_abandonment: el informe "carritos abandonados" es de CONVERSIÓN y NO trae envíos
+    # (numberOfEmailsSent ausente → sent/opens/clicks = 0, imposible calcular tasa de recuperación).
+    # Se puebla desde el informe COMPLETO de carrito ("=carrito", el mismo que alimenta `carrito`),
+    # que sí trae envíos/aperturas/clics reales. `carrito` es la tabla canónica; el dashboard usa
+    # `carrito` (CartWinnerCard/CartSequenceCard). Se mantiene cart_abandonment por compatibilidad.
+    ("cart_abandonment", ["=carrito"],                                      t_carrito),
     ("buyer_cohorts",    ["primerizos"],                                    t_buyer_cohorts),
     ("cohort_retention", ["cohorte", "cohort", "ltv"],                       t_cohort_retention),
     ("channel_segmentation", ["compradores por origen", "channel buyers"],    t_channel_segmentation),
