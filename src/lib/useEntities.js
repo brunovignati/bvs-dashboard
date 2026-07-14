@@ -246,6 +246,16 @@ export function useChannelSegmentation() {
   })
 }
 
+export function usePrestashopMonthly() {
+  // Pedidos y revenue reales por mes desde PrestaShop (source of truth), separados por
+  // canal (web / Amazon / TPV). Origen: Gestor SQL "Embudo mensual BVS" → Supabase.
+  return useQuery({
+    queryKey: ['prestashop_monthly'],
+    queryFn: () => fetchTable('prestashop_monthly', 'year', true, 5000),
+    initialData: [],
+  })
+}
+
 export function useBrandSales() {
   // brand_sales supera las 1000 filas (Supabase corta cada respuesta a 1000). Con un
   // fetchTable simple solo llegaban los meses más antiguos (2024) y los recientes faltaban
