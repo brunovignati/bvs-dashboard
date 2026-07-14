@@ -21,6 +21,26 @@ export default function AcquisitionRetentionCard({ delay }) {
   const first = rows[0];
   const trend = hasData ? last.pctRec - first.pctRec : 0;
 
+  // ── Vista B — nº ABSOLUTO de compradores nuevos vs recurrentes (mismo apilado, sin 100%):
+  // muestra si el negocio crece por captar o por repetir, en volumen real. Mismo periodo. ──
+  const altView = hasData ? (
+    <div className="h-56">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={rows.slice(-18)} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
+          <XAxis dataKey="name" tick={{ fontSize: 9, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false}
+            interval={Math.max(1, Math.floor(Math.min(rows.length, 18) / 8))} />
+          <YAxis tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false}
+            tickFormatter={v => `${(v / 1000).toFixed(0)}K`} />
+          <Tooltip formatter={(v, n) => [Math.round(v).toLocaleString("es-ES"), n]} labelStyle={{ fontSize: 11 }} />
+          <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
+          <Area type="monotone" dataKey="rc" name="Recurrentes" stackId="1" stroke="hsl(30,72%,66%)" fill="hsl(30,72%,66%)" fillOpacity={0.7} />
+          <Area type="monotone" dataKey="ft" name="Primerizos" stackId="1" stroke="hsl(16,79%,57%)" fill="hsl(16,79%,57%)" fillOpacity={0.6} />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  ) : undefined;
+
   return (
     <EvidenceCard sources={["connectif"]}
       question="¿Dependemos de adquisición o de retención?"
@@ -33,7 +53,9 @@ export default function AcquisitionRetentionCard({ delay }) {
         { verb: "crear", rationale: "Si la recurrencia cae, considera un programa de fidelización." },
       ]}
       delay={delay}
-      note="Mix mensual de compradores primerizos vs. recurrentes (Connectif · buyer_cohorts). La retención real por cohorte exige Contact ID (no disponible)."
+      altView={altView}
+      viewLabels={{ a: "Cuota", b: "Absoluto" }}
+      note="Mix mensual de compradores primerizos vs. recurrentes (Connectif · buyer_cohorts). La retención real por cohorte exige Contact ID (no disponible). Vista 'Absoluto' = nº de compradores nuevos y recurrentes (¿crece por captar o por repetir?)."
     >
       {hasData && (
         <div className="h-56">

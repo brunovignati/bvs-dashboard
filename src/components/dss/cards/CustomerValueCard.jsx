@@ -1,4 +1,4 @@
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { LineChart, Line, ComposedChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useDailyRevenue, useBuyerCohorts } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
@@ -50,9 +50,30 @@ export default function CustomerValueCard({ delay }) {
     );
   }
 
+  // ── Vista B — descomposición del valor: Ticket medio (€) × Frecuencia (compras/mes). El
+  // gasto/comprador = ticket × frecuencia; ver ambos por separado revela QUÉ palanca lo mueve. ──
+  const altView = (
+    <div className="h-56">
+      <ResponsiveContainer width="100%" height="100%">
+        <ComposedChart data={recent} margin={{ top: 5, right: 40, left: 4, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
+          <XAxis dataKey="name" tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} />
+          <YAxis yAxisId="l" tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} tickFormatter={v => `€${v.toFixed(0)}`} />
+          <YAxis yAxisId="r" orientation="right" tick={{ fontSize: 8, fill: "hsl(186,32%,26%)" }} axisLine={false} tickLine={false} tickFormatter={v => v.toFixed(1)} />
+          <Tooltip formatter={(v, n) => [n === "Frecuencia/mes" ? Number(v).toFixed(2) : fmtCurrency(v), n]} labelStyle={{ fontSize: 11 }} />
+          <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
+          <Line yAxisId="l" type="monotone" dataKey="aov" name="Ticket medio (€)" stroke="hsl(16,79%,57%)" strokeWidth={2.2} dot={false} />
+          <Line yAxisId="r" type="monotone" dataKey="freq" name="Frecuencia/mes" stroke="hsl(186,32%,42%)" strokeWidth={1.8} dot={false} strokeDasharray="5 3" />
+        </ComposedChart>
+      </ResponsiveContainer>
+    </div>
+  );
+
   return (
     <EvidenceCard sources={["connectif"]}
       question="¿Cuánto vale un cliente? (estimación agregada)"
+      altView={altView}
+      viewLabels={{ a: "Valor", b: "Descomposición" }}
       answer={`≈ ${fmtCurrency(revPerBuyer)} por comprador/mes`}
       answerTone="neutral"
       context={`Gasto medio por comprador cada mes (media 12m). NO es LTV acumulado: las cohortes recientes tienen menos vida, así que la línea no debe leerse como "el valor del cliente sube/baja". CLV real → heatmap de cohortes (pendiente de dato a nivel contacto).`}

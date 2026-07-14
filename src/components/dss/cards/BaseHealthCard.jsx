@@ -1,4 +1,4 @@
-import { ComposedChart, Bar, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceLine } from "recharts";
+import { ComposedChart, BarChart, Bar, Cell, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, ReferenceLine } from "recharts";
 import EvidenceCard from "../EvidenceCard";
 import { useSubscribers, usePushSubscribers } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
@@ -23,6 +23,26 @@ export default function BaseHealthCard({ delay }) {
   const hasData = rows.length >= 2;
   const last = rows[rows.length - 1];
 
+  // ── Vista B — flujo neto mensual de la base email (altas − bajas), barras +/−: aísla el
+  // ritmo de crecimiento/erosión que el nivel absoluto oculta. Mismo dato/periodo. ──
+  const altView = hasData ? (
+    <div className="h-56">
+      <ResponsiveContainer width="100%" height="100%">
+        <BarChart data={rows} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
+          <XAxis dataKey="name" tick={{ fontSize: 9, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false}
+            interval={Math.max(1, Math.floor(rows.length / 8))} />
+          <YAxis tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} tickFormatter={v => fmtNumber(v)} />
+          <Tooltip formatter={(v) => [`${Number(v) >= 0 ? "+" : ""}${fmtNumber(v)}`, "Neto mensual"]} labelStyle={{ fontSize: 11 }} />
+          <ReferenceLine y={0} stroke="hsl(220,13%,75%)" />
+          <Bar dataKey="neto" radius={[3, 3, 0, 0]} maxBarSize={30}>
+            {rows.map((r, i) => <Cell key={i} fill={r.neto >= 0 ? "hsl(16,79%,57%)" : "hsl(220,13%,65%)"} />)}
+          </Bar>
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  ) : undefined;
+
   return (
     <EvidenceCard sources={["connectif"]}
       question="¿Está sana la base de contactos?"
@@ -35,7 +55,9 @@ export default function BaseHealthCard({ delay }) {
         { verb: "mantener", rationale: "Vigila que las altas superen a las bajas mes a mes." },
       ]}
       delay={delay}
-      note="Suscriptores email (status=subscribed) y push por mes (Connectif · subscribers / push_subscribers). Neto = altas − bajas."
+      altView={altView}
+      viewLabels={{ a: "Nivel", b: "Flujo neto" }}
+      note="Suscriptores email (status=subscribed) y push por mes (Connectif · subscribers / push_subscribers). Neto = altas − bajas. Vista 'Flujo neto' = variación neta mensual (+/−) de la base email."
     >
       {hasData && (
         <div className="h-56">
