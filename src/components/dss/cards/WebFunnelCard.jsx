@@ -41,10 +41,12 @@ export default function WebFunnelCard({ delay }) {
   const itemViews = fv("item_views");
   const addToCarts = fv("add_to_carts");
   const checkouts = fv("checkouts");
-  const buys = fv("ecommerce_purchases");
-  const funnelValid = fRows.length > 0 && sessions > 0 && itemViews > 0 && addToCarts > 0 && checkouts > 0 && buys > 0;
+  const gaBuys = fv("ecommerce_purchases");                     // compras que GA4 alcanza a registrar (infra-cuenta)
+  const realBuys = ordersWeb;                                    // compras web REALES (PrestaShop) = cierre del embudo
+  const funnelValid = fRows.length > 0 && sessions > 0 && itemViews > 0 && addToCarts > 0 && checkouts > 0 && realBuys > 0;
 
-  const conv = sessions ? (buys / sessions) * 100 : 0;
+  const conv = sessions ? (realBuys / sessions) * 100 : 0;       // conversión REAL: compra real / sesión
+  const captureRate = realBuys ? (gaBuys / realBuys) * 100 : 0;  // % de compras reales que GA4 captura
 
   // ── Vista B — reparto de pedidos por canal (web/Amazon/TPV) en el tiempo (PrestaShop). ──
   const cutoff = rangeB.end.year * 12 + rangeB.end.month;
@@ -98,20 +100,23 @@ export default function WebFunnelCard({ delay }) {
   }
 
   const stages = [
-    { key: "ses", label: "Sesiones", v: sessions },
-    { key: "view", label: "Vistas de producto", v: itemViews },
-    { key: "cart", label: "Añadir al carrito", v: addToCarts },
-    { key: "chk", label: "Checkout iniciado", v: checkouts },
-    { key: "buy", label: "Compra", v: buys },
+    { key: "ses", label: "Sesiones", v: sessions, src: "ga" },
+    { key: "view", label: "Vistas de producto", v: itemViews, src: "ga" },
+    { key: "cart", label: "Añadir al carrito", v: addToCarts, src: "ga" },
+    { key: "chk", label: "Checkout iniciado", v: checkouts, src: "ga" },
+    { key: "buy", label: "Compra (real)", v: realBuys, src: "ps" },
   ];
   const maxV = sessions || 1;
   const steps = stages.slice(1).map((st, i) => ({
-    label: `${st.label.toLowerCase()} / ${stages[i].label.toLowerCase()}`,
     from: stages[i].label, to: st.label,
     rate: stages[i].v ? (st.v / stages[i].v) * 100 : 0,
+    crossSource: st.src !== stages[i].src,   // checkout (GA4) → compra (real PrestaShop): fuentes distintas
   }));
-  const worst = steps.reduce((m, s) => (s.rate < m.rate ? s : m), steps[0]);
-  const worstShort = { "Vistas de producto": "ver producto", "Añadir al carrito": "carrito", "Checkout iniciado": "checkout", "Compra": "compra" }[worst.to] || worst.to;
+  // El cuello de botella se busca SOLO entre pasos de comportamiento GA4 comparables. El cierre
+  // (checkout GA4 → compra real) mezcla fuentes y no es una tasa de UX válida, así que no compite.
+  const gaSteps = steps.filter(s => !s.crossSource);
+  const worst = gaSteps.reduce((m, s) => (s.rate < m.rate ? s : m), gaSteps[0]);
+  const worstShort = { "Vistas de producto": "ver producto", "Añadir al carrito": "carrito", "Checkout iniciado": "checkout" }[worst.to] || worst.to;
 
   return (
     <EvidenceCard sources={["ga4", "prestashop"]}
@@ -122,15 +127,15 @@ export default function WebFunnelCard({ delay }) {
         { value: `${webShare.toFixed(0)}%`, label: "de los pedidos de la tienda" },
       ]}
       maturity="green"
-      insight={`Embudo de comportamiento web (GA4), 5 etapas encadenadas: de ${fmtNumber(sessions)} sesiones, ${fmtNumber(buys)} acaban en compra (${conv.toFixed(1)}%). El mayor descarte está en el paso a «${worstShort}» (${worst.rate.toFixed(1)}% pasa). El revenue web (${fmtCurrency(revenueWeb)}) es real de PrestaShop; la web pesa el ${webShare.toFixed(0)}% de los pedidos totales de la tienda.`}
+      insight={`De ${fmtNumber(sessions)} sesiones, ${fmtNumber(realBuys)} acaban en compra REAL (${conv.toFixed(1)}% de conversión · pedidos reales de PrestaShop). La mayor fuga del comportamiento está en «${worstShort}»: solo el ${worst.rate.toFixed(1)}% pasa de ${worst.from.toLowerCase()} a ${worst.to.toLowerCase()}. Ahí está la palanca real, no en el checkout. Ojo: GA4 solo registra ${fmtNumber(gaBuys)} de esas ${fmtNumber(realBuys)} compras (~${captureRate.toFixed(0)}%), por eso el cierre se mide con el dato real de PrestaShop.`}
       actions={[
-        { verb: "priorizar", rationale: `Ataca el cuello de botella: solo el ${worst.rate.toFixed(1)}% pasa de «${worst.from.toLowerCase()}» a «${worst.to.toLowerCase()}». Ahí está la mayor fuga del sitio.` },
-        { verb: "investigar", rationale: "Compara las tasas de cada paso con las de campañas/promos para ver qué mejora la conversión web." },
+        { verb: "priorizar", rationale: `Ataca el cuello de botella real: solo el ${worst.rate.toFixed(1)}% pasa de «${worst.from.toLowerCase()}» a «${worst.to.toLowerCase()}». Optimiza ficha de producto y el botón "añadir al carrito", no el checkout (que cierra bien).` },
+        { verb: "investigar", rationale: "El checkout convierte sano; la fuga está antes. Revisa merchandising, precio visible y CTA de carrito en la ficha de producto." },
       ]}
       delay={delay}
       altView={altView}
       viewLabels={{ a: "Embudo", b: "Canales" }}
-      note="5 etapas de GA4 · ga4_daily (sessions, item_views, add_to_carts, checkouts, ecommerce_purchases), sumadas solo sobre días con datos de embudo (desde may-2026) para tasas válidas. La compra del embudo es la de GA4 (comportamiento). Revenue web y % sobre la tienda: PrestaShop · prestashop_monthly (caja real, canal web). Vista 'Canales' = reparto de pedidos web/Amazon/TPV mes a mes (PrestaShop)."
+      note={`Etapas 1-4 = comportamiento GA4 · ga4_daily (sesiones, vistas de producto, carrito, checkout), sumadas sobre días con dato de embudo (desde may-2026). Etapa final = compra WEB REAL de PrestaShop · prestashop_monthly. GA4 infra-cuenta compras (consentimiento/adblock): solo ~${captureRate.toFixed(0)}% de las reales, por eso el cierre usa PrestaShop. Conversión = compra real / sesiones. El cuello de botella se calcula solo entre pasos GA4 comparables; el cierre checkout→compra mezcla fuentes y no se marca como cuello. Vista 'Canales' = reparto web/Amazon/TPV (PrestaShop). Límite: GA4 no expone canal de tráfico ni dispositivo en esta tabla, así que el embudo no se puede segmentar por origen todavía.`}
     >
       <div className="space-y-1 mt-1">
         {stages.map((st, i) => (
@@ -146,14 +151,16 @@ export default function WebFunnelCard({ delay }) {
               <div className="flex items-center justify-center gap-1.5 text-[10px] py-0.5">
                 <ChevronDown className={`w-3.5 h-3.5 shrink-0 ${steps[i] === worst ? "text-red-500" : "text-muted-foreground"}`} />
                 <span className={`font-medium ${steps[i] === worst ? "text-red-600" : "text-muted-foreground"}`}>
-                  {steps[i].rate.toFixed(1)}% pasa a {steps[i].to.toLowerCase()}
+                  {steps[i].crossSource
+                    ? `${steps[i].rate.toFixed(1)}% cierra en compra real (checkout → compra PrestaShop)`
+                    : `${steps[i].rate.toFixed(1)}% pasa a ${steps[i].to.toLowerCase()}`}
                   {steps[i] === worst && <span className="font-semibold"> · cuello de botella</span>}
                 </span>
               </div>
             )}
           </div>
         ))}
-        <p className="text-[10px] text-muted-foreground/70 pt-1">Comportamiento GA4 · {cmp}. Sesiones → vistas de producto → carrito → checkout → compra. Cada tasa = paso siguiente / paso anterior.</p>
+        <p className="text-[10px] text-muted-foreground/70 pt-1">Etapas 1-4: comportamiento GA4 · {cmp}. Cierre: compra web real de PrestaShop ({fmtNumber(realBuys)}; GA4 solo vio {fmtNumber(gaBuys)}). Cada tasa = paso siguiente / paso anterior.</p>
       </div>
     </EvidenceCard>
   );
