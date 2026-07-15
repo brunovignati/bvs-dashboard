@@ -250,6 +250,16 @@ export function useChannelSegmentation() {
   })
 }
 
+export function useCategorySales() {
+  // Ventas por categoría (nivel de categoría principal, depth-2) y mes, canal web.
+  // Origen: PrestaShop (Gestor SQL: order_detail → producto → categoría) → Supabase.
+  return useQuery({
+    queryKey: ['category_sales'],
+    queryFn: () => fetchTable('category_sales', 'year', true, 5000),
+    initialData: [],
+  })
+}
+
 export function usePrestashopMonthly() {
   // Pedidos y revenue reales por mes desde PrestaShop (source of truth), separados por
   // canal (web / Amazon / TPV). Origen: Gestor SQL "Embudo mensual BVS" → Supabase.
