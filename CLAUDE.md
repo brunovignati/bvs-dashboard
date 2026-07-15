@@ -498,6 +498,22 @@ campo mensual. Se limpió el valor placeholder de €10M/mes que disparaba un fa
 `CriticalWorkflowCard` vista Antigüedad: excluye retirados (>30d) del gráfico —aplastaban la escala a
 600d— y los resume aparte; escala real 0-7d. (4) `ChannelDropCard`: oculta canales sin dato (SMS a 0).
 
+**COBERTURA TEMPORAL por tabla (auditoría jul-2026) y fix del selector.** El selector de fechas
+(`ComparisonPanel`) ofrecía un calendario FIJO 2024-2026 con los 12 meses → permitía elegir meses
+FUTUROS vacíos y meses antiguos donde muchas tablas no responden. Cobertura real medida:
+- **ene-2024 → mes actual:** category_sales, cohort_retention, cart_funnel, brand_sales (PrestaShop).
+- **jun-2024 →:** monthly_metrics, email_campaigns, push_campaigns, subscribers, daily_revenue,
+  daily_push, buyer_cohorts, cart_abandonment (Connectif).
+- **jul-2024 →:** prestashop_monthly, channel_segmentation.
+- **sep-2025 →:** compradores (¡solo ~11 filas!).
+- **may-2026 →:** ga4_daily, ga4_channel_daily, ga4_device_daily (GA4) y ig/fb/tk_daily (Metricool).
+
+Fix aplicado: el selector ahora se capa DINÁMICAMENTE a [ene-2024 → mes en curso] (sin meses
+futuros; el año/mes máximos salen de `new Date()`), y muestra una **nota de cobertura** por fuente
+para que los vacíos se entiendan. No se puede estrechar más el rango global sin ocultar el histórico
+de las tablas que sí lo tienen; las tarjetas fuera de su rango siguen mostrando su "gate" de sin dato.
+Mejora futura posible: gate por-tarjeta que indique el mes de inicio de su fuente ("GA4 desde may-2026").
+
 **Regla:** estos items se abordan modificando el sync Python + `sql/schema.sql`, y corren en el
 Action semanal (o ejecución manual). No intentar resolverlos con llamadas desde React.
 
