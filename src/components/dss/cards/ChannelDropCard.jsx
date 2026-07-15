@@ -17,6 +17,9 @@ export default function ChannelDropCard({ channels, worst, hasAttribution, delay
       />
     );
   }
+  // Ocultar canales sin ninguna actividad (p. ej. SMS a cero): no aportan y ensucian la lectura.
+  // Se conserva un canal que cayó a 0 (base>0), porque esa caída sí es informativa.
+  const shown = (channels || []).filter(c => (c.cur || 0) > 0 || (c.base || 0) > 0);
   const anyDrop = worst && worst.delta < -25;
   const answer = anyDrop ? `${worst.name} ${worst.delta.toFixed(0)}%` : "Sin caídas bruscas";
   const context = anyDrop
@@ -25,11 +28,11 @@ export default function ChannelDropCard({ channels, worst, hasAttribution, delay
 
   // ── Vista B — REPARTO: compras atribuidas del último día vs su media de 14 días, por canal. La
   // vista A muestra el % de variación; esta muestra el peso absoluto (qué canal aporta cuánto). ──
-  const hasAbs = channels.some(c => (c.cur || 0) > 0 || (c.base || 0) > 0);
+  const hasAbs = shown.some(c => (c.cur || 0) > 0 || (c.base || 0) > 0);
   const altView = hasAbs ? (
     <div className="h-56">
       <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={channels} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
+        <BarChart data={shown} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
           <XAxis dataKey="name" tick={{ fontSize: 9, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} />
           <YAxis tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} tickFormatter={(v) => v.toFixed(0)} />
@@ -37,7 +40,7 @@ export default function ChannelDropCard({ channels, worst, hasAttribution, delay
           <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
           <Bar dataKey="base" name="Media 14d" fill="hsl(37,42%,80%)" radius={[3, 3, 0, 0]} maxBarSize={26} />
           <Bar dataKey="cur" name="Último día" radius={[3, 3, 0, 0]} maxBarSize={26}>
-            {channels.map((c, i) => <Cell key={i} fill={CH_COLOR[c.name] || "hsl(16,79%,57%)"} />)}
+            {shown.map((c, i) => <Cell key={i} fill={CH_COLOR[c.name] || "hsl(16,79%,57%)"} />)}
           </Bar>
         </BarChart>
       </ResponsiveContainer>
@@ -63,7 +66,7 @@ export default function ChannelDropCard({ channels, worst, hasAttribution, delay
     >
       <div className="h-56">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={channels} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
+          <BarChart data={shown} margin={{ top: 5, right: 8, left: 4, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" vertical={false} />
             <XAxis dataKey="name" tick={{ fontSize: 9, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} />
             <YAxis tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false}
@@ -71,7 +74,7 @@ export default function ChannelDropCard({ channels, worst, hasAttribution, delay
             <Tooltip formatter={(v) => [`${Number(v).toFixed(0)}%`, "Δ vs. media 14d"]} labelStyle={{ fontSize: 11 }} />
             <ReferenceLine y={0} stroke="hsl(220,13%,70%)" />
             <Bar dataKey="delta" radius={[3, 3, 0, 0]}>
-              {channels.map((c, i) => (
+              {shown.map((c, i) => (
                 <Cell key={i} fill={c.delta < -25 ? "hsl(186,32%,26%)" : c.delta < 0 ? "hsl(37,42%,74%)" : "hsl(30,72%,66%)"} />
               ))}
             </Bar>

@@ -23,23 +23,35 @@ export default function CriticalWorkflowCard({ workflows = [], anyStalled, hasDa
     ? "Un flujo que normalmente envía a diario no ha enviado en los últimos 3 días."
     : "Los flujos de carrito y reactivación siguen enviando con normalidad.";
 
-  // ── Vista B — ANTIGÜEDAD: días desde el último envío de cada workflow crítico. La vista A dice
-  // si hay alguno parado; esta ordena todos por frescura (0 = envió hoy) con el umbral de 3 días. ──
-  const wfBars = workflows.slice(0, 8).map(w => ({ name: clip(w.name, 26), full: w.name, days: w.daysSince || 0, stalled: w.stalled, retired: w.retired }));
+  // ── Vista B — ANTIGÜEDAD: días desde el último envío, SOLO de los workflows ACTIVOS
+  // (≤30 días). Los retirados (>30 d) se excluyen del gráfico —si no, sus 300-600 días
+  // aplastan la escala y los activos/parados quedan invisibles— y se resumen aparte. ──
+  const activeWf = workflows.filter(w => !w.retired);
+  const retiredWf = workflows.filter(w => w.retired);
+  const wfBars = activeWf.slice(0, 8)
+    .map(w => ({ name: clip(w.name, 24), full: w.name, days: w.daysSince || 0, stalled: w.stalled }))
+    .sort((a, b) => b.days - a.days);
   const altView = wfBars.length ? (
-    <div className="h-56">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart data={wfBars} layout="vertical" margin={{ top: 4, right: 20, left: 4, bottom: 0 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" horizontal={false} />
-          <XAxis type="number" allowDecimals={false} tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}d`} />
-          <YAxis type="category" dataKey="name" width={150} tick={{ fontSize: 8, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} />
-          <Tooltip formatter={(v) => [`${v} día(s) sin enviar`, "Antigüedad"]} labelFormatter={(l, p) => p?.[0]?.payload?.full || l} labelStyle={{ fontSize: 10 }} />
-          <ReferenceLine x={3} stroke="hsl(0,70%,60%)" strokeDasharray="4 3" label={{ value: "parado ≥3d", position: "top", fontSize: 8, fill: "hsl(0,60%,45%)" }} />
-          <Bar dataKey="days" radius={[0, 4, 4, 0]}>
-            {wfBars.map((w, i) => <Cell key={i} fill={w.stalled ? "hsl(0,72%,52%)" : w.retired ? "hsl(220,9%,72%)" : w.days >= 2 ? "hsl(37,42%,74%)" : "hsl(160,60%,42%)"} />)}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+    <div className="h-56 flex flex-col">
+      <div className="flex-1">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={wfBars} layout="vertical" margin={{ top: 4, right: 24, left: 4, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(36,16%,89%)" horizontal={false} />
+            <XAxis type="number" allowDecimals={false} domain={[0, (max) => Math.max(7, max)]} tick={{ fontSize: 9, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}d`} />
+            <YAxis type="category" dataKey="name" width={160} tick={{ fontSize: 9, fill: "hsl(32,7%,48%)" }} axisLine={false} tickLine={false} />
+            <Tooltip formatter={(v) => [`${v} día(s) sin enviar`, "Antigüedad"]} labelFormatter={(l, p) => p?.[0]?.payload?.full || l} labelStyle={{ fontSize: 10 }} />
+            <ReferenceLine x={3} stroke="hsl(0,70%,60%)" strokeDasharray="4 3" label={{ value: "parado ≥3d", position: "top", fontSize: 8, fill: "hsl(0,60%,45%)" }} />
+            <Bar dataKey="days" radius={[0, 4, 4, 0]}>
+              {wfBars.map((w, i) => <Cell key={i} fill={w.stalled ? "hsl(0,72%,52%)" : w.days >= 2 ? "hsl(37,42%,74%)" : "hsl(160,60%,42%)"} />)}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+      {retiredWf.length > 0 && (
+        <p className="text-[10px] text-muted-foreground/70 pt-1 shrink-0">
+          {retiredWf.length} flujo(s) retirado(s) (&gt;30 d sin enviar), no mostrados: {clip(retiredWf.map(w => w.name).join(", "), 90)}
+        </p>
+      )}
     </div>
   ) : undefined;
 
