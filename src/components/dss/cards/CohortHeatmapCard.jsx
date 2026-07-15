@@ -4,8 +4,9 @@
  * (compradores activos / tamaño de la cohorte). Es el estándar de industria para
  * el LTV y sustituye la lectura engañosa de "LTV como serie temporal".
  *
- * Puerta del dato: se enciende cuando el sync poble `cohort_retention` desde el
- * informe Data Explorer "V. Cohortes" (ver CLAUDE.md §16). Hasta entonces, gate.
+ * Puerta del dato: se enciende cuando `cohort_retention` tiene filas. Poblada desde
+ * PrestaShop (Gestor SQL → Supabase): cohorte = mes de la 1ª compra del cliente en la
+ * tienda web (excluye Amazon y TPV). Ver CLAUDE.md §16.
  */
 import EvidenceCard from "../EvidenceCard";
 import { useCohortRetention } from "@/lib/useEntities";
@@ -21,15 +22,15 @@ export default function CohortHeatmapCard({ delay }) {
 
   if (!hasData) {
     return (
-      <EvidenceCard sources={["connectif"]}
+      <EvidenceCard sources={["prestashop"]}
         question="¿Cómo retiene y cuánto vale cada cohorte? (LTV real)"
-        answer="Se enciende con el informe de cohortes"
+        answer="Se enciende con el dato de cohortes"
         answerTone="neutral"
-        context="El heatmap de cohortes (mes de adquisición × mes de vida) es el LTV correcto y reemplaza la lectura por serie temporal. Necesita el informe de cohortes en el pipeline."
+        context="El heatmap de cohortes (mes de adquisición × mes de vida) es el LTV correcto y reemplaza la lectura por serie temporal. Necesita cohort_retention poblada."
         maturity="amber"
-        actions={[{ verb: "investigar", rationale: "Crear el informe Data Explorer 'V. Cohortes' en Connectif; el sync poblará cohort_retention y este heatmap se activa solo (ver CLAUDE.md §16)." }]}
+        actions={[{ verb: "investigar", rationale: "Poblar cohort_retention desde PrestaShop (Gestor SQL → Supabase); este heatmap se activa solo (ver CLAUDE.md §16)." }]}
         delay={delay}
-        note="Fuente prevista: Connectif · cohort_retention (mes de adquisición × mes de vida)."
+        note="Fuente: PrestaShop · cohort_retention (mes de adquisición × mes de vida)."
       />
     );
   }
@@ -62,7 +63,7 @@ export default function CohortHeatmapCard({ delay }) {
   const fg = (v) => v != null && v >= 55 ? "#fff" : "hsl(220,10%,30%)";
 
   return (
-    <EvidenceCard sources={["connectif"]}
+    <EvidenceCard sources={["prestashop"]}
       question="¿Cómo retiene y cuánto vale cada cohorte? (LTV real)"
       answer={r1 != null ? `Retención mes 1: ${r1.toFixed(0)}%` : "Cohortes disponibles"}
       answerTone="neutral"
@@ -73,7 +74,7 @@ export default function CohortHeatmapCard({ delay }) {
         { verb: "crear", rationale: "Un flujo de segunda compra en las primeras semanas sube la retención temprana, que es la que más mueve el LTV." },
       ]}
       delay={delay}
-      note="Retención = compradores activos de la cohorte / tamaño de la cohorte. Fuente: Connectif · cohort_retention."
+      note="Retención = compradores activos de la cohorte / tamaño de la cohorte. Cohorte = mes de la 1ª compra en la tienda web (excluye Amazon y TPV). Fuente: PrestaShop · cohort_retention."
     >
       <div className="overflow-x-auto -mx-1">
         <table className="text-[10px] border-separate" style={{ borderSpacing: "2px" }}>

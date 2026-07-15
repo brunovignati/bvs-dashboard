@@ -20,6 +20,10 @@ function mapRow(row) {
     purchasesAttr: row.purchases_attr ?? row.purchasesAttr,
     contentName:   row.content_name   ?? row.contentName,
     openRate:      row.open_rate      ?? row.openRate,
+    cohortYear:    row.cohort_year    ?? row.cohortYear,
+    cohortMonth:   row.cohort_month   ?? row.cohortMonth,
+    lifeMonth:     row.life_month     ?? row.lifeMonth,
+    cohortSize:    row.cohort_size    ?? row.cohortSize,
   }
 }
 
