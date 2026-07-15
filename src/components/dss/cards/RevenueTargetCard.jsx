@@ -14,15 +14,27 @@ export default function RevenueTargetCard({ delay }) {
   const { rangeB } = useComparison();
   const [period, setPeriod] = useState("month");
   const [target, setTarget] = useState(0);
+  const [savedTargets, setSavedTargets] = useState({ month: 0, quarter: 0, year: 0 });
+
+  const refreshSaved = () => {
+    if (typeof window === "undefined") return;
+    setSavedTargets({
+      month: Number(window.localStorage.getItem(LS("month")) || 0),
+      quarter: Number(window.localStorage.getItem(LS("quarter")) || 0),
+      year: Number(window.localStorage.getItem(LS("year")) || 0),
+    });
+  };
 
   useEffect(() => {
     const saved = typeof window !== "undefined" ? window.localStorage.getItem(LS(period)) : null;
     setTarget(saved ? Number(saved) : 0);
+    refreshSaved();
   }, [period]);
 
   const saveTarget = (v) => {
     setTarget(v);
     if (typeof window !== "undefined") window.localStorage.setItem(LS(period), String(v));
+    setSavedTargets(prev => ({ ...prev, [period]: v }));
   };
 
   // El período lo marca el comparador (rangeB.end): mes / trimestre / año que contiene ese mes.
@@ -64,6 +76,13 @@ export default function RevenueTargetCard({ delay }) {
             placeholder="meta" className="w-32 text-xs pl-5 pr-2 py-1.5 rounded-md border border-border bg-background focus:outline-none focus:ring-1 focus:ring-primary" />
         </span>
       </label>
+      <p className="text-[10px] text-muted-foreground">
+        Objetivos guardados: {[
+          savedTargets.month ? `Mes ${fmtCurrency(savedTargets.month)}` : null,
+          savedTargets.quarter ? `Trim ${fmtCurrency(savedTargets.quarter)}` : null,
+          savedTargets.year ? `Año ${fmtCurrency(savedTargets.year)}` : null,
+        ].filter(Boolean).join(" · ") || "ninguno — fija Mes y Año (cada período se guarda aparte)"}
+      </p>
     </div>
   );
 
@@ -144,7 +163,7 @@ export default function RevenueTargetCard({ delay }) {
       insight={insight}
       action={action}
       delay={delay}
-      note="Objetivo editable, guardado en tu navegador. Fuente: Connectif · daily_revenue. Con el período en curso se proyecta linealmente por ritmo diario; cerrado, se muestra el revenue real."
+      note="Un objetivo por período (Mes / Trimestre / Año), cada uno editable y guardado por separado en tu navegador. Fuente: daily_revenue (venta web ~€1.5M/mes). Con el período en curso se proyecta linealmente por ritmo diario; cerrado, se muestra el revenue real."
     >
       {hasData && (
         <div className="space-y-3">
