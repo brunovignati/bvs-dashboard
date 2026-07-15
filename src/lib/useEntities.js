@@ -320,6 +320,14 @@ export function useGa4ChannelDaily() {
   })
 }
 
+export function useGa4DeviceDaily() {
+  return useQuery({
+    queryKey: ['ga4_device_daily'],
+    queryFn: () => fetchTable('ga4_device_daily', 'date_str', true, 20000),
+    initialData: [],
+  })
+}
+
 // ─── Contenido por pieza (Metricool: Facebook posts / TikTok vídeos) ──
 
 export function useFbPosts() {

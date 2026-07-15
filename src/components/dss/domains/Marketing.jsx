@@ -10,6 +10,7 @@ import WebConversionCard from "../cards/WebConversionCard";
 import BestDayCard from "../cards/BestDayCard";
 import Ga4TrafficCard from "../cards/Ga4TrafficCard";
 import Ga4ChannelFunnelCard from "../cards/Ga4ChannelFunnelCard";
+import Ga4DeviceCard from "../cards/Ga4DeviceCard";
 import SocialReachCard from "../cards/SocialReachCard";
 import SocialAudienceCard from "../cards/SocialAudienceCard";
 import SocialContentCard from "../cards/SocialContentCard";
@@ -59,7 +60,8 @@ export default function Marketing() {
       <p className="text-xs text-muted-foreground -mt-2">Métricas de alcance y audiencia: parte alta del embudo. Miden notoriedad, no ingresos directos.</p>
       <Grid>
         <div className="lg:col-span-2"><Ga4ChannelFunnelCard delay={0.14} /></div>
-        <Ga4TrafficCard delay={0.15} />
+        <Ga4DeviceCard delay={0.15} />
+        <Ga4TrafficCard delay={0.16} />
         <SocialReachCard delay={0.17} />
         <SocialAudienceCard delay={0.19} />
         <SocialContentCard delay={0.21} />

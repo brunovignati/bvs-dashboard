@@ -233,4 +233,45 @@ try:
 except Exception as e:
     print(f" GA4 por canal omitido (el resto no se ve afectado): {e}")
 
+# ── GA4 por DISPOSITIVO (deviceCategory) — bloque PROTEGIDO e independiente. Puebla
+# ga4_device_daily (requiere supabase/create_ga4_device_daily.sql). Permite ver cómo convierte
+# el tráfico móvil vs escritorio vs tablet. Si falla, nada de lo anterior se ve afectado.
+try:
+    print("Consultando GA4 por dispositivo (deviceCategory)...")
+    dv_req = RunReportRequest(
+        property=f"properties/{GA4_PROPERTY_ID}",
+        dimensions=[Dimension(name="date"), Dimension(name="deviceCategory")],
+        metrics=[
+            Metric(name="sessions"),
+            Metric(name="itemsViewed"),
+            Metric(name="addToCarts"),
+            Metric(name="checkouts"),
+            Metric(name="ecommercePurchases"),
+            Metric(name="purchaseRevenue"),
+        ],
+        date_ranges=[DateRange(start_date="60daysAgo", end_date="today")],
+    )
+    dv_resp = client.run_report(dv_req)
+    dv_rows = []
+    for row in dv_resp.rows:
+        ds = row.dimension_values[0].value
+        device = (row.dimension_values[1].value or "").strip() or "(sin dispositivo)"
+        se, iv, atc, ck, ep, pr = [m.value for m in row.metric_values]
+        dv_rows.append({
+            "date_str": ds,
+            **pd(ds),
+            "device": device,
+            "sessions": fv(se),
+            "item_views": fv(iv),
+            "add_to_carts": fv(atc),
+            "checkouts": fv(ck),
+            "ecommerce_purchases": fv(ep),
+            "purchase_revenue": fv(pr),
+            "updated_at": NOW_ISO,
+        })
+    print(f" {len(dv_rows)} filas dispositivo-día recibidas de GA4")
+    print(f" ga4_device_daily: {upsert('ga4_device_daily', dv_rows, 'date_str,device')}")
+except Exception as e:
+    print(f" GA4 por dispositivo omitido (el resto no se ve afectado): {e}")
+
 print("\nSync GA4 completo.")
