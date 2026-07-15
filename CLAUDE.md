@@ -489,6 +489,15 @@ alcance y web. Honesto: NO son clics de enlace; Instagram no expone visitas de p
 actual. Para clics de enlace reales: re-login en Metricool + capturar el código de métrica desde una
 petición válida, y añadirlo a `sync_social_playwright.py`.
 
+**ESTADO portada "Estado del negocio" — auditoría UX + coherencia (jul 2026).** Corregidas 4 cosas:
+(1) **Coherencia de revenue:** `SaludResumen` ya NO reparte por 2 líneas Connectif (€901K, no cuadraba
+con el titular). Ahora reparte por **categoría real** (`category_sales`, ~€1.5M) → misma base que el
+titular. (2) **Objetivo:** `RevenueTargetCard` ya tenía objetivo por período (Mes/Trim/Año, editable,
+localStorage `bvs_revenue_target_<p>`); ahora muestra los tres a la vez para no meter el anual en el
+campo mensual. Se limpió el valor placeholder de €10M/mes que disparaba un falso "En riesgo". (3)
+`CriticalWorkflowCard` vista Antigüedad: excluye retirados (>30d) del gráfico —aplastaban la escala a
+600d— y los resume aparte; escala real 0-7d. (4) `ChannelDropCard`: oculta canales sin dato (SMS a 0).
+
 **Regla:** estos items se abordan modificando el sync Python + `sql/schema.sql`, y corren en el
 Action semanal (o ejecución manual). No intentar resolverlos con llamadas desde React.
 
