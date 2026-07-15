@@ -1,6 +1,7 @@
 import SectionNav from "../SectionNav";
 import MarketingFunnelCard from "../cards/MarketingFunnelCard";
 import WebFunnelCard from "../cards/WebFunnelCard";
+import MarketingFunnelOverviewCard from "../cards/MarketingFunnelOverviewCard";
 import EmailScaleCard from "../cards/EmailScaleCard";
 import PushPerformanceCard from "../cards/PushPerformanceCard";
 import PushChannelTrendCard from "../cards/PushChannelTrendCard";
@@ -29,11 +30,17 @@ export default function Marketing() {
   return (
     <div className="space-y-6">
       <SectionNav sections={[
+        { id: "mk-embudo", label: "Embudo de marketing" },
         { id: "mk-canales", label: "Canales de venta" },
         { id: "mk-web", label: "Captación web" },
         { id: "mk-notoriedad", label: "Notoriedad y tráfico" },
         { id: "mk-envios", label: "Optimización de envíos" },
       ]} />
+
+      {/* 0 · Embudo de marketing de punta a punta (notoriedad → venta), 4 fuentes */}
+      <Sub id="mk-embudo">Embudo de marketing (punta a punta)</Sub>
+      <p className="text-xs text-muted-foreground -mt-2">De la notoriedad social (Metricool) a las sesiones y el comportamiento (GA4) y la venta real (PrestaShop), en una sola cadena.</p>
+      <MarketingFunnelOverviewCard delay={0.02} />
 
       {/* 1 · Síntesis: embudo del sitio (tráfico → compra) */}
       <WebFunnelCard delay={0.03} />
