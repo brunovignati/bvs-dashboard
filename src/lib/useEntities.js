@@ -250,6 +250,16 @@ export function useChannelSegmentation() {
   })
 }
 
+export function useCartFunnel() {
+  // Embudo de carrito real por mes: carritos con productos, convertidos (web / TPV-marketplace).
+  // Origen: PrestaShop (Gestor SQL: ps_cart + ps_cart_product vs ps_orders) → Supabase.
+  return useQuery({
+    queryKey: ['cart_funnel'],
+    queryFn: () => fetchTable('cart_funnel', 'year', true, 5000),
+    initialData: [],
+  })
+}
+
 export function useCategorySales() {
   // Ventas por categoría (nivel de categoría principal, depth-2) y mes, canal web.
   // Origen: PrestaShop (Gestor SQL: order_detail → producto → categoría) → Supabase.
