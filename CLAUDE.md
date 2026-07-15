@@ -470,6 +470,15 @@ escrito y listo:
 | **Mix de categorías / margen (Producto)** | ✅ **RESUELTO (jul 2026, vía PrestaShop).** `CategoryMixCard` (Producto) muestra el mix REAL por categoría con dato de catálogo por venta. | — | `category_sales` (187 filas, 7 categorías, 2024-01→). **Fuente: PrestaShop Gestor SQL** (`order_detail`→`product`→categoría principal depth-2 vía nleft/nright, canal web = `payment NOT LIKE '%Amazon%' AND module NOT LIKE '%innova%'`). Consulta guardada como **"BVS_category_monthly"** (id 200). Refresco: reejecutar y upsert (vía navegador/Cowork; el Action de GH no alcanza PrestaShop). Mix: Perros ~68%, Gatos ~20% y creciendo. Margen aún pendiente (no hay coste por línea). |
 | **Sticky por impresión** | Eficiencia = revenue/impresión. Hoy `sticky` no tiene impresiones. | Columna de impresiones en el informe de contenido web. | Recalcular `WebStickyCard`. *(Interino ya aplicado: ordena por `convRate`.)* |
 
+**ESTADO embudo de carrito real — ✅ RESUELTO (jul 2026, vía PrestaShop).** `CartAbandonmentCard`
+(Automatizaciones) muestra el abandono de carrito REAL del sitio. Tabla `cart_funnel` (31 filas,
+2024-01→) desde el Gestor SQL: `ps_cart` con productos (EXISTS `ps_cart_product`) vs `ps_orders`
+válidos, clasificando conversión web vs TPV/marketplace. Abandono web = abandonados /
+(abandonados + convertidos_web); excluye carritos TPV/marketplace (convierten siempre). Tasa
+reciente ~47-56% y creciente. Consulta guardada como **"BVS_cart_funnel"** (id 202). Refresco:
+reejecutar + upsert vía navegador/Cowork (el Action de GH no alcanza PrestaShop). Hook
+`useCartFunnel`. Ojo: el registro de carritos escaló en 2025-26, comparar tasas, no absolutos.
+
 **Regla:** estos items se abordan modificando el sync Python + `sql/schema.sql`, y corren en el
 Action semanal (o ejecución manual). No intentar resolverlos con llamadas desde React.
 
