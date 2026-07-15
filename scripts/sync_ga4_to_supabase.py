@@ -191,4 +191,46 @@ try:
 except Exception as e:
     print(f" Ventas por marca GA4 omitido (el resto no se ve afectado): {e}")
 
+# ── GA4 por CANAL de tráfico (sessionDefaultChannelGroup) — bloque PROTEGIDO e independiente.
+# Puebla ga4_channel_daily (requiere supabase/create_ga4_channel_daily.sql). Permite comparar
+# qué canal (orgánico/pago/email/social/directo/referral) convierte mejor. Si falla, nada de lo
+# anterior se ve afectado.
+try:
+    print("Consultando GA4 por canal (sessionDefaultChannelGroup)...")
+    ch_req = RunReportRequest(
+        property=f"properties/{GA4_PROPERTY_ID}",
+        dimensions=[Dimension(name="date"), Dimension(name="sessionDefaultChannelGroup")],
+        metrics=[
+            Metric(name="sessions"),
+            Metric(name="itemsViewed"),
+            Metric(name="addToCarts"),
+            Metric(name="checkouts"),
+            Metric(name="ecommercePurchases"),
+            Metric(name="purchaseRevenue"),
+        ],
+        date_ranges=[DateRange(start_date="60daysAgo", end_date="today")],
+    )
+    ch_resp = client.run_report(ch_req)
+    ch_rows = []
+    for row in ch_resp.rows:
+        ds = row.dimension_values[0].value
+        channel = (row.dimension_values[1].value or "").strip() or "(sin canal)"
+        se, iv, atc, ck, ep, pr = [m.value for m in row.metric_values]
+        ch_rows.append({
+            "date_str": ds,
+            **pd(ds),
+            "channel": channel,
+            "sessions": fv(se),
+            "item_views": fv(iv),
+            "add_to_carts": fv(atc),
+            "checkouts": fv(ck),
+            "ecommerce_purchases": fv(ep),
+            "purchase_revenue": fv(pr),
+            "updated_at": NOW_ISO,
+        })
+    print(f" {len(ch_rows)} filas canal-día recibidas de GA4")
+    print(f" ga4_channel_daily: {upsert('ga4_channel_daily', ch_rows, 'date_str,channel')}")
+except Exception as e:
+    print(f" GA4 por canal omitido (el resto no se ve afectado): {e}")
+
 print("\nSync GA4 completo.")
