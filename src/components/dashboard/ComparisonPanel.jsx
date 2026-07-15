@@ -2,8 +2,17 @@ import { useState } from "react";
 import { useComparison } from "@/lib/ComparisonContext";
 import { monthLabel } from "@/lib/dashboardData";
 
-const MONTHS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-const YEARS = [2024, 2025, 2026];
+// Rango REAL de datos: desde ene-2024 (lo más antiguo: venta web/categorías) hasta el mes
+// en curso (último con dato). Se calcula dinámicamente para no ofrecer meses futuros vacíos.
+const NOW = new Date();
+const MAX = { year: NOW.getFullYear(), month: NOW.getMonth() + 1 };
+const MIN = { year: 2024, month: 1 };
+const YEARS = Array.from({ length: MAX.year - MIN.year + 1 }, (_, i) => MIN.year + i);
+const monthsFor = (year) => {
+  const lo = year === MIN.year ? MIN.month : 1;
+  const hi = year === MAX.year ? MAX.month : 12;
+  return Array.from({ length: Math.max(0, hi - lo + 1) }, (_, i) => lo + i);
+};
 
 const RANGE_PRESETS = [
   { id: "this_month", label: "Este mes" },
@@ -21,13 +30,18 @@ const COMP_MODES = [
 ];
 
 function MonthYear({ value, onChange }) {
+  const months = monthsFor(value.year);
   return (
     <div className="flex gap-1.5">
       <select value={value.month} onChange={(e) => onChange({ ...value, month: +e.target.value })}
         className="flex-1 bg-background text-foreground text-xs rounded-lg border border-border px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary">
-        {MONTHS.map((m) => <option key={m} value={m}>{monthLabel(m)}</option>)}
+        {months.map((m) => <option key={m} value={m}>{monthLabel(m)}</option>)}
       </select>
-      <select value={value.year} onChange={(e) => onChange({ ...value, year: +e.target.value })}
+      <select value={value.year} onChange={(e) => {
+        const y = +e.target.value; const mm = monthsFor(y);
+        const month = mm.includes(value.month) ? value.month : mm[mm.length - 1];
+        onChange({ ...value, year: y, month });
+      }}
         className="w-[4.4rem] bg-background text-foreground text-xs rounded-lg border border-border px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-primary">
         {YEARS.map((y) => <option key={y} value={y}>{y}</option>)}
       </select>
@@ -64,6 +78,9 @@ export default function ComparisonPanel() {
             <MonthYear value={rangeB.end} onChange={(e) => setPrimary({ start: rangeB.start, end: e })} />
           </div>
         )}
+        <p className="text-[10px] text-muted-foreground/80 leading-snug pt-0.5">
+          Cobertura de datos: venta web y categorías desde <span className="font-medium">ene-2024</span> · email/push/CRM desde <span className="font-medium">jun-2024</span> · GA4 y redes sociales desde <span className="font-medium">may-2026</span>. Fuera de su rango, esas tarjetas aparecen vacías.
+        </p>
       </div>
 
       {/* ── Comparar ── */}
