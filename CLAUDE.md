@@ -479,6 +479,16 @@ reciente ~47-56% y creciente. Consulta guardada como **"BVS_cart_funnel"** (id 2
 reejecutar + upsert vía navegador/Cowork (el Action de GH no alcanza PrestaShop). Hook
 `useCartFunnel`. Ojo: el registro de carritos escaló en 2025-26, comparar tasas, no absolutos.
 
+**ESTADO Metricool «clics» — ⚠️ PARCIAL (jul 2026).** Los **clics de enlace al sitio** por red NO
+son accesibles: la API de analítica de Metricool (`/api/v2/analytics/data`) devuelve 401 incluso a
+la propia UI de Metricool en la sesión del navegador (requiere re-login con credenciales, que no se
+puede automatizar desde Cowork; el sync semanal Playwright sí loga con secretos). En su lugar se
+encendió `SocialProfileVisitsCard` (Marketing › Notoriedad) con el dato YA sincronizado: **visitas
+de perfil/página** (`fb_daily.page_views` + `tk_daily.profile_views`) — el paso de "interés" entre
+alcance y web. Honesto: NO son clics de enlace; Instagram no expone visitas de perfil en el sync
+actual. Para clics de enlace reales: re-login en Metricool + capturar el código de métrica desde una
+petición válida, y añadirlo a `sync_social_playwright.py`.
+
 **Regla:** estos items se abordan modificando el sync Python + `sql/schema.sql`, y corren en el
 Action semanal (o ejecución manual). No intentar resolverlos con llamadas desde React.
 
