@@ -16,6 +16,7 @@ import Ga4ChannelLeakCard from "../cards/Ga4ChannelLeakCard";
 import SocialReachCard from "../cards/SocialReachCard";
 import SocialAudienceCard from "../cards/SocialAudienceCard";
 import SocialContentCard from "../cards/SocialContentCard";
+import SocialProfileVisitsCard from "../cards/SocialProfileVisitsCard";
 
 const Sub = ({ children, id }) => (
   <p id={id} className="scroll-mt-28 text-xs font-semibold uppercase tracking-wider text-muted-foreground pt-1">{children}</p>
@@ -72,6 +73,7 @@ export default function Marketing() {
         <Ga4DeviceCard delay={0.15} />
         <Ga4TrafficCard delay={0.16} />
         <SocialReachCard delay={0.17} />
+        <SocialProfileVisitsCard delay={0.18} />
         <SocialAudienceCard delay={0.19} />
         <SocialContentCard delay={0.21} />
       </Grid>
