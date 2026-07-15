@@ -439,7 +439,17 @@ Connectif (Azure) no se pueden descargar desde el entorno Cowork; el procesamien
 |---|---|---|---|
 | **Heatmap de cohortes (LTV real)** | Matriz mes-de-adquisición × mes-de-vida con revenue acumulado/retención. Hoy `buyer_cohorts` solo tiene conteos mensuales primerizos/recurrentes, no el seguimiento por cohorte. | Export `purchases` (nivel pedido: contactId + fecha + importe) **o** un informe Data Explorer de cohortes configurado en Connectif. | Nueva tabla `cohort_retention` + card heatmap que reemplaza la línea de `CustomerValueCard`. |
 
-**ESTADO cohortes (ejecutado — falta solo 1 paso manual en Connectif):** el pipeline ya está
+**ESTADO cohortes — ✅ RESUELTO (julio 2026, vía PrestaShop, NO Connectif).** El heatmap de
+LTV real está ENCENDIDO en Clientes con datos reales. La cohorte se calculó desde PrestaShop
+(Gestor SQL del back-office → `cohort_retention` en Supabase), no desde Connectif: cohorte = mes
+de la 1ª compra del cliente en la tienda **web** (mismo criterio que "Embudo mensual BVS":
+`payment NOT LIKE '%Amazon%' AND module NOT LIKE '%innova%'`). 496 filas / 31 cohortes (2024-01→).
+La consulta reutilizable quedó guardada en el Gestor SQL como **"BVS_cohort_retention"** (id 201).
+Para refrescar: reejecutar esa consulta y volver a hacer upsert en `cohort_retention` (el sync de
+GitHub Actions NO puede — no alcanza la BD de PrestaShop; se hace vía navegador/Cowork, como el
+sync social). `mapRow()` mapea cohortYear/cohortMonth/lifeMonth/cohortSize.
+
+**Pipeline previo (Connectif) — obsoleto, conservado por si acaso:** el pipeline original estaba
 escrito y listo:
 - SQL: `sql/create_cohort_retention.sql` (crear la tabla en Supabase una vez).
 - Sync: `t_cohort_retention()` + entrada en `REPORT_MAP` (keywords `cohorte`/`cohort`/`ltv`) en
