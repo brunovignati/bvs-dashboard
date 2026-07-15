@@ -34,7 +34,10 @@ export default function Ga4ChannelLeakCard({ delay }) {
   const chans = all.filter(c => c.sessions >= totalSes * 0.02).sort((a, b) => b.sessions - a.sessions).slice(0, 7)
     .map(c => {
       const steps = STEPS.map(st => ({ ...st, rate: c[st.den] ? (c[st.num] / c[st.den]) * 100 : 0 }));
-      const valid = steps.filter(s => s.rate > 0);
+      // El cuello (leak) se busca SOLO entre pasos de comportamiento comparables (vista/carrito/
+      // checkout). El paso «compra» de GA4 infra-cuenta las ventas reales, así que sale
+      // artificialmente bajo para TODOS los canales y no es una fuga accionable: se excluye.
+      const valid = steps.filter(s => s.key !== "buy" && s.rate > 0);
       const worst = valid.length ? valid.reduce((m, s) => (s.rate < m.rate ? s : m), valid[0]) : null;
       return { ...c, steps, worst, conv: c.sessions ? (c.ecommerce_purchases / c.sessions) * 100 : 0 };
     });
@@ -64,10 +67,10 @@ export default function Ga4ChannelLeakCard({ delay }) {
       context={`Tasa de cada paso del embudo por canal · ${labelRange(rangeB)}. En rojo, el paso más flojo (cuello) de cada canal. Comportamiento GA4, comparación relativa.`}
       maturity="amber"
       actions={[
-        { verb: "priorizar", rationale: "Cada canal se optimiza distinto: ataca el paso rojo de cada uno (p. ej. si un canal pierde en 'carrito', su tráfico no engancha con el producto; si pierde en 'compra', es checkout/precio)." },
+        { verb: "priorizar", rationale: "Cada canal se optimiza distinto: ataca el paso rojo de cada uno. Si la fuga común es 'carrito' (vista→carrito), la palanca transversal es la ficha de producto y el CTA de añadir al carrito." },
       ]}
       delay={delay}
-      note="Fuente: GA4 · ga4_channel_daily. Cada tasa = paso siguiente / paso anterior (comportamiento). La compra es la de GA4 (infra-cuenta absolutos, pero las tasas sirven para comparar canales). Se muestran los canales con ≥2% del tráfico."
+      note="Fuente: GA4 · ga4_channel_daily. Cada tasa = paso siguiente / paso anterior (comportamiento). El cuello (rojo) se calcula solo entre pasos comparables (vista/carrito/checkout); el paso «compra» de GA4 infra-cuenta las ventas reales (sale bajo para todos) y NO se marca como fuga. Se muestran los canales con ≥2% del tráfico."
     >
       <div className="mt-1 overflow-x-auto">
         <table className="w-full text-[11px]">
