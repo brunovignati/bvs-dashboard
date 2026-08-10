@@ -1,9 +1,12 @@
-name: Sync Mi Compi Registrations
+name: BVS Analytics — Sync Mi Compi Registrations
 
+# NOTA: la API key de Connectif NO puede crear exports (POST /exports → 403),
+# por lo que este workflow no puede correr en automático. La captura SEMANAL
+# de Mi Compi se hace vía Cowork scheduled task "bvs-mi-compi-sync" (como el
+# sync social). Este workflow queda solo como fallback manual por si Connectif
+# habilita el permiso de exports en la API key.
 on:
-  schedule:
-    - cron: '0 */6 * * *'
-  workflow_dispatch:
+  workflow_dispatch:          # Solo manual — ver nota arriba
 
 jobs:
   sync:
@@ -20,7 +23,7 @@ jobs:
       - name: Instalar dependencias
         run: pip install requests
 
-      - name: Sincronizar Mi Compi
+      - name: Sincronizar Mi Compi → Supabase
         env:
           CONNECTIF_API_KEY: ${{ secrets.CONNECTIF_API_KEY }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
