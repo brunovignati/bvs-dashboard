@@ -1,9 +1,9 @@
-name: BVS Analytics â Sync Mi Compi Registrations
+name: Sync Mi Compi Registrations
 
 on:
   schedule:
-    - cron: '0 */6 * * *'   # Cada 6h (00, 06, 12, 18 UTC)
-  workflow_dispatch:          # Ejecutable a mano desde GitHub
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
 
 jobs:
   sync:
@@ -20,7 +20,7 @@ jobs:
       - name: Instalar dependencias
         run: pip install requests
 
-      - name: Sincronizar Mi Compi â Supabase
+      - name: Sincronizar Mi Compi
         env:
           CONNECTIF_API_KEY: ${{ secrets.CONNECTIF_API_KEY }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
