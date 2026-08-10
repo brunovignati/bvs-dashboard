@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { supabase } from './supabase'
 
-// Mapeo snake_case (Supabase) â camelCase (componentes originales de Base44)
+// Mapeo snake_case (Supabase) → camelCase (componentes originales de Base44)
 function mapRow(row) {
   if (!row) return row
   return {
@@ -39,10 +39,10 @@ async function fetchTable(table, column = 'year', ascending = false, limit = 200
 
 // Supabase limita cada respuesta a 1000 filas. Para tablas grandes (email_campaigns,
 // daily_email, daily_push) hay que paginar con .range() hasta reunir todas las filas
-// necesarias; si no, un simple .limit() ordenado por aÃ±o devuelve solo las mÃ¡s antiguas
-// y las secciones que filtran por perÃ­odo reciente aparecen vacÃ­as.
+// necesarias; si no, un simple .limit() ordenado por año devuelve solo las más antiguas
+// y las secciones que filtran por período reciente aparecen vacías.
 // orderCols: array de [columna, ascending] para un orden estable (evita duplicar/saltar
-// filas entre pÃ¡ginas). Usa una clave Ãºnica o casi-Ãºnica (id, o year+month+day+nombre).
+// filas entre páginas). Usa una clave única o casi-única (id, o year+month+day+nombre).
 async function fetchPaged(table, orderCols, limit = 20000) {
   const PAGE = 1000
   const all = []
@@ -70,7 +70,7 @@ export function useMonthlyMetrics() {
 export function useEmailCampaigns() {
   return useQuery({
     queryKey: ['email_campaigns'],
-    // 25k+ filas: paginar por id (clave Ãºnica) para traer todo el histÃ³rico.
+    // 25k+ filas: paginar por id (clave única) para traer todo el histórico.
     queryFn: () => fetchPaged('email_campaigns', [['id', true]], 60000),
     initialData: [],
   })
@@ -183,7 +183,7 @@ export function useCarrito() {
 export function useDailyRevenue() {
   return useQuery({
     queryKey: ['daily_revenue'],
-    // Una fila por dÃ­a: paginar por fecha para no toparse con el tope de 1000 al crecer.
+    // Una fila por día: paginar por fecha para no toparse con el tope de 1000 al crecer.
     queryFn: () => fetchPaged('daily_revenue', [['year', true], ['month', true], ['day', true]], 8000),
     initialData: [],
   })
@@ -192,7 +192,7 @@ export function useDailyRevenue() {
 export function useDailyEmail() {
   return useQuery({
     queryKey: ['daily_email'],
-    // 150k+ filas: traer las MÃS RECIENTES (orden descendente) para las tendencias diarias.
+    // 150k+ filas: traer las MÁS RECIENTES (orden descendente) para las tendencias diarias.
     queryFn: () => fetchPaged('daily_email', [['year', false], ['month', false], ['day', false], ['email_name', true]], 20000),
     initialData: [],
   })
@@ -201,7 +201,7 @@ export function useDailyEmail() {
 export function useDailyPush() {
   return useQuery({
     queryKey: ['daily_push'],
-    // 7k+ filas: paginar por fecha (descendente) para incluir los dÃ­as recientes.
+    // 7k+ filas: paginar por fecha (descendente) para incluir los días recientes.
     queryFn: () => fetchPaged('daily_push', [['year', false], ['month', false], ['day', false], ['workflow', true]], 12000),
     initialData: [],
   })
@@ -210,13 +210,13 @@ export function useDailyPush() {
 export function useDailySticky() {
   return useQuery({
     queryKey: ['daily_sticky'],
-    // 20k+ filas: paginar por fecha DESC para incluir los dÃ­as recientes en las tendencias.
+    // 20k+ filas: paginar por fecha DESC para incluir los días recientes en las tendencias.
     queryFn: () => fetchPaged('daily_sticky', [['year', false], ['month', false], ['day', false], ['content_name', true]], 24000),
     initialData: [],
   })
 }
 
-// ââ Vistas de agregaciÃ³n (perf): ~745 filas por dÃ­a en una sola peticiÃ³n, en vez de
+// ── Vistas de agregación (perf): ~745 filas por día en una sola petición, en vez de
 // paginar decenas de miles. Ver sql/create_agg_views.sql.
 export function useEmailDiario() {
   return useQuery({
@@ -252,7 +252,7 @@ export function useChannelSegmentation() {
 
 export function useCartFunnel() {
   // Embudo de carrito real por mes: carritos con productos, convertidos (web / TPV-marketplace).
-  // Origen: PrestaShop (Gestor SQL: ps_cart + ps_cart_product vs ps_orders) â Supabase.
+  // Origen: PrestaShop (Gestor SQL: ps_cart + ps_cart_product vs ps_orders) → Supabase.
   return useQuery({
     queryKey: ['cart_funnel'],
     queryFn: () => fetchTable('cart_funnel', 'year', true, 5000),
@@ -261,8 +261,8 @@ export function useCartFunnel() {
 }
 
 export function useCategorySales() {
-  // Ventas por categorÃ­a (nivel de categorÃ­a principal, depth-2) y mes, canal web.
-  // Origen: PrestaShop (Gestor SQL: order_detail â producto â categorÃ­a) â Supabase.
+  // Ventas por categoría (nivel de categoría principal, depth-2) y mes, canal web.
+  // Origen: PrestaShop (Gestor SQL: order_detail → producto → categoría) → Supabase.
   return useQuery({
     queryKey: ['category_sales'],
     queryFn: () => fetchTable('category_sales', 'year', true, 5000),
@@ -272,7 +272,7 @@ export function useCategorySales() {
 
 export function usePrestashopMonthly() {
   // Pedidos y revenue reales por mes desde PrestaShop (source of truth), separados por
-  // canal (web / Amazon / TPV). Origen: Gestor SQL "Embudo mensual BVS" â Supabase.
+  // canal (web / Amazon / TPV). Origen: Gestor SQL "Embudo mensual BVS" → Supabase.
   return useQuery({
     queryKey: ['prestashop_monthly'],
     queryFn: () => fetchTable('prestashop_monthly', 'year', true, 5000),
@@ -282,8 +282,8 @@ export function usePrestashopMonthly() {
 
 export function useBrandSales() {
   // brand_sales supera las 1000 filas (Supabase corta cada respuesta a 1000). Con un
-  // fetchTable simple solo llegaban los meses mÃ¡s antiguos (2024) y los recientes faltaban
-  // â hay que paginar con fetchPaged, igual que email_campaigns/daily_*.
+  // fetchTable simple solo llegaban los meses más antiguos (2024) y los recientes faltaban
+  // → hay que paginar con fetchPaged, igual que email_campaigns/daily_*.
   return useQuery({
     queryKey: ['brand_sales'],
     queryFn: () => fetchPaged('brand_sales', [['year', true], ['month', true], ['brand', true]], 20000),
@@ -292,7 +292,7 @@ export function useBrandSales() {
 }
 
 
-// âââ Social Media (Metricool) ââââââââââââââââââââââââââââââ
+// ─── Social Media (Metricool) ──────────────────────────────
 
 export function useIgDaily() {
   return useQuery({
@@ -326,7 +326,7 @@ export function useTkDaily() {
   })
 }
 
-// âââ GA4 (trÃ¡fico web) ââââââââââââââââââââââââââââââââââââ
+// ─── GA4 (tráfico web) ────────────────────────────────────
 
 export function useGa4Daily() {
   return useQuery({
@@ -352,7 +352,7 @@ export function useGa4DeviceDaily() {
   })
 }
 
-// âââ Contenido por pieza (Metricool: Facebook posts / TikTok vÃ­deos) ââ
+// ─── Contenido por pieza (Metricool: Facebook posts / TikTok vídeos) ──
 
 export function useFbPosts() {
   return useQuery({
@@ -370,7 +370,7 @@ export function useTkVideos() {
   })
 }
 
-// âââ Mi Compi (perfil de mascota) âââââââââââââââââââââââââââââ
+// ─── Mi Compi (perfil de mascota) ─────────────────────────────
 
 export function useMiCompiDaily() {
   return useQuery({
