@@ -121,7 +121,17 @@ El cliente usa `service_role` key (bypasa RLS intencionadamente — dashboard in
 | `fb_daily` | `date_str` | Evolución diaria Facebook (followers, page_views) |
 | `tk_daily` | `date_str` | Evolución diaria TikTok (followers, account_views, reach) |
 
-### 4.4 Tablas en schema pero no activas
+### 4.4 Mi Compi (perfil de mascota) — origen: Connectif
+
+| Tabla / Vista | Conflict key | Datos | Componente(s) |
+|---|---|---|---|
+| `mi_compi_registrations` | `email` | Registros Mi Compi: email, nombre/especie/raza/sexo/nacimiento (slots 1-4), alergias, enfermedades, num_compis (generated), first_seen_at, last_synced | MiCompiCard (últimos registros) |
+| `mi_compi_daily` (VIEW) | — | Registros por día: registros, perros, gatos, otros, total_compis, media_compis | MiCompiCard (vista B: barras diarias) |
+| `mi_compi_cumulative` (VIEW) | — | Acumulado running total de registros por día | MiCompiCard (vista A: curva acumulada) |
+
+Schema: `sql/mi_compi_registrations.sql`. RLS: política `read_all` para dashboard interno.
+
+### 4.5 Tablas en schema pero no activas
 
 `rendimiento_push`, `carrito` — definidas en `sql/schema.sql`, no referenciadas en `useEntities.js` ni en componentes.
 
@@ -141,7 +151,29 @@ Secrets:     Credenciales hardcodeadas como fallback en el script
              CONNECTIF_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
 ```
 
-### 5.2 `sync-social.yml` — ⚠️ NO ACTIVO
+### 5.2 `sync-mi-compi.yml` — ⚠️ SOLO MANUAL (fallback)
+
+```
+Estado:      workflow_dispatch only — la API key de Connectif NO puede crear
+             exports (POST /exports → 403), así que el cron automático es
+             imposible desde GitHub Actions.
+Script:      sync_mi_compi.py (funcionará solo si Connectif habilita el
+             permiso de exports en la API key)
+```
+
+**La captura real de Mi Compi es SEMANAL vía Cowork scheduled task
+`bvs-mi-compi-sync`** (mismo patrón que `bvs-instagram-sync` para social).
+Pipeline: crear export de contactos en la UI de Connectif (navegador) →
+descargar ZIP → filtrar contactos con "Nombre Mascota 1" relleno → UPSERT
+en `mi_compi_registrations` vía REST de Supabase (desde el navegador, tab
+del dashboard — el contenedor Cowork no alcanza Supabase directamente).
+Script de transformación de referencia: `process_mi_compi.py` (en la sesión
+Cowork; la lógica equivale a `transform_contact()` de sync_mi_compi.py pero
+con los nombres de columna REALES del CSV: "Nombre Mascota 1",
+"Tipo de Mascota 1", "Tamaño-Peso Perro 1", "Alergia-mascota-1" con
+separador pipe `|`, etc.).
+
+### 5.3 `sync-social.yml` — ⚠️ NO ACTIVO
 
 ```
 Estado:      INACTIVO — la API de Metricool requiere plan Enterprise (token no disponible)
@@ -166,6 +198,15 @@ Parámetros de configuración (con fallback hardcodeado):
 ### `sync_social_to_supabase.py`
 
 ⚠️ **Script no operativo** — la API de Metricool requiere token de plan Enterprise no disponible en la cuenta BVS. El archivo existe en el repo pero `sync-social.yml` no está activo. El sync social lo realiza el Cowork scheduled task `bvs-instagram-sync`.
+
+### `sync_mi_compi.py`
+
+Exporta TODOS los contactos de Connectif (vía API de exports), filtra los que tienen `nombre-mascota-1` relleno (= registros Mi Compi), y hace UPSERT en `mi_compi_registrations`. Extrae hasta 4 slots de mascota por contacto con especie, raza, sexo, nacimiento, talla/peso, esterilización, actividad, pelaje, color, alergias y enfermedades. ⚠️ NO puede correr en automático (API key sin permiso de exports — 403). La captura semanal real la hace el Cowork scheduled task `bvs-mi-compi-sync` (ver §5.2).
+
+Parámetros de configuración (con fallback hardcodeado):
+- `CONNECTIF_API_KEY`
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
 
 ### `fix_rls.py`
 
@@ -196,12 +237,15 @@ bvs-analytics/
 │       └── use-mobile.jsx            # Hook de breakpoint mobile
 ├── sql/
 │   ├── schema.sql                    # Schema completo Supabase
-│   └── create_channel_segmentation.sql
+│   ├── create_channel_segmentation.sql
+│   └── mi_compi_registrations.sql    # Schema Mi Compi + vistas daily/cumulative
 ├── .github/workflows/
 │   ├── sync.yml                      # Connectif → Supabase (diario)
-│   └── sync-social.yml               # INACTIVO -- ver §5.2
+│   ├── sync-mi-compi.yml             # SOLO MANUAL (403 en API) -- ver §5.2
+│   └── sync-social.yml               # INACTIVO -- ver §5.3
 ├── sync_connectif_to_supabase.py
-├── sync_social_to_supabase.py         # INACTIVO -- ver §5.2
+├── sync_mi_compi.py                   # Sync Mi Compi registrations -- ver §6
+├── sync_social_to_supabase.py         # INACTIVO -- ver §5.3
 ├── fix_rls.py
 ├── vite.config.js                    # alias @ → src/
 ├── tailwind.config.js
@@ -326,6 +370,9 @@ Los datos pasan por `mapRow()` que normaliza snake_case → camelCase para compa
 | `useDailyPush()` | daily_push | year ASC, limit 5000 |
 | `useDailySticky()` | daily_sticky | year ASC, limit 10000 |
 | `useChannelSegmentation()` | channel_segmentation | year ASC |
+| `useMiCompiDaily()` | mi_compi_daily (VIEW) | dia ASC |
+| `useMiCompiCumulative()` | mi_compi_cumulative (VIEW) | dia ASC |
+| `useMiCompiRegistrations()` | mi_compi_registrations | first_seen_at DESC, limit 50 |
 
 ---
 
@@ -416,6 +463,7 @@ Estas decisiones son estables y no deben revertirse:
 ### Operativo
 - Dashboard en producción: `https://bvs-dashboard.vercel.app`
 - Sync Connectif → Supabase: funcionando (diario, 3am Madrid via GitHub Actions)
+- Sync Mi Compi → Supabase: SEMANAL vía Cowork scheduled task `bvs-mi-compi-sync` (la API key no puede crear exports — 403; GH Actions solo fallback manual)
 - Sync Metricool → Supabase: vía **Cowork scheduled task `bvs-instagram-sync`** (semanal) — la API de Metricool requiere plan Enterprise no disponible en la cuenta BVS
 - Tablas sociales (ig_daily, ig_reels, fb_daily, tk_daily): pobladas semanalmente por `bvs-instagram-sync`, sin conexión al dashboard todavía
 
@@ -540,7 +588,7 @@ El patrón es único y vive en `EvidenceCard`:
    `ga4_daily`). Si el dato no está, se elige otra lente factible, no se inventa.
 4. Etiquetas de serie **únicas** para evitar colisiones de líneas/categorías.
 
-**Cobertura actual (tarjetas con vista B):** BrandSales, WebSticky, Reactivación, Temáticas,
+**Cobertura actual (tarjetas con vista B):** MiCompi (acumulado↔detalle diario), BrandSales, WebSticky, Reactivación, Temáticas,
 EmailScale, Push (rendimiento), MixCanal, VentasLínea, NoAtribuido, MarcaPropia,
 Adquisición/Retención, ValorCliente, SaludBase, RevenueEvolution, RevenueTarget, WebFunnel
 (embudo↔canales — 5 etapas GA4 reales), MarketingFunnel, CartSequence, CartWinner, Ga4Traffic
