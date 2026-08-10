@@ -1,5 +1,5 @@
 /**
- * MiCompiCard â Registros del perfil de mascota (Mi Compi).
+ * MiCompiCard — Registros del perfil de mascota (Mi Compi).
  * Vista A: curva acumulada de registros.
  * Vista B: barras diarias por especie (perro/gato/otros).
  */
@@ -30,7 +30,7 @@ export default function MiCompiCard({ delay }) {
   const totalPerros = daily.reduce((s, d) => s + (d.perros || 0), 0);
   const totalGatos = daily.reduce((s, d) => s + (d.gatos || 0), 0);
   const totalOtros = daily.reduce((s, d) => s + (d.otros || 0), 0);
-  const avgCompis = totalRegs > 0 ? (totalCompis / totalRegs).toFixed(1) : "â";
+  const avgCompis = totalRegs > 0 ? (totalCompis / totalRegs).toFixed(1) : "—";
   const hasData = daily.length >= 1 && totalRegs > 0;
 
   // Hoy
@@ -46,7 +46,7 @@ export default function MiCompiCard({ delay }) {
   ].filter(d => d.value > 0);
   const PIE_COLORS = [CHART.primary, CHART.positive, CHART.neutral];
 
-  // ââ Vista B â barras diarias por especie ââ
+  // ── Vista B — barras diarias por especie ──
   const altView = hasData ? (
     <div className="space-y-3">
       <div className="flex gap-6">
@@ -80,10 +80,10 @@ export default function MiCompiCard({ delay }) {
           </div>
         )}
       </div>
-      {/* Mini tabla Ãºltimos registros */}
+      {/* Mini tabla últimos registros */}
       {regs.length > 0 && (
         <div className="border-t border-border/60 pt-2">
-          <p className="text-[10px] text-muted-foreground font-semibold mb-1">Ãltimos registros</p>
+          <p className="text-[10px] text-muted-foreground font-semibold mb-1">Últimos registros</p>
           <div className="grid grid-cols-5 gap-x-3 text-[10px]">
             <span className="font-semibold text-muted-foreground">Email</span>
             <span className="font-semibold text-muted-foreground">Compi</span>
@@ -92,11 +92,11 @@ export default function MiCompiCard({ delay }) {
             <span className="font-semibold text-muted-foreground">Fecha</span>
             {regs.slice(0, 5).map((r, i) => (
               <Fragment key={i}>
-                <span className="text-muted-foreground truncate">{r.email?.replace(/(.{3}).*(@.*)/, "$1â¦$2")}</span>
-                <span className="font-medium">{r.nombre_1 || "â"}</span>
-                <span>{r.especie_1 || "â"}</span>
-                <span className="truncate">{r.raza_1 || "â"}</span>
-                <span className="text-muted-foreground">{r.first_seen_at ? new Date(r.first_seen_at).toLocaleDateString("es-ES", { day: "numeric", month: "short" }) : "â"}</span>
+                <span className="text-muted-foreground truncate">{r.email?.replace(/(.{3}).*(@.*)/, "$1…$2")}</span>
+                <span className="font-medium">{r.nombre_1 || "—"}</span>
+                <span>{r.especie_1 || "—"}</span>
+                <span className="truncate">{r.raza_1 || "—"}</span>
+                <span className="text-muted-foreground">{r.first_seen_at ? new Date(r.first_seen_at).toLocaleDateString("es-ES", { day: "numeric", month: "short" }) : "—"}</span>
               </Fragment>
             ))}
           </div>
@@ -107,23 +107,23 @@ export default function MiCompiCard({ delay }) {
 
   return (
     <EvidenceCard sources={["connectif"]}
-      question="Â¿CuÃ¡ntos clientes han registrado su compi?"
-      answer={hasData ? `${fmtNumber(totalRegs)} registros` : "Sin datos â ejecuta el sync"}
+      question="¿Cuántos clientes han registrado su compi?"
+      answer={hasData ? `${fmtNumber(totalRegs)} registros` : "Sin datos — ejecuta el sync"}
       answerTone={hasData ? "neutral" : "neutral"}
       context={hasData
-        ? `${fmtNumber(totalCompis)} compis totales Â· media ${avgCompis}/registro Â· hoy: ${hoy} Â· ${fmtNumber(totalPerros)} perros, ${fmtNumber(totalGatos)} gatos`
-        : "La tabla mi_compi_registrations se pobla tras el primer sync Connectif â Supabase."}
+        ? `${fmtNumber(totalCompis)} compis totales · media ${avgCompis}/registro · hoy: ${hoy} · ${fmtNumber(totalPerros)} perros, ${fmtNumber(totalGatos)} gatos`
+        : "La tabla mi_compi_registrations se pobla tras el primer sync Connectif → Supabase."}
       maturity={hasData ? "green" : "grey"}
       actions={[
         { verb: "activar", rationale: "Usa la base de perfiles para personalizar email, recomendaciones y contenido." },
         { verb: "crecer", rationale: hasData && totalRegs < 500
-          ? "Menos de 500 registros: prioriza visibilidad del formulario (categorÃ­a, ficha, carrito)."
+          ? "Menos de 500 registros: prioriza visibilidad del formulario (categoría, ficha, carrito)."
           : "Mide el ratio registro/visita para optimizar el funnel." },
       ]}
       delay={delay}
       altView={altView}
       viewLabels={{ a: "Acumulado", b: "Detalle diario" }}
-      note="Fuente: Connectif â mi_compi_registrations (sync cada 6h). first_seen_at = primera detecciÃ³n del registro, no fecha exacta de completar el formulario."
+      note="Fuente: Connectif → mi_compi_registrations (sync cada 6h). first_seen_at = primera detección del registro, no fecha exacta de completar el formulario."
     >
       {hasData && (
         <div className="h-56">
