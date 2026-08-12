@@ -7,6 +7,10 @@ name: BVS Analytics — Sync Mi Compi Registrations
 # habilita el permiso de exports en la API key.
 on:
   workflow_dispatch:          # Solo manual — ver nota arriba
+    inputs:
+      export_id:
+        description: Export ID ya creado en Connectif (opcional)
+        required: false
 
 jobs:
   sync:
@@ -26,6 +30,7 @@ jobs:
       - name: Sincronizar Mi Compi → Supabase
         env:
           CONNECTIF_API_KEY: ${{ secrets.CONNECTIF_API_KEY }}
+          CONNECTIF_EXPORT_ID: ${{ inputs.export_id }}
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_KEY }}
         run: python sync_mi_compi.py
