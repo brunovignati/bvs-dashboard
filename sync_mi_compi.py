@@ -251,7 +251,7 @@ def main():
     log.info("=" * 60)
 
     # 1. Create export
-    export_id = create_contacts_export()
+    export_id = os.environ.get("CONNECTIF_EXPORT_ID") or create_contacts_export()
 
     # 2. Wait for export
     file_url = wait_for_export(export_id)
