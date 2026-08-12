@@ -6,7 +6,9 @@ name: BVS Analytics — Sync Mi Compi Registrations
 # sync social). Este workflow queda solo como fallback manual por si Connectif
 # habilita el permiso de exports en la API key.
 on:
-  workflow_dispatch:          # Solo manual — ver nota arriba
+  schedule:
+    - cron: '0 6 * * *'
+  workflow_dispatch:
     inputs:
       export_id:
         description: Export ID ya creado en Connectif (opcional)
