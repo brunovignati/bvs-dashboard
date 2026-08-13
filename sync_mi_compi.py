@@ -234,6 +234,14 @@ def upsert_supabase(records):
     url = f"{SUPABASE_URL}/rest/v1/{table}?on_conflict=email"
     batch_size = 500
 
+    # Normaliza las claves al superconjunto: transform_contact elimina las
+    # claves con valor None, asi que cada registro tiene claves distintas y
+    # PostgREST rechaza el lote (PGRST102 'All object keys must match').
+    all_keys = set()
+    for r in records:
+        all_keys.update(r.keys())
+    records = [{k: r.get(k) for k in all_keys} for r in records]
+
     for i in range(0, len(records), batch_size):
         chunk = records[i:i+batch_size]
         resp = requests.post(url, headers=SUPABASE_HEADERS, json=chunk, timeout=60)
