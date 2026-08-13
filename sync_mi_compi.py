@@ -52,7 +52,7 @@ def create_contacts_export():
     resp = requests.post(
         f"{CONNECTIF_BASE_URL}/exports/",
         headers={**CONNECTIF_HEADERS, "Content-Type": "application/json"},
-        json={"exportType": "contacts", "delimiter": ",", "version": "v6"},
+        json={"exportType": "contacts", "delimiter": ",", "dateFormat": "ISO", "version": "v6"},
         timeout=30,
     )
     if resp.status_code not in (200, 201):
