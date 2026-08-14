@@ -151,7 +151,9 @@ Secrets:     Credenciales hardcodeadas como fallback en el script
              CONNECTIF_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
 ```
 
-### 5.2 `sync-mi-compi.yml` — ⚠️ SOLO MANUAL (fallback)
+### 5.2 `sync-mi-compi.yml` — AUTOMATICO DIARIO (arreglado ago-2026)
+
+> **ACTUALIZADO ago-2026.** Este workflow YA corre en automatico (cron diario `0 6 * * *` = 8:00 Madrid) y funciona de punta a punta. Se arreglaron 3 errores encadenados: (1) **403** al crear el export -> se usa una API key con permiso *Write Exports*; (2) **422** *dateFormat required* -> se anadio `dateFormat: ISO`; (3) **PGRST102** *All object keys must match* en el upsert -> se normalizan las claves al superconjunto antes de enviar el lote a Supabase. Ademas el export ya NO baja los ~1,25M contactos: esta acotado al segmento Connectif `CONNECTIF_SEGMENT_ID` (por defecto `6a7efbe405e665ce3beb71a3`, "AUTO · Mi Compi sync", condicion *Nombre Mascota 1 is not empty*) -> ~154 filas en ~45s. El bloque de abajo quedo OBSOLETO (se conserva como historico).
 
 ```
 Estado:      workflow_dispatch only — la API key de Connectif NO puede crear
@@ -463,7 +465,7 @@ Estas decisiones son estables y no deben revertirse:
 ### Operativo
 - Dashboard en producción: `https://bvs-dashboard.vercel.app`
 - Sync Connectif → Supabase: funcionando (diario, 3am Madrid via GitHub Actions)
-- Sync Mi Compi → Supabase: SEMANAL vía Cowork scheduled task `bvs-mi-compi-sync` (la API key no puede crear exports — 403; GH Actions solo fallback manual)
+- Sync Mi Compi → Supabase: DIARIO y automatico via GitHub Actions (`sync-mi-compi.yml`, cron `0 6 * * *`). Export acotado al segmento `6a7efbe405e665ce3beb71a3` (~154 filas, ~45s). Arreglado ago-2026 (403/422/PGRST102). Ver §5.2. La via semanal Cowork quedo obsoleta.
 - Sync Metricool → Supabase: vía **Cowork scheduled task `bvs-instagram-sync`** (semanal) — la API de Metricool requiere plan Enterprise no disponible en la cuenta BVS
 - Tablas sociales (ig_daily, ig_reels, fb_daily, tk_daily): pobladas semanalmente por `bvs-instagram-sync`, sin conexión al dashboard todavía
 
