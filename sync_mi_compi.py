@@ -22,6 +22,7 @@ from datetime import datetime
 # ââ ConfiguraciÃ³n ââââââââââââââââââââââââââââââââââââââââââââ
 CONNECTIF_API_KEY  = os.environ["CONNECTIF_API_KEY"]
 CONNECTIF_BASE_URL = "https://api.connectif.cloud"
+CONNECTIF_SEGMENT_ID = os.environ.get("CONNECTIF_SEGMENT_ID", "6a7efbe405e665ce3beb71a3").strip()
 
 SUPABASE_URL = os.environ["SUPABASE_URL"]
 SUPABASE_KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
@@ -49,10 +50,16 @@ log = logging.getLogger("mi-compi-sync")
 
 def create_contacts_export():
     """Create a contacts export. Returns export ID."""
+    payload = {"exportType": "contacts", "delimiter": ",", "dateFormat": "ISO", "version": "v6"}
+    if CONNECTIF_SEGMENT_ID:
+        # Acota el export al segmento "AUTO Mi Compi sync" (~cientos con perfil de
+        # mascota) en vez de exportar ~1,25M de toda la base.
+        payload["filters"] = {"segmentId": CONNECTIF_SEGMENT_ID}
+        log.info(f"Export acotado al segmento {CONNECTIF_SEGMENT_ID}")
     resp = requests.post(
         f"{CONNECTIF_BASE_URL}/exports/",
         headers={**CONNECTIF_HEADERS, "Content-Type": "application/json"},
-        json={"exportType": "contacts", "delimiter": ",", "dateFormat": "ISO", "version": "v6"},
+        json=payload,
         timeout=30,
     )
     if resp.status_code not in (200, 201):
