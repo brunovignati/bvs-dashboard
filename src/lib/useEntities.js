@@ -388,6 +388,25 @@ export function useMiCompiCumulative() {
   })
 }
 
+export function useMiCompiParque() {
+  return useQuery({
+    queryKey: ['mi_compi_parque'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('mi_compi_registrations')
+        .select(`email, first_seen_at, num_compis,
+          nombre_1, especie_1, raza_1, sexo_1, nacimiento_1, talla_peso_1, esterilizado_1,
+          nombre_2, especie_2, raza_2, sexo_2, nacimiento_2,
+          nombre_3, especie_3, raza_3, sexo_3, nacimiento_3,
+          nombre_4, especie_4, raza_4, sexo_4, nacimiento_4`)
+        .limit(5000)
+      if (error) throw error
+      return data || []
+    },
+    initialData: [],
+  })
+}
+
 export function useMiCompiRegistrations() {
   return useQuery({
     queryKey: ['mi_compi_registrations'],
