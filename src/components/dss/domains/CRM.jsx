@@ -3,6 +3,7 @@ import BaseHealthCard from "../cards/BaseHealthCard";
 import ListPressureCard from "../cards/ListPressureCard";
 import SegmentsCard from "../cards/SegmentsCard";
 import MiCompiCard from "../cards/MiCompiCard";
+import MiCompiParqueCard from "../cards/MiCompiParqueCard";
 
 export default function CRM({ index, total }) {
   return (
@@ -11,6 +12,7 @@ export default function CRM({ index, total }) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <div className="lg:col-span-2"><BaseHealthCard delay={0.03} /></div>
         <div className="lg:col-span-2"><MiCompiCard delay={0.05} /></div>
+        <div className="lg:col-span-2"><MiCompiParqueCard delay={0.06} /></div>
         <ListPressureCard delay={0.07} />
         <SegmentsCard delay={0.09} />
       </div>
