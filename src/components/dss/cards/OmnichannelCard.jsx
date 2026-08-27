@@ -45,10 +45,24 @@ export default function OmnichannelCard({ delay }) {
   const liveLabel = liveMonth ? `${M[liveMonth.month]} ${liveMonth.year}` : null;
 
   // Composición del PERIODO seleccionado (respeta el selector).
-  const digB = sumRange(rawAll, rangeB, "digital");
-  const retB = sumRange(rawAll, rangeB, "retail");
-  const omniB = sumRange(rawAll, rangeB, "omnichannel");
-  const totB = digB + retB + omniB;
+  const digSel = sumRange(rawAll, rangeB, "digital");
+  const retSel = sumRange(rawAll, rangeB, "retail");
+  const omniSel = sumRange(rawAll, rangeB, "omnichannel");
+  const totSel = digSel + retSel + omniSel;
+
+  // Fallback: el período seleccionado (típicamente el mes en curso) aún no tiene el
+  // origen sincronizado en channel_segmentation, aunque sí hay histórico. En vez de
+  // caer en un callejón sin salida ("Sin datos de origen"), mostramos el ÚLTIMO mes
+  // con datos de origen disponible y lo señalamos claramente.
+  const fallbackMonth = (totSel === 0 && hasAny)
+    ? ([...monthly].reverse().find((m) => m.total > 0) || null)
+    : null;
+
+  const digB = fallbackMonth ? fallbackMonth.digital : digSel;
+  const retB = fallbackMonth ? fallbackMonth.retail : retSel;
+  const omniB = fallbackMonth ? fallbackMonth.omnichannel : omniSel;
+  const totB = digB + retB + omniB; // efectivo: seleccionado o, si vacío, último disponible
+
   const periodTracked = totB > 0 && (retB + omniB) / totB >= LIVE_THRESHOLD;
   const pct = (v) => (totB ? (v / totB) * 100 : 0);
   const parts = [
@@ -56,7 +70,11 @@ export default function OmnichannelCard({ delay }) {
     { label: "Retail", v: retB, pct: pct(retB), color: COLORS[1] },
     { label: "Omnicanal", v: omniB, pct: pct(omniB), color: COLORS[2] },
   ];
-  const cmp = labelRange(rangeB);
+  const cmp = fallbackMonth ? `${M[fallbackMonth.month]} ${fallbackMonth.year}` : labelRange(rangeB);
+  // Aviso cuando lo mostrado no es el período elegido sino el último mes con dato.
+  const staleNote = fallbackMonth
+    ? ` El período seleccionado (${labelRange(rangeB)}) aún no tiene el origen sincronizado; se muestra el último mes disponible (${cmp}).`
+    : "";
 
   // Serie de evolución: SOLO desde que el origen físico se registra (evita la línea plana
   // engañosa de 100% online). Se enciende cuando haya ≥3 meses con registro real.
@@ -94,7 +112,7 @@ export default function OmnichannelCard({ delay }) {
       answerTone={periodTracked ? "neutral" : "warn"}
       maturity={periodTracked ? "green" : "amber"}
       insight={periodTracked
-        ? `En ${cmp}, de ${fmtNumber(totB)} compradores: ${Math.round(parts[0].pct)}% online, ${Math.round(parts[1].pct)}% en tienda física y ${Math.round(parts[2].pct)}% omnicanal. El origen físico se registra desde ${liveLabel}; los meses anteriores figuran como 100% online porque ese canal aún no se capturaba (no porque no hubiera ventas físicas).`
+        ? `En ${cmp}, de ${fmtNumber(totB)} compradores: ${Math.round(parts[0].pct)}% online, ${Math.round(parts[1].pct)}% en tienda física y ${Math.round(parts[2].pct)}% omnicanal. El origen físico se registra desde ${liveLabel}; los meses anteriores figuran como 100% online porque ese canal aún no se capturaba (no porque no hubiera ventas físicas).${staleNote}`
         : liveLabel
           ? `El período seleccionado es anterior a ${liveLabel}, cuando empezó a registrarse el origen físico/retail. Por eso figura como 100% online: es una brecha de registro, no ausencia de ventas físicas. Selecciona ${liveLabel} o posterior para ver el reparto real.`
           : `Hasta ahora solo se captura el origen online; el canal físico/retail aún no llega a Connectif. La serie madura cuando ese origen empiece a registrarse.`}
@@ -103,7 +121,7 @@ export default function OmnichannelCard({ delay }) {
         { verb: "investigar", rationale: "Confirma que el origen físico se captura de forma estable mes a mes antes de tomar decisiones sobre el reparto." },
       ]}
       delay={delay}
-      note={`Fuente: Connectif · channel_segmentation. Origen = purchaseOrigin (Web = online, API = tienda física); omnicanal = clientes que combinan ambos. El origen físico se registra desde ${liveLabel || "una fecha aún no disponible"}; antes solo constaba online.`}
+      note={`Fuente: Connectif · channel_segmentation. Origen = purchaseOrigin (Web = online, API = tienda física); omnicanal = clientes que combinan ambos. El origen físico se registra desde ${liveLabel || "una fecha aún no disponible"}; antes solo constaba online.${staleNote}`}
     >
       {/* Composición del período: barra de triple color (mismo estilo del dashboard) */}
       <div className="mb-1">
