@@ -54,7 +54,6 @@ export default function BrandSalesCard({ delay }) {
 
   const ranked = all
     .sort((a, b) => b.revenue - a.revenue || b.units - a.units)
-    .slice(0, 12)
     .map((b) => ({
       name: b.display.length > 22 ? b.display.slice(0, 21) + "…" : b.display,
       full: b.display,
