@@ -732,5 +732,129 @@ def main():
     log.info("  â SincronizaciÃ³n completada â historial acumulado intacto")
     log.info("=" * 60)
 
+# =============================================================================
+# v4 (oct-2026) — Sync semanal AUTOMATICO.
+# Antes los exports se creaban a mano en la UI de Connectif y este script solo
+# descargaba "lo que hubiera". Ahora:
+#   0. scripts/create_connectif_exports.py crea por API los exports de Data Explorer
+#      (mes anterior completo + mes en curso) y espera a que terminen.
+#   1-2. Se procesan TODOS los exports recientes de cada informe, identificados por
+#      filters.reportId (no por nombre de fichero). Si no hay recientes, se usa el
+#      ultimo por nombre (comportamiento historico).
+# =============================================================================
+from datetime import timezone as _tz
+
+# Tabla -> reportId del informe de Data Explorer (IDs leidos de la UI de Connectif, 2026-10-06)
+REPORT_IDS = {
+    "monthly_metrics":      "6a032974c35f2ee526569182",  # Informe de compras mensual de nutraceuticos BVS
+    "email_campaigns":      "677eac5d1fbd3645a8f198fe",  # V! Metricas looker
+    "cart_abandonment":     "678a0c19159c1febb323192c",  # V! Carrito
+    "buyer_cohorts":        "677eb5251fbd3645a8f304dc",  # V! Primerizos VS. Recurrentes
+    "channel_segmentation": "6a4cc470a51a052948591435",  # V! Compradores por Origen
+    "push_campaigns":       "67b598b10c57a65bf5ab7e1e",  # V! Metricas PUSH DS (Looker)
+    "subscribers":          "67eb9249be76ca1aac769e3d",  # V! Evolutivo suscritos (Looker)
+    "push_subscribers":     "67779b75a9907a7cf6f9ff68",  # V! Evolucion de suscriptores push
+    "compradores":          "698384983f3617fb297eaaa2",  # v! Compradores mensuales de la Marca BVS
+    "sticky":               "69c2472808d66e46cb7d96ad",  # Sticky
+    "envios":               "67cff58bf510fd1692c18874",  # V! Envios/Dia
+    "ventas_push":          "67979330d9db8180adc0b317",  # V! Ventas Push
+    "rendimiento_push":     "67979275d9db8180adc09453",  # V! Rendimiento push
+    "carrito":              "678a0c19159c1febb323192c",  # V! Carrito
+    "daily_revenue":        "6a393bd445d5668a52fcf7fb",  # V! Ventas Diarias
+    "daily_email":          "6a393e1045d5668a52fd9594",  # V! Email Diario
+    "daily_push":           "6a3943e945d5668a52ff42b5",  # V! Push Diario
+    "daily_sticky":         "6a39450745d5668a52ff90bf",  # V! Contenido Web Diario
+}
+RECENT_HOURS = int(os.environ.get("SYNC_RECENT_HOURS", "36"))
+
+
+def _finished_at(exp):
+    v = (exp.get("finishedAt") or "").replace("Z", "+00:00")
+    try:
+        return datetime.fromisoformat(v)
+    except Exception:
+        return None
+
+
+def exports_for_table(all_exports, latest_map, table, keywords):
+    """Exports a procesar para una tabla, en orden cronologico (el mas nuevo pisa al mas viejo)."""
+    rid = REPORT_IDS.get(table)
+    now_utc = datetime.now(_tz.utc)
+    recent = []
+    if rid:
+        for exp in all_exports:
+            if exp.get("status") != "finished" or not exp.get("fileUrl"):
+                continue
+            if (exp.get("filters") or {}).get("reportId") != rid:
+                continue
+            fa = _finished_at(exp)
+            if fa and (now_utc - fa).total_seconds() <= RECENT_HOURS * 3600:
+                recent.append(exp)
+    if recent:
+        recent.sort(key=lambda e: e.get("finishedAt", ""))
+        return recent, "reportId"
+    exp = find_report(latest_map, *keywords)
+    return ([exp] if exp else []), "nombre"
+
+
+def create_exports_in_connectif():
+    """Paso 0: lanza scripts/create_connectif_exports.py con la misma API key."""
+    import subprocess, sys
+    script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "scripts", "create_connectif_exports.py")
+    if not os.path.exists(script):
+        log.warning(f"  No existe {script}; sigo con los exports disponibles")
+        return
+    env = dict(os.environ, CONNECTIF_API_KEY=CONNECTIF_API_KEY)
+    try:
+        res = subprocess.run([sys.executable, script], env=env, timeout=35 * 60)
+        if res.returncode != 0:
+            log.warning(f"  create_connectif_exports termino con codigo {res.returncode}; sigo con lo disponible")
+    except Exception as e:
+        log.warning(f"  No se pudieron crear exports: {e}; sigo con lo disponible")
+
+
+def main_v4():
+    log.info("=" * 60)
+    log.info("  BVS Analytics - Sync Connectif -> Supabase v4 (exports automaticos)")
+    log.info(f"  {NOW.strftime('%Y-%m-%d %H:%M:%S')}")
+    log.info(f"  Snapshot year/month: {CURRENT_YEAR}/{CURRENT_MONTH:02d}")
+    log.info("=" * 60)
+
+    log.info("\n[0/3] Creando exports de Data Explorer en Connectif...")
+    create_exports_in_connectif()
+
+    log.info("\n[1/3] Obteniendo exports de Connectif...")
+    all_exports = get_all_exports()
+    latest_map  = get_latest_exports(all_exports)
+
+    log.info("\n[2/3] Descargando, transformando y subiendo...")
+    synced = set()
+    for table, keywords, transform_fn in REPORT_MAP:
+        key = f"{table}:{keywords[0]}"
+        if key in synced:
+            continue
+        exps, how = exports_for_table(all_exports, latest_map, table, keywords)
+        if not exps:
+            log.warning(f"  [!] No encontrado: {keywords[0]}")
+            continue
+        for exp in exps:
+            try:
+                fa = (exp.get("finishedAt") or "")[:16]
+                log.info(f"\n  -> {exp['fileName']}  [{how}, {fa}]")
+                rows    = download_csv(exp['fileUrl'])
+                records = transform_fn(rows)
+                log.info(f"     {len(rows)} filas CSV -> {len(records)} registros Supabase")
+                upsert_supabase(table, records)
+                synced.add(key)
+            except Exception as e:
+                log.error(f"  [X] Error en {table} ({keywords[0]}): {e}")
+
+    log.info("\n" + "=" * 60)
+    log.info("  Sincronizacion completada - historial acumulado intacto")
+    log.info("=" * 60)
+
+
+main = main_v4
+
 if __name__ == "__main__":
     main()
