@@ -22,6 +22,10 @@ const rangeLen  = (r) => ymOf(r.end) - ymOf(r.start) + 1
 const _now = new Date()
 const CUR = { year: _now.getFullYear(), month: _now.getMonth() + 1 }
 const LAST_CLOSED = addMonths(CUR, -1)
+// El mes en curso está incompleto: nunca se muestra como un mes más (6 días no son un mes).
+// Cualquier período que lo incluya se recorta al último mes cerrado.
+const clampClosed = (p) => (ymOf(p) > ymOf(LAST_CLOSED) ? LAST_CLOSED : p)
+const clampRange  = (r) => ({ start: clampClosed(r.start), end: clampClosed(r.end) })
 
 export function ComparisonProvider({ children }) {
   // rangeB = período PRINCIPAL (activo) · rangeA = período de COMPARACIÓN (referencia)
@@ -45,7 +49,8 @@ export function ComparisonProvider({ children }) {
   }
 
   // Fija el período principal (y arrastra el de comparación si el modo es automático).
-  const setPrimary = (rB) => {
+  const setPrimary = (rB0) => {
+    const rB = clampRange(rB0)
     // normaliza para que start ≤ end
     const norm = ymOf(rB.start) <= ymOf(rB.end) ? rB : { start: rB.end, end: rB.start }
     setRangeB(norm)
@@ -69,7 +74,7 @@ export function ComparisonProvider({ children }) {
   const applyRangePreset = (id) => {
     const end = LAST_CLOSED
     const map = {
-      this_month: { start: CUR, end: CUR },
+      this_month: { start: end, end },   // alias: el mes en curso no se muestra, equivale a 'último mes cerrado'
       last_month: { start: end, end },
       last_3:     { start: addMonths(end, -2),  end },
       last_6:     { start: addMonths(end, -5),  end },
@@ -84,7 +89,7 @@ export function ComparisonProvider({ children }) {
     if (preset === 'prev_month') { applyRangePreset('last_month'); setMode('prev') }
     else if (preset === 'yoy')   { applyRangePreset('last_month'); setMode('yoy') }
   }
-  const setPeriodB = (p) => { setRangeB({ start: p, end: p }); const c = compFor({ start: p, end: p }, compMode); if (c) setRangeA(c) }
+  const setPeriodB = (p0) => { const p = clampClosed(p0); setRangeB({ start: p, end: p }); const c = compFor({ start: p, end: p }, compMode); if (c) setRangeA(c) }
   const setPeriodA = (p) => { setCompMode('custom'); setRangeA({ start: p, end: p }) }
 
   const labelRange = (r) =>
