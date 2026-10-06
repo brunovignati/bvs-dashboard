@@ -71,6 +71,13 @@ def windows(today: date):
     return [(first_prev, last_prev), (first_cur, today)]
 
 
+MAX_QUEUED = 4   # Connectif rechaza con E0301 a partir de 5 exports en cola
+
+
+class QueueFull(Exception):
+    pass
+
+
 def create_export(report_id, d_from, d_to):
     body = {"delimiter": ",", "filters": {"reportId": report_id,
                                           "fromDate": d_from.isoformat(), "toDate": d_to.isoformat()}}
@@ -81,35 +88,43 @@ def create_export(report_id, d_from, d_to):
             log.warning(f"    429 rate limit, espero {wait}s")
             time.sleep(wait)
             continue
+        if r.status_code == 400 and '"E0301"' in r.text:
+            raise QueueFull()
         if r.status_code not in (200, 201):
             raise RuntimeError(f"HTTP {r.status_code}: {r.text[:300]}")
         return r.json()
     raise RuntimeError("rate limit persistente")
 
 
-def wait_all(ids):
-    pending = set(ids)
+def export_status(eid):
+    r = requests.get(f"{BASE}/exports/{eid}", headers=HEADERS, timeout=30)
+    if r.status_code == 429:
+        time.sleep(15)
+        return None
+    if r.status_code != 200:
+        log.warning(f"    {eid}: HTTP {r.status_code}")
+        return None
+    return r.json().get("status")
+
+
+def drain(pending, limit):
+    """Espera hasta que haya menos de `limit` exports en cola. Devuelve el set actualizado."""
     t0 = time.time()
-    while pending and time.time() - t0 < TIMEOUT_SECONDS:
+    while len(pending) >= limit and time.time() - t0 < TIMEOUT_SECONDS:
         for eid in list(pending):
-            r = requests.get(f"{BASE}/exports/{eid}", headers=HEADERS, timeout=30)
-            if r.status_code == 429:
-                time.sleep(15)
-                continue
-            if r.status_code != 200:
-                log.warning(f"    {eid}: HTTP {r.status_code}")
-                continue
-            st = r.json().get("status")
-            if st == "finished":
-                pending.discard(eid)
-            elif st in ("error", "failed", "cancelled"):
-                log.error(f"    export {eid} terminó en estado {st}")
+            st = export_status(eid)
+            if st == "finished" or st in ("error", "failed", "cancelled"):
+                if st != "finished":
+                    log.error(f"    export {eid} termino en estado {st}")
                 pending.discard(eid)
             time.sleep(0.3)
-        if pending:
-            log.info(f"  esperando {len(pending)} exports...")
-            time.sleep(POLL_SECONDS)
+        if len(pending) >= limit:
+            time.sleep(5)
     return pending
+
+
+def wait_all(ids):
+    return drain(set(ids), 1)
 
 
 def main():
@@ -121,15 +136,27 @@ def main():
     log.info("=" * 60)
 
     created, failed = [], []
+    pending = set()
     for name, rid in REPORTS.items():
         for d_from, d_to in windows(today):
-            try:
-                exp = create_export(rid, d_from, d_to)
-                created.append(exp["id"])
-                log.info(f"  ✓ {name} [{d_from}→{d_to}] → {exp['id']}")
-            except Exception as e:
-                failed.append((name, d_from, d_to, str(e)))
-                log.error(f"  ✗ {name} [{d_from}→{d_to}]: {e}")
+            pending = drain(pending, MAX_QUEUED)
+            for intento in range(20):
+                try:
+                    exp = create_export(rid, d_from, d_to)
+                    created.append(exp["id"])
+                    pending.add(exp["id"])
+                    log.info(f"  OK {name} [{d_from}->{d_to}] -> {exp['id']}")
+                    break
+                except QueueFull:
+                    log.info("    cola llena (E0301), espero a que terminen exports...")
+                    time.sleep(8)
+                    pending = drain(pending, 1 if intento >= 2 else MAX_QUEUED)
+                except Exception as e:
+                    failed.append((name, d_from, d_to, str(e)))
+                    log.error(f"  FALLO {name} [{d_from}->{d_to}]: {e}")
+                    break
+            else:
+                failed.append((name, d_from, d_to, "cola llena persistente"))
             time.sleep(0.5)
 
     log.info(f"\n  {len(created)} exports creados, {len(failed)} fallos. Esperando a que terminen...")
