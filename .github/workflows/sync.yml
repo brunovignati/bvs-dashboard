@@ -20,3 +20,5 @@ jobs:
 
       - name: Sincronizar Connectif → Supabase
         run: python sync_connectif_to_supabase.py
+        env:
+          CONNECTIF_API_KEY: ${{ secrets.CONNECTIF_API_KEY }}
