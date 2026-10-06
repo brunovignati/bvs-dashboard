@@ -5,7 +5,9 @@ import { monthLabel } from "@/lib/dashboardData";
 // Rango REAL de datos: desde ene-2024 (lo más antiguo: venta web/categorías) hasta el mes
 // en curso (último con dato). Se calcula dinámicamente para no ofrecer meses futuros vacíos.
 const NOW = new Date();
-const MAX = { year: NOW.getFullYear(), month: NOW.getMonth() + 1 };
+// Último mes CERRADO: el mes en curso no se puede seleccionar (está incompleto).
+const _last = new Date(NOW.getFullYear(), NOW.getMonth(), 0);
+const MAX = { year: _last.getFullYear(), month: _last.getMonth() + 1 };
 const MIN = { year: 2024, month: 1 };
 const YEARS = Array.from({ length: MAX.year - MIN.year + 1 }, (_, i) => MIN.year + i);
 const monthsFor = (year) => {
@@ -15,7 +17,6 @@ const monthsFor = (year) => {
 };
 
 const RANGE_PRESETS = [
-  { id: "this_month", label: "Este mes" },
   { id: "last_month", label: "Mes ant." },
   { id: "last_3", label: "3M" },
   { id: "last_6", label: "6M" },
