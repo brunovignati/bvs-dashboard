@@ -573,10 +573,11 @@ YoY, y confundía). (2) `RevenueBridgeCard` ("¿Qué mueve el revenue?") pasa de
 Connectif cuadraba el revenue pero inflaba los pedidos (sep-26: 24,4K vs 21,2K reales) y hundía
 el ticket (€58 vs €67). (3) Refrescados vía navegador `category_sales` (consulta id 200, 206 filas,
 sep-26 completo) y `prestashop_monthly` (consulta id 199, hasta oct-26). Ambas tablas solo se
-refrescan a mano; si no se refrescan, el último mes queda parcial. (4) **Pendiente:** marcas desde PrestaShop. `brand_sales` es GA4 (≈-40% vs Presta).
-Hace falta crear la tabla `brand_sales_ps` (year, month, brand, orders, units, revenue; PK year,month,brand),
-poblarla con la consulta del Gestor SQL (order_detail → product.id_manufacturer → manufacturer, mismo
-filtro web) y cambiar `BrandSalesCard` a esa fuente.
+refrescan a mano; si no se refrescan, el último mes queda parcial. (4) **Marcas desde PrestaShop — ✅ RESUELTO.** `BrandSalesCard` lee `brand_sales_ps` (nueva tabla, PK
+year,month,brand; columnas orders, units, revenue) en vez de `brand_sales` (GA4, que medía ~49% del
+revenue real en sep-26). Consulta del Gestor SQL **"BVS_brand_monthly"** (id 400; order_detail →
+product.id_manufacturer → manufacturer, mismo filtro web). Hook `useBrandSalesPs` (paginado). Refresco
+manual vía navegador, como `category_sales`. `brand_sales` (GA4) se sigue sincronizando pero ya no se pinta.
 
 **Regla:** estos items se abordan modificando el sync Python + `sql/schema.sql`, y corren en el
 Action semanal (o ejecución manual). No intentar resolverlos con llamadas desde React.
