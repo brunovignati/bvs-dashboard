@@ -564,6 +564,20 @@ para que los vacíos se entiendan. No se puede estrechar más el rango global si
 de las tablas que sí lo tienen; las tarjetas fuera de su rango siguen mostrando su "gate" de sin dato.
 Mejora futura posible: gate por-tarjeta que indique el mes de inicio de su fuente ("GA4 desde may-2026").
 
+**ACTUALIZACIÓN 14-oct-2026 (pedido de Ceci Bianchi).** (1) `CategoryMixCard` muestra una columna
+**YoY** por categoría (ingreso del período activo vs `rangeA` del Comparador; en modo `yoy` = mismo
+período del año anterior) y en el contexto el total y la categoría que más crece (base ≥ €50K). Se
+quitó la nota heurística "Gatos crece X% en el periodo mostrado" (comparaba tramos de la serie, no
+YoY, y confundía). (2) `RevenueBridgeCard` ("¿Qué mueve el revenue?") pasa de Connectif
+`daily_revenue` a **PrestaShop `prestashop_monthly`** (canal web: `orders_web`, `revenue_web`).
+Connectif cuadraba el revenue pero inflaba los pedidos (sep-26: 24,4K vs 21,2K reales) y hundía
+el ticket (€58 vs €67). (3) Refrescados vía navegador `category_sales` (consulta id 200, 206 filas,
+sep-26 completo) y `prestashop_monthly` (consulta id 199, hasta oct-26). Ambas tablas solo se
+refrescan a mano; si no se refrescan, el último mes queda parcial. (4) **Pendiente:** marcas desde PrestaShop. `brand_sales` es GA4 (≈-40% vs Presta).
+Hace falta crear la tabla `brand_sales_ps` (year, month, brand, orders, units, revenue; PK year,month,brand),
+poblarla con la consulta del Gestor SQL (order_detail → product.id_manufacturer → manufacturer, mismo
+filtro web) y cambiar `BrandSalesCard` a esa fuente.
+
 **Regla:** estos items se abordan modificando el sync Python + `sql/schema.sql`, y corren en el
 Action semanal (o ejecución manual). No intentar resolverlos con llamadas desde React.
 
