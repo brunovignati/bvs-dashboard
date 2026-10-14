@@ -4,11 +4,12 @@
  * mismo eje de tiempo. Conectado al Comparador de Periodos: las cifras y variaciones
  * son el período ACTIVO vs el de REFERENCIA, y el histórico termina en el activo.
  * Con tooltip al pasar el cursor (cifras de las tres series en ese mes).
- * Fuente: daily_revenue (negocio total). Revenue = pedidos × ticket.
+ * Fuente: PrestaShop · prestashop_monthly (canal web: excluye Amazon y TPV). Revenue = pedidos × ticket.
+ * (Antes Connectif daily_revenue: el revenue cuadraba pero inflaba los pedidos y hundía el ticket.)
  */
 import { useState } from "react";
 import EvidenceCard from "../EvidenceCard";
-import { useDailyRevenue } from "@/lib/useEntities";
+import { usePrestashopMonthly } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
 import { fmtCurrency, fmtNumber } from "@/lib/dashboardData";
 import { SERIES, PRIMARY } from "@/lib/dss/chartTheme";
@@ -84,15 +85,15 @@ function SmallMultiples({ labels, series }) {
 }
 
 export default function RevenueBridgeCard({ delay }) {
-  const { data = [] } = useDailyRevenue();
+  const { data = [] } = usePrestashopMonthly();
   const { periodA, periodB } = useComparison();
 
   const byM = {};
   for (const r of data) {
     const k = r.year * 12 + r.month;
     if (!byM[k]) byM[k] = { k, year: r.year, month: r.month, revenue: 0, purchases: 0 };
-    byM[k].revenue += r.revenue || 0;
-    byM[k].purchases += r.purchases || 0;
+    byM[k].revenue += Number(r.revenue_web) || 0;
+    byM[k].purchases += Number(r.orders_web) || 0;
   }
   const all = Object.values(byM).sort((a, b) => a.k - b.k);
   const ticketOf = (m) => (m && m.purchases ? m.revenue / m.purchases : 0);
@@ -121,7 +122,7 @@ export default function RevenueBridgeCard({ delay }) {
   ];
 
   return (
-    <EvidenceCard sources={["connectif"]}
+    <EvidenceCard sources={["prestashop"]}
       question="¿Qué mueve el revenue: nº de pedidos o ticket medio?"
       kpis={hasData ? [
         { value: fmtCurrency(cur.revenue), label: `Revenue · ${curLbl}`, delta: revD },
@@ -141,7 +142,7 @@ export default function RevenueBridgeCard({ delay }) {
           : "El motor es el ticket medio: prioriza cross-sell, bundles y precio." },
       ]}
       delay={delay}
-      note="Tres variables en su escala real, mismo eje de tiempo. Cifras y variaciones = período activo vs referencia del Comparador. Fuente: Connectif · daily_revenue (negocio total)."
+      note="Tres variables en su escala real, mismo eje de tiempo. Cifras y variaciones = período activo vs referencia del Comparador. Fuente: PrestaShop · prestashop_monthly, canal web (excluye Amazon y TPV). Revenue = total pagado del pedido con IVA."
     >
       {hasData && (
         <div className="h-72">
