@@ -28,7 +28,7 @@ const short = (c) => SHORT[c] || c;
 
 export default function CategoryMixCard({ delay }) {
   const { data = [] } = useCategorySales();
-  const { rangeB, inRange, labelRange } = useComparison();
+  const { rangeA, rangeB, compMode, inRange, labelRange } = useComparison();
   const cutoff = rangeB.end.year * 12 + rangeB.end.month;
 
   const hasData = data.length > 0;
@@ -52,6 +52,19 @@ export default function CategoryMixCard({ delay }) {
     .sort((a, b) => b.revenue - a.revenue);
   const top = mix[0];
 
+  // ── Variación por categoría vs período de referencia del Comparador (YoY por defecto) ──
+  const prevByCat = {};
+  for (const r of data) if (inRange(rangeA, r)) prevByCat[r.category] = (prevByCat[r.category] || 0) + (Number(r.revenue) || 0);
+  const prevTotal = Object.values(prevByCat).reduce((s, v) => s + v, 0);
+  const growth = (cur, prev) => (prev > 0 ? ((cur - prev) / prev) * 100 : null);
+  const totalGrowth = growth(totalRev, prevTotal);
+  const cmpTag = compMode === "yoy" ? "YoY" : "Var.";
+  const fmtG = (g) => (g == null ? "—" : `${g >= 0 ? "+" : ""}${g.toFixed(0)}%`);
+  const gColor = (g) => (g == null ? "hsl(32,7%,48%)" : g >= 0 ? "hsl(152,45%,32%)" : "hsl(4,60%,45%)");
+  const fastest = mix.filter(m => (prevByCat[m.category] || 0) >= 50000)
+    .map(m => ({ ...m, g: growth(m.revenue, prevByCat[m.category]) }))
+    .sort((a, b) => b.g - a.g)[0];
+
   // ── Vista B: evolución mensual por categoría (hasta el corte, últimos 18 meses) ──
   const catsOrder = mix.map(m => m.category); // por relevancia en el periodo
   const topCats = catsOrder.slice(0, 5);
@@ -66,14 +79,6 @@ export default function CategoryMixCard({ delay }) {
   const series = Object.values(byMonth).sort((a, b) => a.ym - b.ym).slice(-18);
   const seriesKeys = [...topCats, ...(series.some(s => s["Otras"]) ? ["Otras"] : [])];
 
-  // Crecimiento de Gatos: compara primer vs último tramo en la serie (insight de mix)
-  const gatosKey = "Tienda de Productos para Gatos";
-  let gatosNote = "";
-  if (series.length >= 6) {
-    const first = series.slice(0, 3).reduce((s, r) => s + (r[gatosKey] || 0), 0) / 3;
-    const last = series.slice(-3).reduce((s, r) => s + (r[gatosKey] || 0), 0) / 3;
-    if (first > 0) { const g = ((last - first) / first) * 100; if (g >= 15) gatosNote = ` Gatos crece ${g.toFixed(0)}% en el periodo mostrado (gana peso en el mix).`; }
-  }
 
   const altView = (
     <div className="h-64">
@@ -97,7 +102,7 @@ export default function CategoryMixCard({ delay }) {
       question="¿Qué categorías de producto venden más?"
       answer={top ? `${short(top.category)} lidera · ${top.pct.toFixed(0)}% del ingreso` : "Mix por categoría"}
       answerTone="neutral"
-      context={`Reparto del ingreso web por categoría principal · ${labelRange(rangeB)}.${gatosNote}`}
+      context={`Reparto del ingreso web por categoría principal · ${labelRange(rangeB)}. ${cmpTag} = vs ${labelRange(rangeA)}${totalGrowth != null ? ` (total ${fmtG(totalGrowth)})` : ""}.${fastest ? ` La que más crece es ${short(fastest.category)} (${fmtG(fastest.g)}).` : ""}`}
       kpis={[
         { value: fmtCurrency(totalRev), label: `Ingreso categorizado · ${labelRange(rangeB)}` },
         { value: `${top ? top.pct.toFixed(0) : 0}%`, label: `Peso de ${top ? short(top.category) : "—"}` },
@@ -114,17 +119,27 @@ export default function CategoryMixCard({ delay }) {
       note="Fuente: PrestaShop · category_sales (order_detail → producto → categoría principal, canal web, excluye Amazon y TPV). Dato REAL de catálogo por venta (sustituye la inferencia por nombre de campaña). Ingreso de línea con IVA."
     >
       <div className="mt-1 space-y-1.5">
-        {mix.map((m, i) => (
+        <div className="flex justify-end text-[10px] uppercase tracking-wide text-muted-foreground">
+          <span className="w-14 text-right" title={`vs ${labelRange(rangeA)}`}>{cmpTag}</span>
+        </div>
+        {mix.map((m, i) => {
+          const g = growth(m.revenue, prevByCat[m.category] || 0);
+          return (
           <div key={m.category}>
             <div className="flex items-baseline justify-between text-xs mb-0.5">
-              <span className="text-foreground truncate max-w-[60%]" title={m.category}>{short(m.category)}</span>
-              <span className="font-mono text-muted-foreground">{fmtCurrency(m.revenue)} · <span className="text-foreground font-semibold">{m.pct.toFixed(0)}%</span></span>
+              <span className="text-foreground truncate max-w-[55%]" title={m.category}>{short(m.category)}</span>
+              <span className="font-mono text-muted-foreground flex items-baseline">
+                {fmtCurrency(m.revenue)} · <span className="text-foreground font-semibold ml-1">{m.pct.toFixed(0)}%</span>
+                <span className="w-14 text-right font-semibold" style={{ color: gColor(g) }}
+                  title={`${labelRange(rangeA)}: ${fmtCurrency(prevByCat[m.category] || 0)}`}>{fmtG(g)}</span>
+              </span>
             </div>
             <div className="h-2.5 rounded bg-muted/50 overflow-hidden">
               <div className="h-full rounded" style={{ width: `${Math.max(1, m.pct)}%`, background: COLORS[i % COLORS.length] }} />
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </EvidenceCard>
   );
