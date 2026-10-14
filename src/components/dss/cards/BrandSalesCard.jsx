@@ -1,13 +1,13 @@
 /**
- * BrandSalesCard (Growth · Revenue) — Ventas por MARCA real (fabricante), origen GA4.
- * GA4 registra cada compra a nivel de artículo con su item_brand → aquí se agrega por marca
+ * BrandSalesCard (Growth · Revenue) — Ventas por MARCA real (fabricante), origen PrestaShop.
+ * Cada línea de pedido web lleva el fabricante del producto (ps_manufacturer) → aquí se agrega por marca
  * en el periodo seleccionado y se ordena por revenue. Es la única fuente que hoy da el
  * consumo por marca real (Connectif solo conoce "BVS Vet Shop"). Respeta el selector.
- * Matiz: GA4 mide la web (online, sujeto a consentimiento); direccional, no exacto contable.
+ * Antes venía de GA4 (item_brand), que solo medía ~la mitad del revenue real (consentimiento/adblock).
  */
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Cell } from "recharts";
 import EvidenceCard from "../EvidenceCard";
-import { useBrandSales } from "@/lib/useEntities";
+import { useBrandSalesPs } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
 import { fmtCurrency, fmtNumber } from "@/lib/dashboardData";
 
@@ -36,7 +36,7 @@ const betterDisplay = (a, b) => {
 };
 
 export default function BrandSalesCard({ delay }) {
-  const { data: raw = [] } = useBrandSales();
+  const { data: raw = [] } = useBrandSalesPs();
   const { rangeB, inRange, labelRange } = useComparison();
 
   const agg = {};
@@ -101,7 +101,7 @@ export default function BrandSalesCard({ delay }) {
   ) : undefined;
 
   return (
-    <EvidenceCard sources={["ga4"]}
+    <EvidenceCard sources={["prestashop"]}
       question="¿Qué marcas venden más? (consumo por marca)"
       kpis={hasData ? [
         { value: top.full, label: "Marca líder" },
@@ -112,8 +112,8 @@ export default function BrandSalesCard({ delay }) {
       answerTone={hasData ? "neutral" : "warn"}
       maturity={hasData ? "green" : "amber"}
       insight={hasData
-        ? `En ${cmp}, ${top.full} lidera con el ${top.share.toFixed(0)}% del revenue por fabricante medido por GA4. Ranking por ingresos de artículo; unidades en el tooltip. Excluye la marca propia (Barakaldo Vet / BVS Vet Shop) y agrupa variantes de la misma marca.`
-        : "Aún no hay datos de ventas por marca para el período seleccionado (se pueblan desde GA4)."}
+        ? `En ${cmp}, ${top.full} lidera con el ${top.share.toFixed(0)}% del revenue web por fabricante (PrestaShop). Ranking por ingresos de artículo; unidades en el tooltip. Excluye la marca propia (Barakaldo Vet / BVS Vet Shop) y agrupa variantes de la misma marca.`
+        : "Aún no hay datos de ventas por marca para el período seleccionado (se pueblan desde PrestaShop)."}
       actions={[
         { verb: "escalar", rationale: top ? `Refuerza surtido y promoción de las marcas que más pesan (empezando por ${top.full}).` : "Prioriza las marcas con mayor venta comprobada." },
         { verb: "vigilar", rationale: "Compara el peso de cada marca entre periodos para detectar las que ganan o pierden tracción." },
@@ -121,7 +121,7 @@ export default function BrandSalesCard({ delay }) {
       delay={delay}
       altView={altView}
       viewLabels={{ a: "Ranking", b: "Evolución" }}
-      note="Fuente: Google Analytics 4 (dimensión item_brand · itemRevenue e itemsPurchased), agregado por marca y mes. Mide ventas de la web (online, sujeto a consentimiento/adblock): medida direccional del consumo por marca, no cifra contable exacta. El total exacto + retail llegará vía PrestaShop cuando haya acceso. Vista 'Evolución' = revenue mensual de las 5 marcas líderes, últimos 12 meses hasta el fin del periodo."
+      note="Fuente: PrestaShop · brand_sales_ps (order_detail → producto → fabricante, canal web, excluye Amazon y TPV), agregado por marca y mes. Ingreso de línea con IVA. Sustituye a GA4, que solo medía ~la mitad del revenue real. Vista 'Evolución' = revenue mensual de las 5 marcas líderes, últimos 12 meses hasta el fin del periodo."
     >
       {hasData && (
         <div style={{ height: Math.max(180, ranked.length * 26 + 30) }}>
