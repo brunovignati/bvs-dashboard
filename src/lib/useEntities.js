@@ -280,6 +280,17 @@ export function usePrestashopMonthly() {
   })
 }
 
+export function useBrandSalesPs() {
+  // Ventas por MARCA (fabricante) desde PrestaShop, canal web (excluye Amazon y TPV).
+  // Origen: Gestor SQL "BVS_brand_monthly" (id 400) → Supabase brand_sales_ps. Sustituye a
+  // brand_sales (GA4), que solo capturaba ~la mitad del revenue real. Supera 1000 filas → paginado.
+  return useQuery({
+    queryKey: ['brand_sales_ps'],
+    queryFn: () => fetchPaged('brand_sales_ps', [['year', true], ['month', true], ['brand', true]], 20000),
+    initialData: [],
+  })
+}
+
 export function useBrandSales() {
   // brand_sales supera las 1000 filas (Supabase corta cada respuesta a 1000). Con un
   // fetchTable simple solo llegaban los meses más antiguos (2024) y los recientes faltaban
