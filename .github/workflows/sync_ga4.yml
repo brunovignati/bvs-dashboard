@@ -2,7 +2,7 @@ name: BVS GA4 Sync
 
 on:
   schedule:
-    - cron: "0 1 * * 1" # Lunes 1am UTC - mismo horario que sync_social.yml
+    - cron: "0 1 * * *" # Cada día 1am UTC (3:00 Madrid)
   workflow_dispatch: # Tambien ejecutable a mano desde GitHub
 
 jobs:
