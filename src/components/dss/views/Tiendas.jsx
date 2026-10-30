@@ -1,17 +1,23 @@
 /**
- * Tiendas — vista de las tiendas físicas (PrestaShop POS / TPV). Tres bloques:
- * Ventas (por tienda y marca propia) · Descuentos y códigos · ¿Vuelven? (recompra tras código y latas).
+ * Tiendas — vista de las tiendas físicas (PrestaShop POS / TPV). Cuatro bloques:
+ * Ventas (por tienda, marca propia, día y hora) · Descuentos y códigos (con margen y cesta) · ¿Vuelven? (recompra
+ * tras código y latas) · Clientes y zonas (movimiento entre tiendas, zona, web + tienda).
  * Fuente única: tablas pos_* de Supabase, refrescadas desde el Gestor SQL de PrestaShop.
  */
 import DomainHeader from "../DomainHeader";
 import SectionNav from "../SectionNav";
 import PosStoreSalesCard from "../cards/PosStoreSalesCard";
 import PosBvsBrandCard from "../cards/PosBvsBrandCard";
+import PosHourlyCard from "../cards/PosHourlyCard";
 import PosDiscountsCard from "../cards/PosDiscountsCard";
 import PosCodesCard from "../cards/PosCodesCard";
 import PosCodeSuccessCard from "../cards/PosCodeSuccessCard";
+import PosBasketCard from "../cards/PosBasketCard";
 import PosRetentionCard from "../cards/PosRetentionCard";
 import PosLatasCard from "../cards/PosLatasCard";
+import PosFlowCard from "../cards/PosFlowCard";
+import PosZoneCard from "../cards/PosZoneCard";
+import PosChannelCard from "../cards/PosChannelCard";
 import { usePosMeta } from "@/lib/useEntities";
 
 export default function Tiendas() {
@@ -25,28 +31,39 @@ export default function Tiendas() {
         { id: "sec-ventas", label: "Ventas" },
         { id: "sec-dto", label: "Descuentos y códigos" },
         { id: "sec-vuelta", label: "¿Vuelven?" },
+        { id: "sec-clientes", label: "Clientes y zonas" },
       ]} />
       {updated && <p className="text-[11px] text-muted-foreground -mt-2">Datos de tienda actualizados el {updated}.</p>}
       <section id="sec-ventas" className="scroll-mt-28 space-y-5">
-        <DomainHeader title="Ventas por tienda" index={1} total={3} />
+        <DomainHeader title="Ventas por tienda" index={1} total={4} />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           <PosStoreSalesCard delay={0.03} />
           <PosBvsBrandCard delay={0.05} />
+          <div className="lg:col-span-2"><PosHourlyCard delay={0.07} /></div>
         </div>
       </section>
       <section id="sec-dto" className="scroll-mt-28 space-y-5">
-        <DomainHeader title="Descuentos y códigos" index={2} total={3} />
+        <DomainHeader title="Descuentos y códigos" index={2} total={4} />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           <div className="lg:col-span-2"><PosDiscountsCard delay={0.03} /></div>
           <PosCodesCard delay={0.05} />
           <PosCodeSuccessCard delay={0.07} />
+          <div className="lg:col-span-2"><PosBasketCard delay={0.09} /></div>
         </div>
       </section>
       <section id="sec-vuelta" className="scroll-mt-28 space-y-5">
-        <DomainHeader title="¿Vuelven los clientes?" index={3} total={3} />
+        <DomainHeader title="¿Vuelven los clientes?" index={3} total={4} />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           <PosRetentionCard delay={0.03} />
           <PosLatasCard delay={0.05} />
+        </div>
+      </section>
+      <section id="sec-clientes" className="scroll-mt-28 space-y-5">
+        <DomainHeader title="Clientes y zonas" index={4} total={4} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <PosFlowCard delay={0.03} />
+          <PosZoneCard delay={0.05} />
+          <div className="lg:col-span-2"><PosChannelCard delay={0.07} /></div>
         </div>
       </section>
     </div>
