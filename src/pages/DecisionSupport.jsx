@@ -4,12 +4,14 @@ import DomainNav from "@/components/dss/DomainNav";
 import DailyHealth from "@/components/dss/views/DailyHealth";
 import GrowthMarketing from "@/components/dss/views/GrowthMarketing";
 import OpsCRM from "@/components/dss/views/OpsCRM";
+import Tiendas from "@/components/dss/views/Tiendas";
 import Marketing from "@/components/dss/domains/Marketing";
 
 const VIEW_MAP = {
   daily: DailyHealth,
   growth: GrowthMarketing,
   marketing: Marketing,
+  tiendas: Tiendas,
   ops: OpsCRM,
 };
 
