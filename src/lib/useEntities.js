@@ -496,3 +496,76 @@ export function usePosMeta() {
     initialData: [],
   })
 }
+
+// ── Tiendas v2 (30-oct-2026): margen, hora y día, zona, movimiento entre tiendas, web+tienda, cesta ──
+// Tablas grandes (hora ≈10K filas, zona ≈8K): se pide la primera página con el recuento y el resto EN PARALELO.
+async function fetchPagedParallel(table, orderCols, limit = 40000) {
+  const PAGE = 1000
+  const page = (from) => {
+    let q = supabase.from(table).select('*', from === 0 ? { count: 'exact' } : undefined)
+    for (const [col, asc] of orderCols) q = q.order(col, { ascending: asc })
+    return q.range(from, from + PAGE - 1)
+  }
+  const first = await page(0)
+  if (first.error) throw first.error
+  const rows = first.data || []
+  const total = Math.min(first.count ?? rows.length, limit)
+  if (rows.length < PAGE || total <= PAGE) return rows.map(mapRow)
+  const rest = await Promise.all(Array.from({ length: Math.ceil((total - PAGE) / PAGE) }, (_, i) => page(PAGE * (i + 1))))
+  for (const r of rest) { if (r.error) throw r.error; rows.push(...(r.data || [])) }
+  return rows.map(mapRow)
+}
+
+export function usePosMarginMonthly() {
+  // Venta y coste de compra por tienda y mes (líneas de ticket TPV) → margen de producto.
+  return useQuery({
+    queryKey: ['pos_margin_monthly'],
+    queryFn: () => fetchPaged('pos_margin_monthly', [['year', true], ['month', true], ['store', true]], 5000),
+    initialData: [],
+  })
+}
+
+export function usePosHourly() {
+  // Tickets e ingreso por tienda, mes, día de la semana (1=lunes) y hora.
+  return useQuery({
+    queryKey: ['pos_hourly'],
+    queryFn: () => fetchPagedParallel('pos_hourly', [['year', true], ['month', true], ['store', true], ['dow', true], ['hour', true]], 40000),
+    initialData: [],
+  })
+}
+
+export function usePosZone() {
+  // Tickets e ingreso por tienda, mes y código postal del cliente identificado.
+  return useQuery({
+    queryKey: ['pos_zone'],
+    queryFn: () => fetchPagedParallel('pos_zone', [['year', true], ['month', true], ['store', true], ['cp', true]], 40000),
+    initialData: [],
+  })
+}
+
+export function usePosFlow() {
+  // Dónde compra un trimestre el cliente que compró en una tienda ese mismo trimestre del año anterior.
+  return useQuery({
+    queryKey: ['pos_flow'],
+    queryFn: () => fetchPaged('pos_flow', [['year', true], ['quarter', true], ['store_from', true], ['dest_kind', true], ['dest_store', true]], 5000),
+    initialData: [],
+  })
+}
+
+export function usePosChannelQuarter() {
+  // Clientes por trimestre: solo tienda / ambos canales / solo web, con su ingreso.
+  return useQuery({
+    queryKey: ['pos_channel_quarter'],
+    queryFn: () => fetchTable('pos_channel_quarter', 'year', true, 500),
+    initialData: [],
+  })
+}
+
+export function usePosBasket() {
+  // Cesta por código (marca → tickets, unidades, ingreso) y la fila base '(sin código)'.
+  return useQuery({
+    queryKey: ['pos_basket'],
+    queryFn: () => fetchPaged('pos_basket', [['code', true], ['brand', true]], 5000),
+    initialData: [],
+  })
+}
