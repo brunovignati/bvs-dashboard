@@ -12,7 +12,10 @@ import { fmtNumber } from "@/lib/dashboardData";
 import { COLORS, num } from "./posUtils";
 
 const MIN_SHARED = 20; // tickets mínimos de cada tienda para hablar de zona compartida
-// Las direcciones vienen con erratas y mayúsculas mezcladas ("agorta", "BASAURI"): se vota el nombre más usado de cada código postal.
+// El campo ciudad de las direcciones viene sucio (erratas, barrios, el propio CP): el municipio sale de una tabla fija de códigos
+// postales de Bizkaia y, si el CP no está en la tabla, del nombre más votado que sea texto limpio.
+const CP_NAMES = { 48901: "Barakaldo", 48902: "Barakaldo", 48903: "Barakaldo", 48910: "Sestao", 48920: "Portugalete", 48930: "Getxo (Las Arenas)", 48940: "Leioa", 48950: "Erandio", 48960: "Galdakao", 48970: "Basauri", 48980: "Santurtzi", 48990: "Getxo (Algorta)", 48991: "Getxo (Algorta)" };
+const knownCp = (cp) => (/^480(0[1-9]|1[0-5])$/.test(String(cp)) ? "Bilbao" : CP_NAMES[cp] || "");
 const title = (s) => (s || "").toLowerCase().replace(/(^|[\s-])\S/g, (c) => c.toUpperCase()).trim();
 
 export default function PosZoneCard({ delay }) {
@@ -22,8 +25,8 @@ export default function PosZoneCard({ delay }) {
 
   const inP = raw.filter((r) => inRange(rangeB, r) && r.cp);
   const votes = {};
-  for (const r of raw) { if (!r.cp || !r.city) continue; const v = (votes[r.cp] ||= {}); const k = title(r.city); v[k] = (v[k] || 0) + num(r.tickets); }
-  const cityName = (cp) => Object.entries(votes[cp] || {}).sort((a, b) => b[1] - a[1])[0]?.[0] || "";
+  for (const r of raw) { if (!r.cp || !r.city || /\d/.test(r.city) || r.city.trim().length < 4) continue; const v = (votes[r.cp] ||= {}); const k = title(r.city); v[k] = (v[k] || 0) + num(r.tickets); }
+  const cityName = (cp) => knownCp(cp) || Object.entries(votes[cp] || {}).sort((a, b) => b[1] - a[1])[0]?.[0] || "";
   const tkByStore = {};
   for (const r of inP) tkByStore[r.store] = (tkByStore[r.store] || 0) + num(r.tickets);
   const stores = Object.entries(tkByStore).sort((a, b) => b[1] - a[1]).map(([s]) => s);
@@ -89,7 +92,7 @@ export default function PosZoneCard({ delay }) {
       delay={delay}
       altView={altView}
       viewLabels={{ a: "Zonas por tienda", b: "Zonas compartidas" }}
-      note="Fuente: PrestaShop · pos_zone (código postal de la dirección del cliente identificado; excluye caja genérica y clientes sin dirección, así que es una muestra, no el total de tickets). Zona compartida = código postal con ≥ 20 tickets de cada una de las dos tiendas principales y la segunda con ≥ 20% de los tickets de esa zona. Que dos tiendas compartan zona no prueba canibalización: cruzar con el movimiento entre tiendas."
+      note="Fuente: PrestaShop · pos_zone (código postal de la dirección del cliente identificado, con el municipio de una tabla fija de códigos postales de Bizkaia; excluye caja genérica y clientes sin dirección, así que es una muestra, no el total de tickets). Zona compartida = código postal con ≥ 20 tickets de cada una de las dos tiendas principales y la segunda con ≥ 20% de los tickets de esa zona. Que dos tiendas compartan zona no prueba canibalización: cruzar con el movimiento entre tiendas."
     >
       {hasData && (
         <div>
