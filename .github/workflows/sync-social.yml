@@ -30,4 +30,4 @@ jobs:
           METRICOOL_TOKEN:           ${{ secrets.METRICOOL_TOKEN }}
           METRICOOL_BRAND_ID:        "4404955"
           SUPABASE_URL:              ${{ secrets.SUPABASE_URL }}
-          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_KEY }}
