@@ -49,3 +49,62 @@ export function lastMonths(rows, cutoff, n = 12) {
   for (const r of rows) { const k = ym(r); if (k <= cutoff) set.add(k); }
   return [...set].sort((a, b) => a - b).slice(-n);
 }
+
+// ── Margen de producto ───────────────────────────────────────────────────────────────────────────
+// Las líneas del TPV ya van netas de cupón y promo, así que NO se resta ningún descuento más.
+// Margen % = (venta sin IVA − coste de compra de catálogo) / venta sin IVA, solo sobre líneas con coste conocido (≈98%).
+export const marginPct = (rk, cost) => (num(rk) > 0 ? ((num(rk) - num(cost)) / num(rk)) * 100 : null);
+// Margen en € estimado sobre TODA la venta de líneas (se extrapola el % a las líneas sin coste).
+export const marginEur = (rl, rk, cost) => (num(rk) > 0 ? ((num(rk) - num(cost)) / num(rk)) * num(rl) : 0);
+export const coverPct = (rl, rk) => (num(rl) > 0 ? (num(rk) / num(rl)) * 100 : 0);
+export const fmtPct1 = (p) => (p == null ? "—" : `${p.toFixed(1)}%`);
+
+// ── Estadística ──────────────────────────────────────────────────────────────────────────────────
+// CDF de la normal estándar (Abramowitz–Stegun 26.2.17).
+export function normCdf(z) {
+  const t = 1 / (1 + 0.2316419 * Math.abs(z));
+  const d = 0.3989423 * Math.exp((-z * z) / 2);
+  const p = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+  return z > 0 ? 1 - p : p;
+}
+export const pTwoSided = (z) => 2 * (1 - normCdf(Math.abs(z)));
+
+// Corrección de Holm entre varias pruebas a la vez: devuelve true/false (significativa) alineado con pvals.
+export function holmSig(pvals, alpha = 0.05) {
+  const order = pvals.map((p, i) => [p, i]).sort((a, b) => a[0] - b[0]);
+  const out = new Array(pvals.length).fill(false);
+  const m = pvals.length;
+  for (let k = 0; k < m; k++) {
+    if (order[k][0] <= alpha / (m - k)) out[order[k][1]] = true;
+    else break;
+  }
+  return out;
+}
+
+// z de "vuelven más de lo esperado". Con ss (Σ residuo² por cliente, errores agrupados por cliente) la varianza
+// cuenta que un mismo cliente aparece en varios tickets; sin ss (filas antiguas) cae a la binomial.
+export function retentionZ(real, exp, n, ss) {
+  const s = num(ss);
+  if (s > 0) return (real - exp) / Math.sqrt(s);
+  const p = n > 0 ? exp / n : 0;
+  return (real - exp) / (Math.sqrt(n * p * (1 - p)) || 1);
+}
+
+// ── Trimestres y días ────────────────────────────────────────────────────────────────────────────
+export const qKey = (r) => num(r.year) * 4 + num(r.quarter) - 1;
+export const qLabel = (k) => `T${(k % 4) + 1} ${String(Math.floor(k / 4)).slice(2)}`;
+export const DOW = ["", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
+export const DOW_FULL = ["", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"];
+
+// Trimestre natural de una fecha (año*4 + 0..3) y trimestre elegido a partir del periodo activo del Comparador.
+export const qOfYM = (year, month) => num(year) * 4 + Math.floor((num(month) - 1) / 3);
+export function currentQ(meta) {
+  const v = (meta || []).find((m) => m.key === "pos")?.value;
+  const d = v?.today ? new Date(v.today) : new Date();
+  return d.getUTCFullYear() * 4 + Math.floor(d.getUTCMonth() / 3);
+}
+// Último trimestre con dato que no pase del fin del periodo activo.
+export function pickQ(keys, rangeB) {
+  const target = qOfYM(rangeB.end.year, rangeB.end.month);
+  return [...keys].filter((k) => k <= target).sort((a, b) => b - a)[0] ?? null;
+}

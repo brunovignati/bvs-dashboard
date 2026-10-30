@@ -9,7 +9,7 @@ import EvidenceCard from "../EvidenceCard";
 import { usePosRetentionMonthly } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
 import { fmtNumber } from "@/lib/dashboardData";
-import { COLORS, GRID, AXIS, MUTED, num, fmtPts, ym, ymLabel } from "./posUtils";
+import { COLORS, GRID, AXIS, MUTED, num, fmtPts, ym, ymLabel, retentionZ } from "./posUtils";
 
 const MIN_N = 100;
 const sum = (rows, f) => rows.reduce((s, r) => s + num(r[f]), 0);
@@ -34,8 +34,8 @@ export default function PosRetentionCard({ delay }) {
   });
   const h60 = hz[1];
   const hasData = h60.n >= MIN_N;
-  const p = h60.n > 0 ? h60.e / h60.n : 0;
-  const z = h60.n > 0 ? (h60.r - h60.e) / (Math.sqrt(h60.n * p * (1 - p)) || 1) : 0;
+  // z con errores agrupados por cliente (Σ residuo² por cliente de cada mes; el mismo cliente puede repetir mes: ligero optimismo)
+  const z = h60.n > 0 ? retentionZ(h60.r, h60.e, h60.n, sum(used, "ss60")) : 0;
   const clear = Math.abs(z) >= 2;
   const ns = sum(used, "ns") || 1;
   const spend = sum(used, "s60") / ns, spendExp = sum(used, "es60") / ns;
@@ -86,7 +86,7 @@ export default function PosRetentionCard({ delay }) {
       delay={delay}
       altView={altView}
       viewLabels={{ a: "Con vs sin código", b: "Por mes" }}
-      note="Fuente: PrestaShop · pos_retention_monthly. Observacional: por ticket con código (cupón o promo TPV), el cliente 'vuelve' si compra de nuevo en cualquier tienda en 30/60/90 días. Esperado = tasa de los tickets SIN código del mismo mes y misma frecuencia previa (1ª compra, 0, 1-2, 3-5, 6+ tickets en 180 días). Solo clientes identificados (los tickets a caja genérica, ≈44% de los de promo, no se pueden seguir). Excluye empleado y vales de devolución. Ventana desde 11-jun-2026. Diferencia clara = |z| ≥ 2."
+      note="Fuente: PrestaShop · pos_retention_monthly. Observacional: por ticket con código (cupón o promo TPV), el cliente 'vuelve' si compra de nuevo en cualquier tienda en 30/60/90 días. Esperado = tasa de los tickets SIN código del mismo mes y misma frecuencia previa (1ª compra, 0, 1-2, 3-5, 6+ tickets en 180 días). Solo clientes identificados (los tickets a caja genérica, ≈44% de los de promo, no se pueden seguir). Excluye empleado y vales de devolución. Ventana desde 11-jun-2026. Diferencia clara = |z| ≥ 2 con errores agrupados por cliente (un cliente con varios tickets cuenta una sola vez)."
     >
       {hasData && (
         <div style={{ height: 240 }}>

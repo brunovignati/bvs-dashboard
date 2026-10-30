@@ -5,19 +5,25 @@
  */
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import EvidenceCard from "../EvidenceCard";
-import { usePosStoreMonthly } from "@/lib/useEntities";
+import { usePosStoreMonthly, usePosMarginMonthly } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
 import { fmtCurrency, fmtNumber } from "@/lib/dashboardData";
-import { COLORS, GRID, AXIS, num, pctChange, fmtG, gColor, ym, ymLabel, cmpWord, sumByKey, lastMonths } from "./posUtils";
+import { COLORS, GRID, AXIS, num, pctChange, fmtG, gColor, fmtPts, ym, ymLabel, cmpWord, sumByKey, lastMonths, marginPct, marginEur, coverPct } from "./posUtils";
 
 const F = ["revenue", "tickets"];
+const FM = ["rev_lines", "rev_known", "cost"];
 
 export default function PosStoreSalesCard({ delay }) {
   const { data: raw = [] } = usePosStoreMonthly();
+  const { data: marg = [] } = usePosMarginMonthly();
   const { rangeA, rangeB, compMode, inRange, labelRange } = useComparison();
 
   const cur = sumByKey(raw, inRange, rangeB, (r) => r.store, F);
   const prev = sumByKey(raw, inRange, rangeA, (r) => r.store, F);
+  // Margen de producto por tienda (periodo activo y de comparación)
+  const mCur = sumByKey(marg, inRange, rangeB, (r) => r.store, FM);
+  const mPrev = sumByKey(marg, inRange, rangeA, (r) => r.store, FM);
+  const mTot = (o) => Object.values(o).reduce((t, a) => ({ rev_lines: t.rev_lines + a.rev_lines, rev_known: t.rev_known + a.rev_known, cost: t.cost + a.cost }), { rev_lines: 0, rev_known: 0, cost: 0 });
 
   const rows = Object.entries(cur)
     .map(([store, a]) => ({
@@ -25,6 +31,8 @@ export default function PosStoreSalesCard({ delay }) {
       avg: a.tickets > 0 ? a.revenue / a.tickets : 0,
       prev: prev[store]?.revenue || 0,
       g: pctChange(a.revenue, prev[store]?.revenue || 0),
+      mg: marginPct(mCur[store]?.rev_known, mCur[store]?.cost),
+      cover: coverPct(mCur[store]?.rev_lines, mCur[store]?.rev_known),
     }))
     .filter((r) => r.revenue > 0)
     .sort((a, b) => b.revenue - a.revenue);
@@ -36,6 +44,12 @@ export default function PosStoreSalesCard({ delay }) {
   const avg = tickets > 0 ? total / tickets : 0;
   const prevAvg = prevTickets > 0 ? prevTotal / prevTickets : 0;
   const hasData = rows.length > 0;
+  const mt = mTot(mCur), mtp = mTot(mPrev);
+  const mg = marginPct(mt.rev_known, mt.cost), mgPrev = marginPct(mtp.rev_known, mtp.cost);
+  const mgEur = marginEur(mt.rev_lines, mt.rev_known, mt.cost);
+  const hasMargin = mg != null;
+  const withMg = rows.filter((r) => r.mg != null && r.cover >= 95);
+  const mgHi = [...withMg].sort((a, b) => b.mg - a.mg)[0], mgLo = [...withMg].sort((a, b) => a.mg - b.mg)[0];
 
   // Mismas tiendas: crecimiento solo con las que ya vendían en el periodo de comparación (excluye aperturas).
   const same = rows.filter((r) => r.prev > 0);
@@ -74,12 +88,14 @@ export default function PosStoreSalesCard({ delay }) {
       question="¿Cuánto vende cada tienda y cómo crece frente al mismo mes del año pasado?"
       kpis={hasData ? [
         { value: fmtCurrency(total), label: `Facturación · ${labelRange(rangeB)}`, delta: pctChange(total, prevTotal) ?? undefined },
-        { value: fmtNumber(tickets), label: "Tickets", delta: pctChange(tickets, prevTickets) ?? undefined },
+        hasMargin
+          ? { value: `${mg.toFixed(1)}%`, label: `Margen de producto · ≈ ${fmtCurrency(mgEur)}`, delta: mgPrev != null ? mg - mgPrev : undefined, deltaSuffix: " pts" }
+          : { value: fmtNumber(tickets), label: "Tickets", delta: pctChange(tickets, prevTickets) ?? undefined },
         { value: `${avg.toFixed(1)} €`, label: "Ticket medio", delta: pctChange(avg, prevAvg) ?? undefined },
       ] : undefined}
       answer={!hasData ? "Sin ventas de tienda en el periodo" : undefined}
       context={hasData
-        ? `Variación vs ${labelRange(rangeA)} (${cmpWord(compMode)}).${sameG != null ? ` Con las mismas tiendas: ${fmtG(sameG)}.` : ""}${best && worst && best.store !== worst.store ? ` Sube más ${best.store} (${fmtG(best.g)}) y baja más ${worst.store} (${fmtG(worst.g)}).` : ""}`
+        ? `Variación vs ${labelRange(rangeA)} (${cmpWord(compMode)}).${sameG != null ? ` Con las mismas tiendas: ${fmtG(sameG)}.` : ""}${best && worst && best.store !== worst.store ? ` Sube más ${best.store} (${fmtG(best.g)}) y baja más ${worst.store} (${fmtG(worst.g)}).` : ""}${hasMargin && mgHi && mgLo && mgHi.store !== mgLo.store ? ` Margen: más en ${mgHi.store} (${mgHi.mg.toFixed(1)}%), menos en ${mgLo.store} (${mgLo.mg.toFixed(1)}%)${mgPrev != null ? `; total ${fmtPts(mg - mgPrev)} vs ${labelRange(rangeA)}` : ""}.` : ""} Los tickets del periodo: ${fmtNumber(tickets)} (${fmtG(pctChange(tickets, prevTickets))}).`
         : undefined}
       maturity={hasData ? "green" : "amber"}
       actions={[
@@ -89,7 +105,7 @@ export default function PosStoreSalesCard({ delay }) {
       delay={delay}
       altView={altView}
       viewLabels={{ a: "Por tienda", b: "Evolución" }}
-      note="Fuente: PrestaShop · pos_store_monthly (pedidos con módulo InnovaCommerceTPV, válidos; total pagado con IVA, ya neto de descuentos). Tienda = sufijo del módulo; sin sufijo = Barakaldo. Excluye web y Amazon. Variación frente al periodo de comparación del selector. Vista 'Evolución': 5 tiendas líderes, 12 meses hasta el fin del periodo."
+      note="Fuente: PrestaShop · pos_store_monthly (pedidos con módulo InnovaCommerceTPV, válidos; total pagado con IVA, ya neto de descuentos). Tienda = sufijo del módulo; sin sufijo = Barakaldo. Excluye web y Amazon. Margen de producto = (venta sin IVA − coste de compra de catálogo) / venta sin IVA, sobre las líneas con coste conocido (≈98% de la venta; * = menos del 95%); el precio de línea ya va neto de cupón y promo. No incluye personal, alquiler ni mermas. Variación frente al periodo de comparación del selector. Vista 'Evolución': 5 tiendas líderes, 12 meses hasta el fin del periodo."
     >
       {hasData && (
         <div className="mt-1 space-y-1.5">
@@ -101,7 +117,9 @@ export default function PosStoreSalesCard({ delay }) {
               <div className="flex items-baseline justify-between text-xs mb-0.5">
                 <span className="text-foreground truncate max-w-[45%]">{r.store}</span>
                 <span className="font-mono text-muted-foreground flex items-baseline">
-                  {fmtCurrency(r.revenue)} · {fmtNumber(r.tickets)} tk · {r.avg.toFixed(0)} €/tk
+                  {fmtCurrency(r.revenue)} · {fmtNumber(r.tickets)} tk · {r.avg.toFixed(0)} €/tk{r.mg != null && (
+                    <span className="ml-1" title={`Margen de producto${r.cover < 95 ? ` — coste conocido solo en el ${r.cover.toFixed(0)}% de la venta (poco fiable)` : ""}`}> · {r.mg.toFixed(0)}% mg{r.cover < 95 ? "*" : ""}</span>
+                  )}
                   <span className="w-14 text-right font-semibold" style={{ color: gColor(r.g) }}
                     title={`${labelRange(rangeA)}: ${fmtCurrency(r.prev)}`}>{r.prev > 0 ? fmtG(r.g) : "nueva"}</span>
                 </span>

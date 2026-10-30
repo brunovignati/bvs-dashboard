@@ -8,12 +8,13 @@
  */
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import EvidenceCard from "../EvidenceCard";
-import { usePosStoreMonthly } from "@/lib/useEntities";
+import { usePosStoreMonthly, usePosMarginMonthly } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
 import { fmtCurrency, fmtNumber } from "@/lib/dashboardData";
-import { COLORS, GRID, AXIS, pctChange, ym, ymLabel, cmpWord, sumByKey, lastMonths } from "./posUtils";
+import { COLORS, GRID, AXIS, pctChange, fmtPts, ym, ymLabel, cmpWord, sumByKey, lastMonths, marginPct } from "./posUtils";
 
 const F = ["revenue", "coupon_discount", "promo_discount", "tickets", "tickets_discount"];
+const FM = ["rev_lines", "rev_known", "cost"];
 const PROMO_LOG_START = 2026 * 12 + 6; // jun-2026: primer mes con registro de promos POS
 
 const summarize = (a) => {
@@ -34,6 +35,7 @@ const total = (obj) => {
 
 export default function PosDiscountsCard({ delay }) {
   const { data: raw = [] } = usePosStoreMonthly();
+  const { data: marg = [] } = usePosMarginMonthly();
   const { rangeA, rangeB, compMode, inRange, labelRange } = useComparison();
 
   const curBy = sumByKey(raw, inRange, rangeB, (r) => r.store, F);
@@ -46,8 +48,14 @@ export default function PosDiscountsCard({ delay }) {
   // (antes solo se contaban cupones): se oculta la variación y se avisa.
   const prevPartial = prev.tickets > 0 && rangeA.start.year * 12 + rangeA.start.month < PROMO_LOG_START;
 
+  // Margen de producto tras descuentos (las líneas ya van netas de cupón y promo)
+  const mByStore = sumByKey(marg, inRange, rangeB, (r) => r.store, FM);
+  const mTotal = (o) => Object.values(o).reduce((t, a) => ({ rk: t.rk + a.rev_known, c: t.c + a.cost }), { rk: 0, c: 0 });
+  const mgNow = (() => { const t = mTotal(mByStore); return marginPct(t.rk, t.c); })();
+  const mgPrev = (() => { const t = mTotal(sumByKey(marg, inRange, rangeA, (r) => r.store, FM)); return marginPct(t.rk, t.c); })();
+
   const rows = Object.entries(curBy)
-    .map(([store, a]) => ({ store, ...summarize(a) }))
+    .map(([store, a]) => ({ store, ...summarize(a), mg: marginPct(mByStore[store]?.rev_known, mByStore[store]?.cost) }))
     .filter((r) => r.tickets > 0)
     .sort((a, b) => b.pct - a.pct);
   const maxPct = Math.max(1, ...rows.map((r) => r.pct));
@@ -57,7 +65,9 @@ export default function PosDiscountsCard({ delay }) {
   const months = lastMonths(raw, cutoff, 12);
   const evo = months.map((k) => {
     const s = summarize(total(sumByKey(raw, (r, row) => ym(row) === k, null, () => "t", F)));
-    return { name: ymLabel(k), "% descuento": Math.round(s.pct * 10) / 10, "% tickets con descuento": Math.round(s.shareTk * 10) / 10 };
+    const mm = sumByKey(marg, (r, row) => ym(row) === k, null, () => "t", FM).t;
+    const mgk = mm ? marginPct(mm.rev_known, mm.cost) : null;
+    return { name: ymLabel(k), "% descuento": Math.round(s.pct * 10) / 10, "% tickets con descuento": Math.round(s.shareTk * 10) / 10, "% margen de producto": mgk != null ? Math.round(mgk * 10) / 10 : null };
   });
   const altView = evo.length >= 2 ? (
     <div style={{ height: 260 }}>
@@ -70,6 +80,7 @@ export default function PosDiscountsCard({ delay }) {
           <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
           <Line type="monotone" dataKey="% descuento" stroke={COLORS[0]} strokeWidth={2} dot={false} />
           <Line type="monotone" dataKey="% tickets con descuento" stroke={COLORS[3]} strokeWidth={2} dot={false} />
+          <Line type="monotone" dataKey="% margen de producto" stroke={COLORS[5]} strokeWidth={2} dot={false} strokeDasharray="4 3" connectNulls />
         </LineChart>
       </ResponsiveContainer>
     </div>
@@ -87,7 +98,7 @@ export default function PosDiscountsCard({ delay }) {
       ] : undefined}
       answer={!hasData ? "Sin ventas de tienda en el periodo" : undefined}
       context={hasData
-        ? `${fmtCurrency(cur.dto)} descontados en ${fmtNumber(cur.tkDto)} de ${fmtNumber(cur.tickets)} tickets (${cur.shareTk.toFixed(0)}%). Variación vs ${labelRange(rangeA)} (${cmpWord(compMode)}).${hi ? ` Más descuento: ${hi.store} (${hi.pct.toFixed(1)}%).` : ""}${partial ? " Ojo: antes de jun-26 solo se registran cupones, no las promos del TPV; el % real era algo mayor." : ""}${!partial && prevPartial ? ` Sin variación en descuento: en ${labelRange(rangeA)} solo se registraban cupones (las promos del TPV empiezan en jun-26), no es comparable.` : ""}`
+        ? `${fmtCurrency(cur.dto)} descontados en ${fmtNumber(cur.tkDto)} de ${fmtNumber(cur.tickets)} tickets (${cur.shareTk.toFixed(0)}%).${mgNow != null ? ` Margen de producto tras descuentos: ${mgNow.toFixed(1)}%${mgPrev != null ? ` (${fmtPts(mgNow - mgPrev)} vs ${labelRange(rangeA)})` : ""}.` : ""} Variación vs ${labelRange(rangeA)} (${cmpWord(compMode)}).${hi ? ` Más descuento: ${hi.store} (${hi.pct.toFixed(1)}%).` : ""}${partial ? " Ojo: antes de jun-26 solo se registran cupones, no las promos del TPV; el % real era algo mayor." : ""}${!partial && prevPartial ? ` Sin variación en descuento: en ${labelRange(rangeA)} solo se registraban cupones (las promos del TPV empiezan en jun-26), no es comparable.` : ""}`
         : undefined}
       maturity="amber"
       actions={[
@@ -97,7 +108,7 @@ export default function PosDiscountsCard({ delay }) {
       delay={delay}
       altView={altView}
       viewLabels={{ a: "Por tienda", b: "Evolución" }}
-      note="Fuente: PrestaShop · pos_store_monthly. Facturación = total pagado con IVA (ya neto de descuentos). Descuento = cupones de caja (ps_order_cart_rule) + promos del TPV (ps_prestapos_discount_log, desde 11-jun-2026). % descuento = descuento / (pagado + descuento). Descuento medio = descuento total / tickets con algún descuento. Incluye descuento manual en caja y empleado."
+      note="Fuente: PrestaShop · pos_store_monthly. Facturación = total pagado con IVA (ya neto de descuentos). Descuento = cupones de caja (ps_order_cart_rule) + promos del TPV (ps_prestapos_discount_log, desde 11-jun-2026). % descuento = descuento / (pagado + descuento). Descuento medio = descuento total / tickets con algún descuento. Incluye descuento manual en caja y empleado. Margen = (venta sin IVA − coste de compra de catálogo) / venta sin IVA (pos_margin_monthly); el precio de línea ya va neto de descuentos, de modo que el margen es el que queda después de descontar."
     >
       {hasData && (
         <div className="mt-1 space-y-1.5">
@@ -105,6 +116,7 @@ export default function PosDiscountsCard({ delay }) {
             <span className="w-16 text-right">Descuento</span>
             <span className="w-10 text-right">%</span>
             <span className="w-14 text-right">Tk c/dto</span>
+            <span className="w-12 text-right" title="Margen de producto tras descuentos">Margen</span>
           </div>
           {rows.map((r, i) => (
             <div key={r.store}>
@@ -114,6 +126,7 @@ export default function PosDiscountsCard({ delay }) {
                   <span className="w-16 text-right">{fmtCurrency(r.dto)}</span>
                   <span className="w-10 text-right text-foreground font-semibold">{r.pct.toFixed(1)}%</span>
                   <span className="w-14 text-right">{r.shareTk.toFixed(0)}%</span>
+                  <span className="w-12 text-right">{r.mg != null ? `${r.mg.toFixed(0)}%` : "—"}</span>
                 </span>
               </div>
               <div className="h-2.5 rounded bg-muted/50 overflow-hidden">
