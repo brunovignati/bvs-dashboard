@@ -620,4 +620,35 @@ enriquecer ese hook (canal: `cur`/`base`; workflow: `daysSince`).
 
 ---
 
+## 18. Pestaña Tiendas (tiendas físicas · TPV / Presta POS) — añadida 30-oct-2026, ampliada (v2) el mismo día
+
+Vista `tiendas` (`src/components/dss/views/Tiendas.jsx`, pestaña «Tiendas» en `VIEWS`/`VIEW_MAP`). Pedido de Jone tras la reunión de estrategia de tienda física; v2 tras una auditoría de «qué más se puede cruzar». Mismo patrón que el resto (EvidenceCard: pregunta, asterisco de fuente y método, KPI, gráfico, vista B). Fuente única: tablas `pos_*` de Supabase, alimentadas desde el Gestor SQL de PrestaShop. 12 tarjetas en 4 bloques.
+
+| Bloque | Tarjeta | Pregunta | Tabla(s) |
+|---|---|---|---|
+| Ventas | `PosStoreSalesCard` | Ventas por tienda, crecimiento vs mismo mes del año anterior y **margen de producto** | `pos_store_monthly` + `pos_margin_monthly` |
+| Ventas | `PosBvsBrandCard` | Venta de marca BVS Vet Shop por tienda y su peso | `pos_bvs_monthly` + `pos_store_monthly` |
+| Ventas | `PosHourlyCard` | Día y hora en que vende cada tienda (mapa de calor, selector de tienda) | `pos_hourly` |
+| Descuentos y códigos | `PosDiscountsCard` | Facturación, descuento medio, % de descuento y **margen tras descuentos** | `pos_store_monthly` + `pos_margin_monthly` |
+| Descuentos y códigos | `PosCodesCard` | Códigos más usados y evolución por meses | `pos_codes_monthly` |
+| Descuentos y códigos | `PosCodeSuccessCard` | Qué códigos hacen volver más al cliente (vs esperado sin código) + margen y gasto por código | `pos_code_retention` + `pos_meta` |
+| Descuentos y códigos | `PosBasketCard` | Qué se lleva el cliente con un código (ticket, unidades, marcas que arrastra) | `pos_basket` |
+| ¿Vuelven? | `PosRetentionCard` | ¿Vuelven más los clientes que usaron código? (30/60/90 d) | `pos_retention_monthly` |
+| ¿Vuelven? | `PosLatasCard` | Latas BVS en promo (5+1, regalo): ¿volvieron y repiten? | `pos_latas` |
+| Clientes y zonas | `PosFlowCard` | ¿Dónde compra hoy (misma tienda / otra / solo web / no se ve) el cliente que compraba en cada tienda hace un año? Saldo entre tiendas | `pos_flow` |
+| Clientes y zonas | `PosZoneCard` | Código postal del cliente por tienda y zonas compartidas entre tiendas | `pos_zone` |
+| Clientes y zonas | `PosChannelCard` | ¿Compra el cliente de tienda también en la web? (solo tienda / ambos / solo web, con gasto) | `pos_channel_quarter` |
+
+- Esquema: `sql/pos_tables.sql` (14 tablas `pos_*`, RLS con lectura pública; v2 añade `pos_margin_monthly`, `pos_hourly`, `pos_zone`, `pos_flow`, `pos_channel_quarter`, `pos_basket` y columnas `coupon_excl`, `ss60`, `tickets_all`, `rev_all`, `rev_known`, `cost`, `units_all`). Hooks `usePos*` al final de `useEntities.js` (las tablas grandes `pos_hourly`/`pos_zone`, ≈10K y ≈8K filas, se leen con `fetchPagedParallel`). Utilidades de las tarjetas: `cards/posUtils.js` (margen, `normCdf`, `holmSig`, `retentionZ`, trimestres) y `cards/PosStoreChips.jsx` (selector de tienda).
+- Consultas guardadas en el Gestor SQL (copias en `sql/pos_queries.sql`): 758 `BVS_pos_store_monthly`, 761 `BVS_pos_bvs_monthly`, 763 `BVS_pos_codes_monthly`, 766 `BVS_pos_tickets`, 767 `BVS_pos_ticket_codes`, 768 `BVS_pos_latas`, 772 `BVS_pos_margin_monthly`, 773 `BVS_pos_ticket_brands`, 774 `BVS_pos_hourly`, 775 `BVS_pos_zone`, 776 `BVS_pos_web_quarter`, 777 `BVS_pos_cust_web` (766, 767, 768, 773, 774, 775 y 777 se exportan a CSV; las demás se leen directas).
+- **Refresco:** `scripts/pos_refresh.js` se ejecuta en el navegador, en una pestaña del admin de PrestaShop (`await posRefresh()`): exporta las 12 consultas una a una (tarda unos minutos), calcula en JS la retención, el movimiento entre tiendas, el reparto web/tienda y la cesta, y hace upsert en las 14 tablas. Lo lanza la tarea programada «Refresco Presta dashboard BVS» (el Action de GitHub no alcanza PrestaShop ni Supabase desde fuera del navegador). **Ojo:** la tarea semanal ya llama a `posRefresh()`; no hace falta cambiar su prompt, pero ahora tarda más (12 exportaciones en vez de 6).
+- **Definiciones:** TPV = `ps_orders.module LIKE 'InnovaCommerceTPV%'`; tienda = sufijo del módulo (sin sufijo = Barakaldo). Clientes genéricos de caja `id_customer` 1 y 2703803 (excluidos del análisis por cliente). El ticket (`total_paid_tax_incl`) ya viene neto de descuentos: bruto = pagado + cupón + promo POS. Marca BVS = fabricante 35; latas = fabricante 35 y categorías 534-539.
+- **Margen de producto:** (venta sin IVA de línea − coste de compra) / venta sin IVA, con `ps_order_detail.original_wholesale_price` (coste de catálogo al hacer el pedido) y solo sobre líneas con coste conocido (≈98% de la venta; Barakaldo ≈90%, se marca con asterisco). **Las líneas del TPV ya van netas de cupón y promo** (venta de líneas ≈ total pagado sin IVA ±0,2%, comprobado), así que no se resta ningún descuento más. Es margen de producto: no incluye personal, alquiler ni mermas. Margen típico sep-2026: 35-37% en todas las tiendas.
+- **Prueba estadística (v2):** retención observacional (esperado = tickets sin código del mismo mes y misma frecuencia previa: 1ª compra, 0, 1-2, 3-5, 6+ en 180 días). z = (reales − esperados) / √Σ(residuo por cliente)² (`ss60`), de modo que un cliente con varios tickets cuenta una sola vez; entre códigos se aplica la corrección de Holm (5%). Antes se usaba la binomial por ticket, que sobreestimaba la significación.
+- **Movimiento entre tiendas y web+tienda:** trimestres naturales, solo clientes identificados. Flujo: clientes con ticket en la tienda X en el trimestre Q−4 → en Q compran en la misma tienda / en otra (la de más tickets) / solo web / no se les ve. Web+tienda: cliente de tienda que además tiene pedido web válido en el mismo trimestre (mismo `id_customer`); el % es un mínimo (no enlaza cajas genéricas ni cuentas distintas). El trimestre en curso se avisa como incompleto.
+- **Límites que hay que decir siempre:** las promos del TPV (`ps_prestapos_discount_log`) solo existen desde el 11-jun-2026, así que el % de descuento anterior solo cuenta cupones y la retención usa una ventana fija desde esa fecha (el selector solo acota los meses de compra; si el periodo aún no tiene 60 días de seguimiento se muestra la ventana completa). ~44% de los tickets con promo van a caja genérica y no se pueden seguir (la cesta y el margen por código sí los incluyen). La retención y el gasto «solo tienda vs ambos canales» son observacionales, no un experimento. La hora es la del servidor de PrestaShop. La cesta compara cada código con la base completa sin ajustar. Ingreso y margen de producto, no beneficio.
+- **Pendiente (decisión de Jone, no del dashboard):** un grupo de control por tienda (holdout) para medir de verdad el efecto de las promos; y el modelo en Python que predice la recompra de cada cliente (análisis aparte, no tarjeta).
+
+---
+
 *Actualiza este archivo cuando cambie la arquitectura, las tablas, los workflows o las convenciones del proyecto.
