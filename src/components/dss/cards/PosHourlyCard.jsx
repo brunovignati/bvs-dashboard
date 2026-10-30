@@ -69,7 +69,7 @@ export default function PosHourlyCard({ delay }) {
       <table className="w-full text-[11px]">
         <thead>
           <tr className="text-[10px] uppercase tracking-wide text-muted-foreground text-right">
-            <th className="text-left font-normal pb-1">Tienda</th><th className="font-normal pb-1">Tickets</th><th className="font-normal pb-1">Día fuerte</th><th className="font-normal pb-1">Hora punta</th><th className="font-normal pb-1">Sábado</th>
+            <th className="text-left font-normal pb-1">Tienda</th><th className="font-normal pb-1">Compras</th><th className="font-normal pb-1">Día fuerte</th><th className="font-normal pb-1">Hora fuerte</th><th className="font-normal pb-1">Sábado</th>
           </tr>
         </thead>
         <tbody className="font-mono">
@@ -84,28 +84,28 @@ export default function PosHourlyCard({ delay }) {
           ))}
         </tbody>
       </table>
-      <p className="text-[10px] text-muted-foreground mt-1.5">Entre paréntesis, % de los tickets de la tienda que cae en ese día u hora.</p>
+      <p className="text-[10px] text-muted-foreground mt-1.5">El % es la parte de las compras de la tienda que cae en ese día u hora.</p>
     </div>
   ) : undefined;
 
   return (
-    <EvidenceCard sources={["prestashop"]}
-      question="¿A qué día y hora vende cada tienda?"
+    <EvidenceCard sources={["prestashop"]} kpiGrid
+      question="¿Qué días y a qué horas se vende más?"
       kpis={hasData ? [
-        { value: DOW_FULL[A.dayTop] ? DOW_FULL[A.dayTop][0].toUpperCase() + DOW_FULL[A.dayTop].slice(1) : "—", label: `Día más fuerte · ${share(A.dayT[A.dayTop] || 0).toFixed(0)}% de los tickets` },
-        { value: `${A.hourTop}:00–${A.hourTop + 1}:00`, label: `Hora punta · ${share(A.hourT[A.hourTop] || 0).toFixed(0)}% de los tickets` },
-        { value: `${share(top3).toFixed(0)}%`, label: "De los tickets caen en las 3 horas punta" },
+        { value: DOW_FULL[A.dayTop] ? DOW_FULL[A.dayTop][0].toUpperCase() + DOW_FULL[A.dayTop].slice(1) : "—", label: "Día más fuerte" },
+        { value: `${A.hourTop}–${A.hourTop + 1} h`, label: "Hora más fuerte" },
+        { value: `${share(top3).toFixed(0)}%`, label: "En sus 3 mejores horas" },
       ] : undefined}
-      answer={!hasData ? "Sin tickets de tienda en el periodo" : undefined}
-      context={hasData ? `${labelRange(rangeB)} · ${fmtNumber(A.total)} tickets${store !== "Todas" ? ` de ${store}` : " de todas las tiendas"}. Franja más fuerte: ${peak ? `${DOW_FULL[peak.d]} ${peak.h}:00 (${fmtNumber(peak.t)} tickets)` : "—"}. Hora del ticket según el servidor de PrestaShop.` : undefined}
+      answer={!hasData ? "Sin compras de tienda en el periodo" : undefined}
+      context={hasData ? `${labelRange(rangeB)} · ${fmtNumber(A.total)} compras${store !== "Todas" ? ` en ${store}` : " en todas las tiendas"}. El ${DOW_FULL[A.dayTop]} concentra el ${share(A.dayT[A.dayTop] || 0).toFixed(0)}% y de ${A.hourTop} a ${A.hourTop + 1} h cae el ${share(A.hourT[A.hourTop] || 0).toFixed(0)}%. Mejor momento: ${peak ? `${DOW_FULL[peak.d]} a las ${peak.h}:00` : "—"}. Cuanto más oscuro el cuadro, más compras.` : undefined}
       maturity={hasData ? "green" : "amber"}
       actions={[
-        { verb: "reforzar", rationale: peak ? `${DOW_FULL[peak.d]} a las ${peak.h}:00 es la franja con más tickets (${fmtNumber(peak.t)}): ahí hace falta personal en caja y el producto repuesto antes.` : "Refuerza personal en la franja con más tickets." },
-        { verb: "probar", rationale: valley ? `${DOW_FULL[valley.d]} a las ${valley.h}:00 es la franja abierta con menos tickets (${fmtNumber(valley.t)}): probar allí una acción (promo de franja, cita, consulta) y medir si sube frente al resto.` : "Prueba una acción en la franja abierta más floja y mide si sube." },
+        { verb: "reforzar", rationale: peak ? `${DOW_FULL[peak.d]} a las ${peak.h}:00 es el momento con más compras (${fmtNumber(peak.t)}). Ahí hace falta personal en caja y producto repuesto antes.` : "Refuerza el personal en el momento con más compras." },
+        { verb: "probar", rationale: valley ? `${DOW_FULL[valley.d]} a las ${valley.h}:00 es el momento con la tienda abierta y menos compras (${fmtNumber(valley.t)}). Prueba ahí una acción (promo de franja, cita, consulta) y mira si sube.` : "Prueba una acción en el momento abierto más flojo y mira si sube." },
       ]}
       delay={delay}
       altView={altView}
-      viewLabels={{ a: "Mapa día × hora", b: "Por tienda" }}
+      viewLabels={{ a: "Día y hora", b: "Por tienda" }}
       note="Fuente: PrestaShop · pos_hourly (tickets TPV válidos; día y hora de date_add, hora del servidor). Periodo = el del selector. Cada celda = tickets de ese día de la semana y hora sumados en el periodo; más oscuro = más tickets. Columnas = horas con actividad real (≥ 2% de los tickets). Valle = franja con menos tickets entre días y horas en los que la tienda abre con normalidad (excluye cierres y pausas)."
     >
       {hasData && (
@@ -122,7 +122,7 @@ export default function PosHourlyCard({ delay }) {
                   return (
                     <div key={h} className="h-6 rounded-sm text-[8px] flex items-center justify-center text-foreground/80"
                       style={{ background: heat(c?.t || 0, max) }}
-                      title={`${DOW_FULL[d]} ${h}:00 · ${fmtNumber(c?.t || 0)} tickets${c && c.t > 0 ? ` · ${(c.rev / c.t).toFixed(0)} € de ticket medio` : ""}`}>
+                      title={`${DOW_FULL[d]} ${h}:00 · ${fmtNumber(c?.t || 0)} compras${c && c.t > 0 ? ` · ${(c.rev / c.t).toFixed(0)} € de compra media` : ""}`}>
                       {c && c.t >= max * 0.35 ? c.t : ""}
                     </div>
                   );

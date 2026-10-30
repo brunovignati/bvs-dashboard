@@ -9,7 +9,9 @@ import EvidenceCard from "../EvidenceCard";
 import { usePosChannelQuarter, usePosMeta } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
 import { fmtNumber } from "@/lib/dashboardData";
-import { COLORS, GRID, AXIS, GOOD, num, qKey, qLabel, pickQ, currentQ, fmtPts } from "./posUtils";
+import { COLORS, GRID, AXIS, GOOD, num, qKey, qLabel, qLong, pickQ, currentQ } from "./posUtils";
+
+const TREND = "% que también compra en la web";
 
 const SEGS = [["solo_tienda", "Solo tienda"], ["ambos", "Tienda y web"], ["solo_web", "Solo web"]];
 
@@ -44,7 +46,7 @@ export default function PosChannelCard({ delay }) {
   const pNow = hasData ? pctBoth(cur) : null, pPrev = prev ? pctBoth(prev) : null;
 
   // Evolución: últimos 8 trimestres hasta el elegido (el trimestre en curso, si está incompleto, solo cuenta como el último)
-  const trend = keys.filter((k) => k <= (Q ?? -1) && (k < qNow || k === Q)).slice(-8).map((k) => ({ name: qLabel(k), "% de clientes de tienda que también compran en la web": Math.round(pctBoth(Qs[k]) * 10) / 10 }));
+  const trend = keys.filter((k) => k <= (Q ?? -1) && (k < qNow || k === Q)).slice(-8).map((k) => ({ name: qLabel(k), [TREND]: Math.round(pctBoth(Qs[k]) * 10) / 10 }));
 
   const bars = hasData ? SEGS.map(([k, l]) => {
     const s = cur[k];
@@ -67,19 +69,19 @@ export default function PosChannelCard({ delay }) {
   ) : undefined;
 
   return (
-    <EvidenceCard sources={["prestashop"]}
+    <EvidenceCard sources={["prestashop"]} kpiGrid
       question="¿Compra el cliente de tienda también en la web?"
       kpis={hasData ? [
-        { value: `${pNow.toFixed(1)}%`, label: `Clientes de tienda que también compran en la web · ${qLabel(Q)}`, delta: pPrev != null ? pNow - pPrev : undefined, deltaSuffix: " pts" },
-        { value: ratio ? `${ratio.toFixed(1)}×` : "—", label: "Gasto del cliente de los dos canales frente al de solo tienda" },
-        { value: fmtNumber(storeCust(cur)), label: "Clientes identificados de tienda en el trimestre" },
+        { value: `${pNow.toFixed(1)}%`, label: "También compra en la web", delta: pPrev != null ? pNow - pPrev : undefined, deltaSuffix: " pts" },
+        { value: ratio ? `${ratio.toFixed(1)}×` : "—", label: "Gasta más que solo tienda" },
+        { value: fmtNumber(storeCust(cur)), label: "Clientes de tienda" },
       ] : undefined}
       answer={!hasData ? "Aún no hay trimestres con datos de tienda y web" : undefined}
-      context={hasData ? `${qLabel(Q)}: ${fmtNumber(cur.ambos.c)} clientes compraron en tienda y en web, ${fmtNumber(cur.solo_tienda.c)} solo en tienda${cur.solo_web ? ` y ${fmtNumber(cur.solo_web.c)} solo en la web` : ""}. Gasto por cliente: ${vTienda ? `${vTienda.toFixed(0)} € solo tienda` : ""}${vBoth ? `, ${vBoth.toFixed(0)} € tienda y web` : ""}${vWeb ? `, ${vWeb.toFixed(0)} € solo web` : ""}.${pPrev != null ? ` Hace un año: ${pPrev.toFixed(1)}% (${fmtPts(pNow - pPrev)}).` : ""}${partial ? ` Ojo: ${qLabel(Q)} aún no ha terminado.` : ""}` : undefined}
-      maturity={hasData && !partial ? "amber" : "amber"}
+      context={hasData ? `${qLong(Q)}: de ${fmtNumber(storeCust(cur))} clientes de tienda, ${fmtNumber(cur.ambos.c)} también compraron en la web${pPrev != null ? ` (hace un año, ${pPrev.toFixed(1)}%)` : ""}. Gasto por cliente: ${vTienda ? `${vTienda.toFixed(0)} € solo tienda` : ""}${vBoth ? `, ${vBoth.toFixed(0)} € tienda y web` : ""}${vWeb ? `, ${vWeb.toFixed(0)} € solo web (${fmtNumber(cur.solo_web.c)} clientes)` : ""}.${partial ? ` Ojo: el ${qLong(Q)} aún no ha terminado.` : ""}` : undefined}
+      maturity="amber"
       actions={[
-        { verb: "probar", rationale: hasData ? `Solo ${pNow.toFixed(0)}% de los clientes de tienda compra también en la web, y quien lo hace gasta ${ratio ? `${ratio.toFixed(1)}×` : "más"} lo del solo tienda. Probar a invitar a un grupo de clientes de tienda a la web, dejando otro sin invitar para medir si el gasto sube de verdad.` : "Prueba a invitar a clientes de tienda a la web con un grupo de control." },
-        { verb: "vigilar", rationale: "Quien usa los dos canales ya era un cliente más activo: el gasto mayor no prueba que la web lo cause. Leer como oportunidad, no como efecto." },
+        { verb: "probar", rationale: hasData ? `Solo el ${pNow.toFixed(0)}% de los clientes de tienda compra también en la web, y quien lo hace gasta ${ratio ? `${ratio.toFixed(1)} veces` : "más"} lo que gasta quien solo viene a tienda. Prueba a invitar a un grupo de clientes de tienda a la web y deja otro sin invitar, para ver si el gasto sube de verdad.` : "Prueba a invitar a clientes de tienda a la web, dejando un grupo sin invitar para comparar." },
+        { verb: "vigilar", rationale: "Quien usa los dos canales ya era un cliente más activo: gastar más no prueba que la web lo cause. Léelo como una oportunidad, no como un efecto." },
       ]}
       delay={delay}
       altView={altView}
@@ -94,7 +96,7 @@ export default function PosChannelCard({ delay }) {
               <XAxis dataKey="name" {...AXIS} />
               <YAxis {...AXIS} domain={[0, "auto"]} tickFormatter={(v) => `${v}%`} />
               <Tooltip formatter={(v) => [`${v}%`, "Clientes de tienda que también compran en la web"]} labelStyle={{ fontSize: 10 }} />
-              <Line type="monotone" dataKey="% de clientes de tienda que también compran en la web" stroke={GOOD} strokeWidth={2} dot={{ r: 3 }} />
+              <Line type="monotone" dataKey={TREND} stroke={GOOD} strokeWidth={2} dot={{ r: 3 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>

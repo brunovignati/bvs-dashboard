@@ -64,35 +64,35 @@ export default function PosBasketCard({ delay }) {
           ))}
         </tbody>
       </table>
-      <p className="text-[10px] text-muted-foreground mt-1.5">% de los tickets que llevan esa marca. Arrastre = veces más (o menos) que sin código. Solo marcas con ≥ {MIN_BRAND_TK} tickets y ≥ 1% sin código.</p>
+      <p className="text-[10px] text-muted-foreground mt-1.5">% de las compras que llevan esa marca. Arrastre = cuántas veces más (o menos) aparece que sin código.</p>
     </div>
   ) : undefined;
 
   return (
-    <EvidenceCard sources={["prestashop"]}
-      question="¿Qué se lleva el cliente cuando usa un código?"
+    <EvidenceCard sources={["prestashop"]} kpiGrid
+      question="¿Qué compra el cliente cuando usa un código?"
       kpis={hasData ? [
-        { value: `${kpi.tk.toFixed(1)} €`, label: `Ticket medio sin IVA (sin código: ${kpi.tkBase.toFixed(1)} €)`, delta: pctChange(kpi.tk, kpi.tkBase) ?? undefined },
-        { value: kpi.u.toFixed(1), label: `Unidades por ticket (sin código: ${kpi.uBase.toFixed(1)})`, delta: pctChange(kpi.u, kpi.uBase) ?? undefined },
-        { value: bestLift ? cut(bestLift.brand, 18) : "—", label: bestLift ? `Marca que más se arrastra · ${bestLift.lift.toFixed(1)}× más que sin código` : "Marca que más se arrastra" },
+        { value: `${kpi.tk.toFixed(1)} €`, label: "Compra media", delta: pctChange(kpi.tk, kpi.tkBase) ?? undefined },
+        { value: kpi.u.toFixed(1), label: "Unidades por compra", delta: pctChange(kpi.u, kpi.uBase) ?? undefined },
+        { value: bestLift ? `${bestLift.lift.toFixed(1)}×` : "—", label: bestLift ? `Más ${cut(bestLift.brand, 14)}` : "Marca que más arrastra" },
       ] : undefined}
       answer={!hasData ? "Aún no hay cesta por código" : undefined}
-      context={hasData ? `${code}: ${fmtNumber(num(t.tickets))} tickets (todos los clientes) frente a ${fmtNumber(num(base.tickets))} sin código. Ticket medio ${fmtG(pctChange(kpi.tk, kpi.tkBase))} y unidades por ticket ${fmtG(pctChange(kpi.u, kpi.uBase))} frente a sin código. El ticket ya va neto del descuento.` : undefined}
+      context={hasData ? `Con ${code} (${fmtNumber(num(t.tickets))} compras): compra media ${fmtG(pctChange(kpi.tk, kpi.tkBase))} y unidades por compra ${fmtG(pctChange(kpi.u, kpi.uBase))} frente a una compra sin código (${kpi.tkBase.toFixed(1)} € y ${kpi.uBase.toFixed(1)} unidades, ${fmtNumber(num(base.tickets))} compras). La compra ya lleva el descuento aplicado.${bestLift ? ` ${cut(bestLift.brand, 24)} aparece ${bestLift.lift.toFixed(1)} veces más que sin código.` : ""}` : undefined}
       maturity="amber"
       actions={[
-        { verb: "aprovechar", rationale: bestLift ? `Con ${code}, ${cut(bestLift.brand, 24)} aparece ${bestLift.lift.toFixed(1)}× más que sin código: es la marca natural para completar la oferta (regalo o segunda unidad) en vez de descontar todo el ticket.` : "Busca la marca que más se arrastra con cada código y úsala como complemento de la oferta." },
-        { verb: "revisar", rationale: hasData && kpi.tk < kpi.tkBase ? `Con ${code} el ticket medio es menor que sin código (${kpi.tk.toFixed(1)} € frente a ${kpi.tkBase.toFixed(1)} €): el descuento no está subiendo la cesta.` : "Comprueba que el código sube la cesta y no solo regala descuento a quien ya compraba." },
+        { verb: "aprovechar", rationale: bestLift ? `Con ${code}, ${cut(bestLift.brand, 24)} aparece ${bestLift.lift.toFixed(1)}× más que sin código: es la marca natural para completar la oferta (regalo o segunda unidad) en vez de descontar toda la compra.` : "Busca la marca que más se arrastra con cada código y úsala para completar la oferta." },
+        { verb: "revisar", rationale: hasData && kpi.tk < kpi.tkBase ? `Con ${code} la compra media es menor que sin código (${kpi.tk.toFixed(1)} € frente a ${kpi.tkBase.toFixed(1)} €): el descuento no está subiendo la compra.` : "Comprueba que el código sube la compra y no solo regala descuento a quien ya compraba." },
       ]}
       delay={delay}
       altView={altView}
-      viewLabels={{ a: "Marcas más frecuentes", b: "Arrastre por marca" }}
+      viewLabels={{ a: "Marcas más frecuentes", b: "Qué marca arrastra" }}
       note="Fuente: PrestaShop · pos_basket + pos_meta. Tickets TPV válidos desde 11-jun-2026 (inicio del registro de promos POS), todos los clientes. 'Sin código' = tickets sin ningún cupón ni promo POS (se excluyen también los de vale de devolución y empleado). Marca = fabricante del producto; 'Sin marca' = productos sin fabricante. Un ticket con varios códigos cuenta en cada uno. El código se compara con la base completa sin ajustar por tienda, cliente ni mes: describe qué se vende con el código, no su causa. Solo se guardan los códigos con ≥ 100 tickets y sus 12 marcas más frecuentes."
     >
       {hasData && (
         <div>
           <div className="mb-2">
             <select value={code} onChange={(e) => setSel(e.target.value)} className="text-xs bg-background border border-border rounded px-2 py-1 max-w-full">
-              {codes.map((c) => <option key={c.code} value={c.code}>{cut(c.code, 40)} · {fmtNumber(num(c.tickets))} tk</option>)}
+              {codes.map((c) => <option key={c.code} value={c.code}>{cut(c.code, 40)} · {fmtNumber(num(c.tickets))} compras</option>)}
             </select>
           </div>
           <div className="flex gap-3 text-[10px] text-muted-foreground mb-1.5">

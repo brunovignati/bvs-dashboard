@@ -10,7 +10,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import EvidenceCard from "../EvidenceCard";
 import { usePosCodeRetention, usePosMeta } from "@/lib/useEntities";
 import { fmtNumber } from "@/lib/dashboardData";
-import { GRID, AXIS, GOOD, BAD, MUTED, num, fmtPts, isNotPromo, marginPct, marginEur, retentionZ, pTwoSided, holmSig } from "./posUtils";
+import { GRID, AXIS, GOOD, BAD, MUTED, num, fmtPts, fmtPuntos, isNotPromo, marginPct, marginEur, retentionZ, pTwoSided, holmSig } from "./posUtils";
 
 const MIN_N = 100;
 const cut = (s, n = 24) => (s.length > n ? s.slice(0, n - 1) + "…" : s);
@@ -56,16 +56,16 @@ export default function PosCodeSuccessCard({ delay }) {
         <thead>
           <tr className="text-[10px] uppercase tracking-wide text-muted-foreground text-right">
             <th className="text-left font-normal pb-1">Código</th>
-            <th className="font-normal pb-1">Tickets</th>
+            <th className="font-normal pb-1">Compras</th>
             <th className="font-normal pb-1">Margen</th>
-            <th className="font-normal pb-1">€ margen/tk</th>
-            <th className="font-normal pb-1" title="Gasto medio del cliente en los 60 días siguientes frente a lo esperado sin código">Gasto 60 d</th>
+            <th className="font-normal pb-1" title="Margen en euros de cada compra con este código">Margen por compra</th>
+            <th className="font-normal pb-1" title="Gasto medio del cliente en los 60 días siguientes; entre paréntesis, lo que gastaría sin código">Gasto en 60 días</th>
           </tr>
         </thead>
         <tbody className="font-mono">
           {mb && mgBase != null && (
             <tr className="text-right border-b border-border/60 text-foreground">
-              <td className="text-left py-1 font-sans font-medium">Sin código (base)</td>
+              <td className="text-left py-1 font-sans font-medium">Sin código</td>
               <td>{fmtNumber(num(mb.tickets))}</td>
               <td>{mgBase.toFixed(1)}%</td>
               <td>{eurBase != null ? `${eurBase.toFixed(2)} €` : "—"}</td>
@@ -86,30 +86,30 @@ export default function PosCodeSuccessCard({ delay }) {
           })}
         </tbody>
       </table>
-      <p className="text-[10px] text-muted-foreground mt-1.5">Margen de producto sobre toda la venta del código (también caja genérica). Entre paréntesis, gasto esperado sin código.</p>
+      <p className="text-[10px] text-muted-foreground mt-1.5">Margen sobre toda la venta del código. Entre paréntesis, lo que gastaría el cliente sin código.</p>
     </div>
   ) : undefined;
 
   return (
-    <EvidenceCard sources={["prestashop"]}
+    <EvidenceCard sources={["prestashop"]} kpiGrid
       question="¿Qué códigos hacen volver más al cliente?"
       kpis={hasData ? [
-        { value: best ? cut(best.code, 20) : "Ninguno claro", label: "Mejor código (vuelta a 60 días)" },
-        { value: `${winners.length} / ${losers.length}`, label: "Suben / bajan la vuelta de forma clara" },
-        { value: fmtNumber(rows.length), label: `Códigos medidos (≥ ${MIN_N} tickets)` },
+        { value: fmtNumber(winners.length), label: "Hacen volver más" },
+        { value: fmtNumber(losers.length), label: "Hacen volver menos" },
+        { value: fmtNumber(rows.length), label: "Códigos medidos" },
       ] : undefined}
-      answer={!hasData ? "Aún no hay códigos con seguimiento suficiente" : undefined}
+      answer={!hasData ? "Aún no hay códigos con datos suficientes" : undefined}
       context={hasData
-        ? `Diferencia en puntos entre el % que vuelve en 60 días con el código y el % esperado sin él. ${best ? `Mejor: ${best.code} (${fmtPts(best.diff)}${best.mg != null ? `, ${mgTxt(best)}` : ""}).` : "Ninguno sube la vuelta de forma clara."} ${worst ? `Peor: ${worst.code} (${fmtPts(worst.diff)}).` : ""} Gris = diferencia dentro del ruido (prueba por cliente con corrección de Holm). Solo clientes identificados; ventana fija jun–oct 2026.`
+        ? `${best ? `Mejor: ${best.code} (${fmtPuntos(best.diff)}${best.mg != null ? `, ${mgTxt(best)}` : ""}).` : "Ninguno hace volver más al cliente."} ${worst ? `Peor: ${worst.code} (${fmtPuntos(worst.diff)}).` : ""} Cada barra: puntos más (o menos) de clientes que vuelven en 60 días frente a quien no usó código. Gris = sin diferencia clara.`
         : undefined}
       maturity="amber"
       actions={[
-        { verb: "mantener", rationale: winners.length ? `Los códigos en verde (${winners.slice(0, 3).map((w) => w.code).join(", ")}) traen al cliente de vuelta más que lo normal incluso tras la corrección por comparar varios códigos a la vez: son los candidatos a repetir. Mira su margen en la vista B antes de ampliarlos.` : "Ningún código sube la vuelta de forma clara: el descuento, por sí solo, no está fidelizando." },
-        { verb: "revisar", rationale: losers.length ? `Los códigos en rojo (${losers.slice(0, 3).map((w) => w.code).join(", ")}) adelantan compras: el cliente compró con descuento y vuelve menos. Sustituir por regalo o venta cruzada.` : "Vigila los códigos que adelantan compras sin aumentar la vuelta." },
+        { verb: "mantener", rationale: winners.length ? `Los códigos en verde (${winners.slice(0, 3).map((w) => w.code).join(", ")}) traen de vuelta al cliente más de lo normal: son los que merece repetir. Mira su margen en «Margen y gasto» antes de ampliarlos.` : "Ningún código hace volver más al cliente: el descuento, por sí solo, no fideliza." },
+        { verb: "revisar", rationale: losers.length ? `Los códigos en rojo (${losers.slice(0, 3).map((w) => w.code).join(", ")}) adelantan compras: el cliente compra con descuento y vuelve menos. Cámbialos por un regalo o una venta cruzada.` : "Vigila los códigos que adelantan compras sin hacer volver más al cliente." },
       ]}
       delay={delay}
       altView={altView}
-      viewLabels={{ a: "Vuelta a 60 días", b: "Margen y gasto" }}
+      viewLabels={{ a: "Cuánto vuelven", b: "Margen y gasto" }}
       note="Fuente: PrestaShop · pos_code_retention + pos_meta. Método observacional: por ticket con código, se mira si el cliente vuelve a cualquier tienda en 60 días y se compara con lo esperado para tickets SIN código del mismo mes y la misma frecuencia de compra previa (1ª compra, 0, 1-2, 3-5, 6+ tickets en 180 días). Prueba: z = (reales − esperados) / √Σ(residuo por cliente)², de modo que un cliente con varios tickets cuenta una sola vez; con la corrección de Holm porque se comparan varios códigos a la vez (5%). Gris = no distinguible del azar. Margen de producto = (venta sin IVA − coste de compra de catálogo) / venta sin IVA, línea ya neta de descuento; sobre todos los tickets del código. Excluye clientes de caja genérica en la vuelta (≈44% de los tickets con promo, no rastreables), vales de devolución y empleado. Ventana desde 11-jun-2026 (inicio del registro de promos POS). No es un experimento: orienta, no prueba causalidad."
     >
       {hasData && (
@@ -121,7 +121,7 @@ export default function PosCodeSuccessCard({ delay }) {
               <YAxis type="category" dataKey="name" width={150} {...AXIS} />
               <ReferenceLine x={0} stroke={MUTED} />
               <Tooltip
-                formatter={(v, n, p) => [`${p?.payload?.real.toFixed(1)}% vuelve · esperado ${p?.payload?.exp.toFixed(1)}% · ${fmtNumber(p?.payload?.n)} tickets medidos · ${fmtNumber(p?.payload?.customers)} clientes`, `${fmtPts(v)}${p?.payload?.sig ? "" : " (ruido)"}`]}
+                formatter={(v, n, p) => [`${p?.payload?.real.toFixed(1)}% vuelve · ${p?.payload?.exp.toFixed(1)}% sin código · ${fmtNumber(p?.payload?.n)} compras · ${fmtNumber(p?.payload?.customers)} clientes`, `${fmtPuntos(v)}${p?.payload?.sig ? "" : " (sin diferencia clara)"}`]}
                 labelFormatter={(l, p) => p?.[0]?.payload?.code || l} labelStyle={{ fontSize: 10 }} />
               <Bar dataKey="diff" radius={[3, 3, 3, 3]}>
                 {rows.map((r, i) => <Cell key={i} fill={barColor(r)} />)}

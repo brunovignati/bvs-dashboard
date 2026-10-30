@@ -10,7 +10,7 @@ import { useComparison } from "@/lib/ComparisonContext";
 import { fmtCurrency, fmtNumber } from "@/lib/dashboardData";
 import { COLORS, GRID, AXIS, num, ym, ymLabel, isNotPromo, lastMonths } from "./posUtils";
 
-const SRC = { cupon: "cupón", promo_pos: "promo TPV" };
+const SRC = { cupon: "cupón", promo_pos: "promo de tienda" };
 const cut = (s, n = 26) => (s.length > n ? s.slice(0, n - 1) + "…" : s);
 
 export default function PosCodesCard({ delay }) {
@@ -51,7 +51,7 @@ export default function PosCodesCard({ delay }) {
           <CartesianGrid strokeDasharray="3 3" stroke={GRID} vertical={false} />
           <XAxis dataKey="name" {...AXIS} interval={Math.max(0, Math.floor(evo.length / 8))} />
           <YAxis {...AXIS} />
-          <Tooltip formatter={(v, n) => [`${fmtNumber(v)} tickets`, n]} labelStyle={{ fontSize: 10 }} />
+          <Tooltip formatter={(v, n) => [`${fmtNumber(v)} usos`, n]} labelStyle={{ fontSize: 10 }} />
           <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
           {top5.map((c, i) => <Line key={c} type="monotone" dataKey={cut(c, 22)} stroke={COLORS[i % COLORS.length]} strokeWidth={2} dot={false} />)}
         </LineChart>
@@ -60,23 +60,23 @@ export default function PosCodesCard({ delay }) {
   ) : undefined;
 
   return (
-    <EvidenceCard sources={["prestashop"]}
-      question="¿Qué códigos de descuento se usan más en tienda?"
+    <EvidenceCard sources={["prestashop"]} kpiGrid
+      question="¿Qué códigos se usan más en tienda?"
       kpis={hasData ? [
-        { value: cut(top.code, 20), label: `Más usado · ${labelRange(rangeB)}` },
-        { value: fmtNumber(top.tickets), label: "Usos del más usado" },
-        { value: fmtCurrency(totalDto), label: `Descontado en ${fmtNumber(all.length)} códigos` },
+        { value: cut(top.code, 18), label: "Más usado" },
+        { value: fmtNumber(top.tickets), label: `Usos de ${cut(top.code, 14)}` },
+        { value: fmtCurrency(totalDto), label: `Descontado en total` },
       ] : undefined}
       answer={!hasData ? "Sin códigos usados en el periodo" : undefined}
-      context={hasData ? `Los 3 primeros reúnen el ${top3Share.toFixed(0)}% de los usos. Un ticket puede llevar más de un código. Excluye vales de devolución y descuento de empleado.` : undefined}
+      context={hasData ? `${labelRange(rangeB)} · ${fmtNumber(all.length)} códigos distintos. Los 3 más usados suman el ${top3Share.toFixed(0)}% de los usos. No cuenta vales de devolución ni descuento de empleado.` : undefined}
       maturity="amber"
       actions={[
-        { verb: "revisar", rationale: top ? `${top.code} concentra los usos: confirmar en la tarjeta de éxito si además hace volver al cliente antes de repetirlo.` : "Revisa qué códigos concentran los usos." },
-        { verb: "limpiar", rationale: "Los códigos con muy pocos usos añaden complejidad en caja sin mover ventas: candidatos a retirar." },
+        { verb: "revisar", rationale: top ? `${top.code} concentra los usos. Antes de repetirlo, mira en «¿Qué códigos hacen volver más al cliente?» si además hace volver al cliente.` : "Revisa qué códigos concentran los usos." },
+        { verb: "limpiar", rationale: "Los códigos que casi nadie usa complican la caja y no mueven ventas: son candidatos a retirar." },
       ]}
       delay={delay}
       altView={altView}
-      viewLabels={{ a: "Ranking", b: "Por meses" }}
+      viewLabels={{ a: "Ranking", b: "Mes a mes" }}
       note="Fuente: PrestaShop · pos_codes_monthly. Cupones de caja (ps_order_cart_rule, normalizados: '20% apertura', 'Descuento manual en caja') + promos del TPV (ps_prestapos_discount_log, desde 11-jun-2026, una por línea de descuento). Usos = tickets que llevan el código. % descuento = descuento / (ticket pagado + descuento). Vista 'Por meses': tickets mensuales de los 5 códigos líderes del periodo, 12 meses hasta su fin."
     >
       {hasData && (
@@ -87,7 +87,7 @@ export default function PosCodesCard({ delay }) {
               <XAxis type="number" {...AXIS} tick={{ fontSize: 8, fill: AXIS.tick.fill }} />
               <YAxis type="category" dataKey="name" width={150} {...AXIS} />
               <Tooltip
-                formatter={(v, n, p) => [`${fmtNumber(v)} usos · ${fmtCurrency(p?.payload?.discount)} descontados · ${p?.payload?.avgDto.toFixed(2)} € por uso · ${p?.payload?.pct.toFixed(1)}% del ticket`, SRC[p?.payload?.src] || "código"]}
+                formatter={(v, n, p) => [`${fmtNumber(v)} usos · ${fmtCurrency(p?.payload?.discount)} descontados · ${p?.payload?.avgDto.toFixed(2)} € por uso · ${p?.payload?.pct.toFixed(1)}% de la compra`, SRC[p?.payload?.src] || "código"]}
                 labelFormatter={(l, p) => p?.[0]?.payload?.code || l} labelStyle={{ fontSize: 10 }} />
               <Bar dataKey="tickets" radius={[0, 4, 4, 0]}>
                 {ranked.map((r, i) => <Cell key={i} fill={r.src === "promo_pos" ? COLORS[3] : COLORS[0]} />)}
@@ -96,7 +96,7 @@ export default function PosCodesCard({ delay }) {
           </ResponsiveContainer>
           <div className="flex gap-3 justify-end text-[10px] text-muted-foreground -mt-1">
             <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ background: COLORS[0] }} />cupón de caja</span>
-            <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ background: COLORS[3] }} />promo del TPV</span>
+            <span className="inline-flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ background: COLORS[3] }} />promo de tienda</span>
           </div>
         </div>
       )}

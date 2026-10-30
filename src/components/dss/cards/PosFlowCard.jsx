@@ -8,9 +8,9 @@ import EvidenceCard from "../EvidenceCard";
 import { usePosFlow, usePosMeta } from "@/lib/useEntities";
 import { useComparison } from "@/lib/ComparisonContext";
 import { fmtNumber } from "@/lib/dashboardData";
-import { COLORS, GOOD, MUTED, num, qKey, qLabel, pickQ, currentQ } from "./posUtils";
+import { COLORS, GOOD, MUTED, num, qKey, qLabel, qLong, pickQ, currentQ } from "./posUtils";
 
-const KINDS = [["same", "Misma tienda", GOOD], ["other", "Otra tienda", COLORS[0]], ["web", "Solo web", COLORS[3]], ["none", "No se les ve", MUTED]];
+const KINDS = [["same", "Misma tienda", GOOD], ["other", "Otra tienda", COLORS[0]], ["web", "Solo web", COLORS[3]], ["none", "Sin compra a su nombre", MUTED]];
 const MIN_BASE = 100;
 
 export default function PosFlowCard({ delay }) {
@@ -53,7 +53,7 @@ export default function PosFlowCard({ delay }) {
       <table className="w-full text-[11px]">
         <thead>
           <tr className="text-[10px] uppercase tracking-wide text-muted-foreground text-right">
-            <th className="text-left font-normal pb-1">Tienda</th><th className="font-normal pb-1">Pierde hacia otras</th><th className="font-normal pb-1">Gana desde otras</th><th className="font-normal pb-1">Saldo</th>
+            <th className="text-left font-normal pb-1">Tienda</th><th className="font-normal pb-1">Se van a otra</th><th className="font-normal pb-1">Llegan de otra</th><th className="font-normal pb-1">Saldo</th>
           </tr>
         </thead>
         <tbody className="font-mono">
@@ -66,30 +66,30 @@ export default function PosFlowCard({ delay }) {
         </tbody>
       </table>
       <div className="text-[11px]">
-        <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Trasvases más grandes (clientes)</div>
+        <div className="text-[10px] uppercase tracking-wide text-muted-foreground mb-1">Quién pasa a qué tienda (clientes)</div>
         {topPairs.map((p, i) => <div key={i} className="flex justify-between font-mono"><span className="font-sans">{p.from} → {p.to}</span><span>{fmtNumber(p.n)}</span></div>)}
       </div>
     </div>
   ) : undefined;
 
   return (
-    <EvidenceCard sources={["prestashop"]}
-      question="¿Dónde compra hoy el cliente que compraba en cada tienda hace un año?"
+    <EvidenceCard sources={["prestashop"]} kpiGrid
+      question="¿Siguen comprando en su tienda los clientes de hace un año?"
       kpis={hasData ? [
-        { value: `${pct(T.same, T.base).toFixed(0)}%`, label: "Sigue comprando en su misma tienda" },
-        { value: `${pct(T.other, T.base).toFixed(0)}%`, label: "Compra ahora en otra tienda" },
-        { value: `${pct(T.web, T.base).toFixed(0)}%`, label: "Compra solo en la web" },
+        { value: `${pct(T.same, T.base).toFixed(0)}%`, label: "Sigue en su tienda" },
+        { value: `${pct(T.other, T.base).toFixed(0)}%`, label: "Va a otra tienda" },
+        { value: `${pct(T.web, T.base).toFixed(0)}%`, label: "Solo compra en la web" },
       ] : undefined}
       answer={!hasData ? "Aún no hay trimestres comparables (hace falta un año de histórico)" : undefined}
-      context={hasData ? `${qLabel(Q)} frente a ${qLabel(Q - 4)}: ${fmtNumber(T.base)} clientes identificados que compraron en una tienda en ${qLabel(Q - 4)}.${worst ? ` Cede más a otra tienda: ${worst.store} (${pct(worst.other, worst.base).toFixed(0)}% de su clientela${worstTo ? `, sobre todo hacia ${worstTo[0]}` : ""}).` : ""}${partial ? ` Ojo: ${qLabel(Q)} aún no ha terminado, 'No se les ve' está inflado.` : ""} Un cliente que paga como caja genérica no se puede seguir: 'No se les ve' no significa que se haya perdido.` : undefined}
+      context={hasData ? `De ${fmtNumber(T.base)} clientes que compraron en el ${qLong(Q - 4)}, esto es lo que hacen en el ${qLong(Q)}.${worst ? ` La que más cede: ${worst.store} (el ${pct(worst.other, worst.base).toFixed(0)}% se va a otra tienda${worstTo ? `, sobre todo a ${worstTo[0]}` : ""}).` : ""}${partial ? ` Ojo: el ${qLong(Q)} aún no ha terminado.` : ""} «Sin compra a su nombre» no es perderlos: pueden pagar como cliente genérico.` : undefined}
       maturity={hasData && !partial ? "green" : "amber"}
       actions={[
-        { verb: "revisar", rationale: worst ? `${worst.store} pierde ${pct(worst.other, worst.base).toFixed(0)}% de su clientela hacia otra tienda${worstTo ? ` (sobre todo ${worstTo[0]})` : ""}: mirar en la tarjeta de zona si comparten barrio antes de duplicar promos en las dos.` : "Mira qué tienda cede más clientes a otra y si comparten barrio." },
-        { verb: "medir", rationale: "El movimiento entre tiendas no es pérdida si el cliente sigue comprando en BVS: el saldo (vista B) dice quién gana y quién cede; la vuelta total se lee en 'Misma tienda' + 'Otra tienda'." },
+        { verb: "revisar", rationale: worst ? `${worst.store} pierde el ${pct(worst.other, worst.base).toFixed(0)}% de sus clientes hacia otra tienda${worstTo ? ` (sobre todo ${worstTo[0]})` : ""}. Mira en la tarjeta de zonas si comparten barrio antes de duplicar promos en las dos.` : "Mira qué tienda cede más clientes a otra y si comparten barrio." },
+        { verb: "medir", rationale: "Cambiar de tienda no es perder al cliente si sigue comprando en BVS. La vista «Quién gana y quién pierde» muestra el saldo de cada tienda." },
       ]}
       delay={delay}
       altView={altView}
-      viewLabels={{ a: "Por tienda", b: "Saldo entre tiendas" }}
+      viewLabels={{ a: "Por tienda", b: "Quién gana y quién pierde" }}
       note={`Fuente: PrestaShop · pos_flow. Base = clientes identificados (no caja genérica) con ticket en la tienda X en ${Q != null ? qLabel(Q - 4) : "el mismo trimestre del año anterior"}; si compraron en varias, cuentan en cada una. Destino en ${Q != null ? qLabel(Q) : "el trimestre"}: misma tienda = compró en X; otra tienda = no en X pero sí en otra (la de más tickets); solo web = solo pedidos web; no se les ve = ninguna compra identificada. Trimestres naturales; el trimestre es el del fin del periodo del selector. Tiendas con menos de ${MIN_BASE} clientes no se muestran.`}
     >
       {hasData && (

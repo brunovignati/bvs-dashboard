@@ -19,6 +19,8 @@ export const pctChange = (cur, prev) => (prev > 0 ? ((cur - prev) / prev) * 100 
 export const fmtG = (g) => (g == null ? "—" : `${g >= 0 ? "+" : ""}${g.toFixed(0)}%`);
 export const gColor = (g) => (g == null ? MUTED : g >= 0 ? GOOD : BAD);
 export const fmtPts = (p) => (p == null ? "—" : `${p >= 0 ? "+" : ""}${p.toFixed(1)} pts`);
+// Igual, pero con la palabra entera para las frases (los KPI usan «pts» para que quepan).
+export const fmtPuntos = (p) => (p == null ? "—" : `${p >= 0 ? "+" : ""}${p.toFixed(1)} puntos`);
 export const eur = (v, d = 0) => `${num(v).toLocaleString("es-ES", { minimumFractionDigits: d, maximumFractionDigits: d })} €`;
 
 // Mes como entero (año*12 + mes) y su etiqueta corta ("Sep 26").
@@ -93,6 +95,8 @@ export function retentionZ(real, exp, n, ss) {
 // ── Trimestres y días ────────────────────────────────────────────────────────────────────────────
 export const qKey = (r) => num(r.year) * 4 + num(r.quarter) - 1;
 export const qLabel = (k) => `T${(k % 4) + 1} ${String(Math.floor(k / 4)).slice(2)}`;
+// Trimestre en palabras para las frases: «3.er trimestre 2026».
+export const qLong = (k) => `${(k % 4) + 1}.${(k % 4) === 2 ? "er" : "º"} trimestre ${Math.floor(k / 4)}`;
 export const DOW = ["", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 export const DOW_FULL = ["", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"];
 

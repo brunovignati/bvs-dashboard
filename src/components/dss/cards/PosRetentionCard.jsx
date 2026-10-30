@@ -40,14 +40,14 @@ export default function PosRetentionCard({ delay }) {
   const ns = sum(used, "ns") || 1;
   const spend = sum(used, "s60") / ns, spendExp = sum(used, "es60") / ns;
 
-  const chart = hz.filter((x) => x.n >= 50).map((x) => ({ name: `${x.h} días`, "Con código": Math.round(x.real * 10) / 10, "Esperado sin código": Math.round(x.exp * 10) / 10, n: x.n }));
+  const chart = hz.filter((x) => x.n >= 50).map((x) => ({ name: `En ${x.h} días`, "Con código": Math.round(x.real * 10) / 10, "Sin código": Math.round(x.exp * 10) / 10, n: x.n }));
 
   // ── Vista B: diferencia en puntos por mes de compra (todos los meses con seguimiento hasta el corte) ──
   const cutoff = rangeB.end.year * 12 + rangeB.end.month;
   const evo = [...con].filter((r) => ym(r) <= cutoff && num(r.n30) >= 50).sort((a, b) => ym(a) - ym(b)).map((r) => ({
     name: ymLabel(ym(r)),
-    "A 30 días": num(r.n30) > 0 ? Math.round(((num(r.r30) - num(r.e30)) / num(r.n30)) * 1000) / 10 : 0,
-    "A 60 días": num(r.n60) >= 50 ? Math.round(((num(r.r60) - num(r.e60)) / num(r.n60)) * 1000) / 10 : null,
+    "En 30 días": num(r.n30) > 0 ? Math.round(((num(r.r30) - num(r.e30)) / num(r.n30)) * 1000) / 10 : 0,
+    "En 60 días": num(r.n60) >= 50 ? Math.round(((num(r.r60) - num(r.e60)) / num(r.n60)) * 1000) / 10 : null,
   }));
   const altView = evo.length >= 1 ? (
     <div style={{ height: 240 }}>
@@ -57,35 +57,35 @@ export default function PosRetentionCard({ delay }) {
           <XAxis dataKey="name" {...AXIS} />
           <YAxis {...AXIS} tickFormatter={(v) => `${v > 0 ? "+" : ""}${v}`} />
           <ReferenceLine y={0} stroke={MUTED} />
-          <Tooltip formatter={(v, n) => [v == null ? "sin seguimiento aún" : fmtPts(v), n]} labelStyle={{ fontSize: 10 }} />
+          <Tooltip formatter={(v, n) => [v == null ? "aún sin datos" : `${fmtPts(v)} frente a sin código`, n]} labelStyle={{ fontSize: 10 }} />
           <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
-          <Bar dataKey="A 30 días" fill={COLORS[0]} radius={[3, 3, 0, 0]} />
-          <Bar dataKey="A 60 días" fill={COLORS[3]} radius={[3, 3, 0, 0]} />
+          <Bar dataKey="En 30 días" fill={COLORS[0]} radius={[3, 3, 0, 0]} />
+          <Bar dataKey="En 60 días" fill={COLORS[3]} radius={[3, 3, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>
   ) : undefined;
 
   return (
-    <EvidenceCard sources={["prestashop"]}
+    <EvidenceCard sources={["prestashop"]} kpiGrid
       question="¿Vuelven más los clientes que usaron un código?"
       kpis={hasData ? [
-        { value: `${h60.real.toFixed(1)}%`, label: "Vuelven en 60 días con código" },
-        { value: `${h60.exp.toFixed(1)}%`, label: "Esperado sin código" },
-        { value: fmtPts(h60.diff), label: clear ? "Diferencia clara" : "Diferencia (ruido)" },
+        { value: `${h60.real.toFixed(1)}%`, label: "Vuelven con código" },
+        { value: `${h60.exp.toFixed(1)}%`, label: "Vuelven sin código" },
+        { value: fmtPts(h60.diff), label: clear ? "Diferencia clara" : "Sin diferencia clara" },
       ] : undefined}
       answer={!hasData ? "Aún no hay 60 días de seguimiento en este periodo" : undefined}
       context={hasData
-        ? `${enough ? labelRange(rangeB) : `Ventana completa ${winLabel} (el periodo elegido aún no tiene seguimiento)`} · ${fmtNumber(h60.n)} tickets con código y cliente identificado. Gasto en los 60 días siguientes: ${spend.toFixed(0)} € con código frente a ${spendExp.toFixed(0)} € esperado. ${clear ? "" : "La diferencia está dentro del ruido: el código, en conjunto, no cambia si el cliente vuelve."}`
+        ? `«Vuelven» = compran otra vez en cualquier tienda en 60 días. ${enough ? labelRange(rangeB) : `${winLabel} (el periodo elegido es muy reciente para saberlo)`} · ${fmtNumber(h60.n)} compras con código. Gasto en esos 60 días: ${spend.toFixed(0)} € con código y ${spendExp.toFixed(0)} € sin código.${clear ? "" : " En conjunto, el código no cambia si el cliente vuelve."}`
         : undefined}
       maturity="amber"
       actions={[
-        { verb: "decidir", rationale: hasData && !clear ? "En conjunto el descuento no hace volver más: usarlo para captar o mover stock, no como herramienta de fidelización. Mirar la tarjeta de códigos para ver cuáles sí funcionan." : "Hay efecto claro: mirar la tarjeta de códigos para saber cuáles lo aportan y repetirlos." },
-        { verb: "esperar", rationale: "El seguimiento crece cada semana (el registro de promos empieza el 11-jun-2026): releer cuando los meses recientes completen 60 y 90 días." },
+        { verb: "decidir", rationale: hasData && !clear ? "En conjunto el descuento no hace volver más: úsalo para atraer clientes o mover stock, no para fidelizar. Mira la tarjeta de códigos para ver cuáles sí funcionan." : "Hay un efecto claro: mira la tarjeta de códigos para saber cuáles lo aportan y repetirlos." },
+        { verb: "esperar", rationale: "Los datos crecen cada semana (las promos se anotan desde el 11-jun-2026). Vuelve a mirar cuando los meses recientes tengan 60 y 90 días." },
       ]}
       delay={delay}
       altView={altView}
-      viewLabels={{ a: "Con vs sin código", b: "Por mes" }}
+      viewLabels={{ a: "Con y sin código", b: "Mes a mes" }}
       note="Fuente: PrestaShop · pos_retention_monthly. Observacional: por ticket con código (cupón o promo TPV), el cliente 'vuelve' si compra de nuevo en cualquier tienda en 30/60/90 días. Esperado = tasa de los tickets SIN código del mismo mes y misma frecuencia previa (1ª compra, 0, 1-2, 3-5, 6+ tickets en 180 días). Solo clientes identificados (los tickets a caja genérica, ≈44% de los de promo, no se pueden seguir). Excluye empleado y vales de devolución. Ventana desde 11-jun-2026. Diferencia clara = |z| ≥ 2 con errores agrupados por cliente (un cliente con varios tickets cuenta una sola vez)."
     >
       {hasData && (
@@ -98,7 +98,7 @@ export default function PosRetentionCard({ delay }) {
               <Tooltip formatter={(v, n) => [`${v}%`, n]} labelStyle={{ fontSize: 10 }} />
               <Legend iconType="circle" iconSize={7} wrapperStyle={{ fontSize: 10 }} />
               <Bar dataKey="Con código" fill={COLORS[0]} radius={[3, 3, 0, 0]} />
-              <Bar dataKey="Esperado sin código" fill={COLORS[1]} radius={[3, 3, 0, 0]} />
+              <Bar dataKey="Sin código" fill={COLORS[1]} radius={[3, 3, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
