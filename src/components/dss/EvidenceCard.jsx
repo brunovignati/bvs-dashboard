@@ -92,6 +92,7 @@ export default function EvidenceCard({
   viewLabels = { a: "Resumen", b: "Evolución" },
   status,
   sources: sourcesProp,   // ['connectif'|'ga4'|'metricool'] — por defecto Connectif
+  kpiGrid = false,        // true: los 3 KPI en columnas iguales (una sola fila); por defecto, el flujo de siempre
   delay = 0,
 }) {
   const [showNote, setShowNote] = useState(false);
@@ -143,16 +144,20 @@ export default function EvidenceCard({
 
       {/* 2. KPI principal */}
       {kpis && kpis.length > 0 ? (
-        <div className="flex flex-wrap gap-x-8 gap-y-3">
-          {kpis.slice(0, 3).map((k, i) => (
-            <div key={i}>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-bold font-heading leading-none tracking-tight">{k.value}</span>
-                {k.delta !== undefined && <Delta value={k.delta} suffix={k.deltaSuffix} />}
+        <div className={kpiGrid ? "grid grid-cols-1 sm:grid-cols-3 gap-x-4 gap-y-3" : "flex flex-wrap gap-x-8 gap-y-3"}>
+          {kpis.slice(0, 3).map((k, i) => {
+            // En modo cuadrícula, un valor de texto largo baja de tamaño para no romper la fila.
+            const big = !kpiGrid || String(k.value).length <= 9;
+            return (
+              <div key={i} className={kpiGrid ? "min-w-0" : undefined}>
+                <div className="flex items-baseline gap-x-2 flex-wrap">
+                  <span className={`${big ? "text-3xl" : "text-xl"} font-bold font-heading leading-none tracking-tight break-words`}>{k.value}</span>
+                  {k.delta !== undefined && <Delta value={k.delta} suffix={k.deltaSuffix} />}
+                </div>
+                <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground mt-1.5 leading-tight">{k.label}</p>
               </div>
-              <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground mt-1.5">{k.label}</p>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (answer !== undefined && answer !== null) ? (
         <div className={`text-2xl font-bold font-heading leading-tight ${TONE[answerTone] || TONE.neutral}`}>{answer}</div>
