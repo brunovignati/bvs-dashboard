@@ -16,8 +16,13 @@
  *   3. Con tickets (766), códigos por ticket (767) y latas (768) calcula en el navegador la retención
  *      (computePos) → pos_retention_monthly, pos_code_retention, pos_latas. Se calcula en JS y no en SQL
  *      porque un EXISTS por ticket sobre ~130K tickets cuelga el Gestor.
- *   4. Escribe pos_meta ('pos') con la fecha del cálculo.
+ *   4. v2 (30-oct-2026): margen (772, 773), hora y día (774), zona (775), web+tienda (776, 777); en JS calcula el margen y la
+ *      cesta por código, el movimiento de clientes entre tiendas y el reparto web/tienda por trimestre.
+ *   5. Escribe pos_meta ('pos') con la fecha del cálculo.
  * La clave service_role se lee del propio repo público (src/lib/supabase.js), como en el resto de refrescos.
+ *
+ * Prueba estadística (v2): el residuo (vuelve − esperado) se suma por CLIENTE y se guarda ss60 = Σ residuo_cliente²;
+ * z = (reales − esperados) / √Σss60 (errores robustos por clúster) y Holm entre códigos en la tarjeta.
  *
  * Método de retención (observacional): por ticket, ¿vuelve el cliente a cualquier tienda en 30/60/90 días?
  * Esperado = tasa de los tickets SIN código del mismo mes y la misma frecuencia previa (1ª compra, 0, 1-2, 3-5,
@@ -25,7 +30,8 @@
  * son la caja genérica). Ventana desde 2026-06-11 (inicio de ps_prestapos_discount_log).
  */
 
-const POS_QUERY_IDS = { store: 758, bvs: 761, codes: 763, tickets: 766, ticketCodes: 767, latas: 768 };
+const POS_QUERY_IDS = { store: 758, bvs: 761, codes: 763, tickets: 766, ticketCodes: 767, latas: 768,
+  margin: 772, brands: 773, hourly: 774, zone: 775, webq: 776, custweb: 777 };
 const POS_WINDOW_START = '2026-06-11';
 const SUPABASE_URL = 'https://tdygooblqxldyakijgda.supabase.co';
 const REPO_KEY_URL = 'https://raw.githubusercontent.com/brunovignati/bvs-dashboard/main/src/lib/supabase.js';
@@ -68,22 +74,54 @@ function computePos(P) {
   const C={}; W.forEach(o=>{ if(o.hasCode) return; const k=ym(o)+'|'+o.fb; const c=C[k]||(C[k]={n:{30:0,60:0,90:0},r:{30:0,60:0,90:0},ns:0,s:0}); [30,60,90].forEach(h=>{ if(o.obs>=h){c.n[h]++; if(o.ret[h]) c.r[h]++;} }); if(o.obs>=60){c.ns++; c.s+=o.s60;} });
   const exp=(o,h)=>{ const c=C[ym(o)+'|'+o.fb]; return c&&c.n[h]>=20?c.r[h]/c.n[h]:null; };
   const expS=o=>{ const c=C[ym(o)+'|'+o.fb]; return c&&c.ns>=20?c.s/c.ns:null; };
-  const acc=()=>({n30:0,r30:0,e30:0,n60:0,r60:0,e60:0,n90:0,r90:0,e90:0,ns:0,s60:0,es60:0});
-  const add=(a,o)=>{ [30,60,90].forEach(h=>{ if(o.obs<h) return; const e=exp(o,h); if(e===null) return; a['n'+h]++; a['r'+h]+=o.ret[h]?1:0; a['e'+h]+=e; }); if(o.obs>=60){ const e=expS(o); if(e!==null){ a.ns++; a.s60+=o.s60; a.es60+=e; } } };
+  const acc=()=>({n30:0,r30:0,e30:0,n60:0,r60:0,e60:0,n90:0,r90:0,e90:0,ns:0,s60:0,es60:0,_rc:{}});
+  const fin=a=>{ a.ss60=0; for(const k in a._rc) a.ss60+=a._rc[k]*a._rc[k]; delete a._rc; return a; };
+  const add=(a,o)=>{ [30,60,90].forEach(h=>{ if(o.obs<h) return; const e=exp(o,h); if(e===null) return; a['n'+h]++; a['r'+h]+=o.ret[h]?1:0; a['e'+h]+=e; if(h===60) a._rc[o.c]=(a._rc[o.c]||0)+((o.ret[60]?1:0)-e); }); if(o.obs>=60){ const e=expS(o); if(e!==null){ a.ns++; a.s60+=o.s60; a.es60+=e; } } };
   const rnd=a=>{ for(const k in a) if(typeof a[k]==='number') a[k]=Math.round(a[k]*100)/100; return a; };
   // 1) retención mensual
   const M={}; W.forEach(o=>{ const g=o.hasCode?'con_codigo':'sin_codigo'; const k=ym(o)+'|'+g; (M[k]||(M[k]=Object.assign({year:Math.floor(ym(o)/100),month:ym(o)%100,grp:g},acc())));
     add(M[k],o); });
-  const retention_monthly=Object.values(M).map(rnd);
+  const retention_monthly=Object.values(M).map(a=>rnd(fin(a)));
+  // 2a) margen y cesta por código (TODOS los clientes, también caja genérica; ventana desde P.start)
+  const TM={}; (P.brands||[]).forEach(r=>{ const t=TM[r.o]||(TM[r.o]={rev:0,rk:0,cost:0,units:0,b:[]}); t.rev+=r.rev; t.rk+=r.rk; t.cost+=r.cost; t.units+=r.units; t.b.push(r); });
+  const anyCode={}, promoCodes={};
+  P.codes.forEach(r=>{ anyCode[r.o]=1; if(NOPROMO.test(r.code)||EMP.test(r.code)) return; (promoCodes[r.o]||(promoCodes[r.o]=new Set())).add(r.code); });
+  const newA=()=>({tickets:0,rev:0,rk:0,cost:0,units:0,b:{}});
+  const addB=(a,t)=>{ a.tickets++; a.rev+=t.rev; a.rk+=t.rk; a.cost+=t.cost; a.units+=t.units; t.b.forEach(x=>{ const b=a.b[x.brand]||(a.b[x.brand]={tickets:0,units:0,rev:0}); b.tickets++; b.units+=x.units; b.rev+=x.rev; }); };
+  const CA={}, base=newA();
+  for(const o in TM){ if(!anyCode[o]) addB(base,TM[o]); else if(promoCodes[o]) promoCodes[o].forEach(c=>addB(CA[c]||(CA[c]=newA()),TM[o])); }
+  const r2=x=>Math.round(x*100)/100;
+  const basket=[]; const pushB=(code,a,nb)=>{ basket.push({code,brand:'',tickets:a.tickets,units:r2(a.units),rev:r2(a.rev)}); Object.entries(a.b).sort((x,y)=>y[1].tickets-x[1].tickets).slice(0,nb).forEach(([b,v])=>basket.push({code,brand:b,tickets:v.tickets,units:r2(v.units),rev:r2(v.rev)})); };
+  if(base.tickets) pushB('(sin código)',base,60);
+  Object.entries(CA).filter(([,a])=>a.tickets>=100).forEach(([c,a])=>pushB(c,a,12));
   // 2) por código
   const K={}; W.forEach(o=>{ o.codes.forEach(c=>{ const src=null; const k=c; const a=K[k]||(K[k]=Object.assign({code:c,tickets:0,customers:new Set(),fiel:0,sum_t:0},acc())); a.tickets++; a.customers.add(o.c); if(o.fb==='6+') a.fiel++; a.sum_t+=o.t; add(a,o); }); });
-  const code_retention=Object.values(K).filter(a=>a.tickets>=30).map(a=>{ const r=Object.assign({},a); r.customers=a.customers.size; r.pct_fiel=Math.round(1000*a.fiel/a.tickets)/10; r.avg_ticket=Math.round(100*a.sum_t/a.tickets)/100; delete r.fiel; delete r.sum_t; return rnd(r); }).sort((x,y)=>y.tickets-x.tickets);
+  const code_retention=Object.values(K).filter(a=>a.tickets>=30).map(a=>{ fin(a); const r=Object.assign({},a); const ca=CA[a.code]; r.tickets_all=ca?ca.tickets:0; r.rev_all=ca?ca.rev:0; r.rev_known=ca?ca.rk:0; r.cost=ca?ca.cost:0; r.units_all=ca?ca.units:0; r.customers=a.customers.size; r.pct_fiel=Math.round(1000*a.fiel/a.tickets)/10; r.avg_ticket=Math.round(100*a.sum_t/a.tickets)/100; delete r.fiel; delete r.sum_t; return rnd(r); }).sort((x,y)=>y.tickets-x.tickets);
   // 3) latas BVS
   const isLP=c=>/^5\+1 latas BVS$/i.test(c), isLR=c=>/^Lata .*-Regalo$/i.test(c)&&!/purina/i.test(c);
   const grpL=o=>o.codes.some(isLP)?'5+1 latas':o.codes.some(isLR)?'lata de regalo':(o.u>0&&!o.hasCode)?'latas sin promo':null;
   const L={}, seen={}; W.forEach(o=>{ const g=grpL(o); if(!g||o.obs<60) return; const key=g+'|'+o.c; if(seen[key]) return; seen[key]=1; const seg=o.priorLatas?'ya compraba':'nuevo'; const k=g+'|'+seg; const a=L[k]||(L[k]={grp:g,seg,n:0,ret60:0,again60:0,units:0,sum_t:0}); a.n++; if(o.ret[60]) a.ret60++; if(o.lat60) a.again60++; a.units+=o.u; a.sum_t+=o.t; });
   const latas=Object.values(L).map(a=>({grp:a.grp,seg:a.seg,n:a.n,ret60:a.ret60,again60:a.again60,units_avg:Math.round(100*a.units/a.n)/100,ticket_avg:Math.round(100*a.sum_t/a.n)/100}));
-  return {retention_monthly, code_retention, latas, meta:{tickets:T.length, window_tickets:W.length, start:P.start, today:P.today}};
+  // 4) Movimiento de clientes entre tiendas y reparto web/tienda, por trimestre natural (clientes identificados)
+  const qk=d=>{ const x=new Date(d); return x.getUTCFullYear()*4+Math.floor(x.getUTCMonth()/3); };   // año*4 + (trimestre-1)
+  const CQ={}; T.forEach(o=>{ const c=CQ[o.c]||(CQ[o.c]={}); const a=c[qk(o.d)]||(c[qk(o.d)]={s:{},rev:0}); a.s[o.s]=(a.s[o.s]||0)+1; a.rev+=o.t; });
+  const WQ={}; (P.custweb||[]).forEach(r=>{ (WQ[r.c]||(WQ[r.c]={}))[(+r.y)*4+(+r.q-1)]={n:+r.n,rev:+r.rev}; });
+  const quarters=[...new Set(T.map(o=>qk(o.d)))].sort((a,b)=>a-b);
+  const FL={}; quarters.forEach(Q=>{ if(!quarters.includes(Q-4)) return;
+    for(const c in CQ){ const b0=CQ[c][Q-4]; if(!b0) continue; const cur=CQ[c][Q];
+      for(const s in b0.s){ let kind,dest='';
+        if(cur&&cur.s[s]) kind='same';
+        else if(cur){ kind='other'; dest=Object.entries(cur.s).sort((x,y)=>y[1]-x[1]||(x[0]<y[0]?-1:1))[0][0]; }
+        else if(WQ[c]&&WQ[c][Q]) kind='web'; else kind='none';
+        const k=[Q,s,kind,dest].join('|'); FL[k]=(FL[k]||0)+1; } } });
+  const flow=Object.entries(FL).map(([k,n])=>{ const [Q,s,kind,dest]=k.split('|'); return {year:Math.floor(+Q/4),quarter:(+Q%4)+1,store_from:cap(s),dest_kind:kind,dest_store:cap(dest),customers:n}; });
+  const WQT={}; (P.webq||[]).forEach(r=>{ WQT[(+r.y)*4+(+r.q-1)]={cust:+r.customers,rev:+r.rev}; });
+  const channel=[]; quarters.forEach(Q=>{ let st=0,both=0,rS=0,rSb=0,rWb=0;
+    for(const c in CQ){ const a=CQ[c][Q]; if(!a) continue; st++; const w=WQ[c]&&WQ[c][Q]; if(w){ both++; rSb+=a.rev; rWb+=w.rev; } else rS+=a.rev; }
+    const y=Math.floor(Q/4), q=(Q%4)+1;
+    channel.push({year:y,quarter:q,seg:'solo_tienda',customers:st-both,rev_store:r2(rS),rev_web:0},{year:y,quarter:q,seg:'ambos',customers:both,rev_store:r2(rSb),rev_web:r2(rWb)});
+    const W=WQT[Q]; if(W) channel.push({year:y,quarter:q,seg:'solo_web',customers:Math.max(0,W.cust-both),rev_store:0,rev_web:r2(Math.max(0,W.rev-rWb))}); });
+  return {retention_monthly, code_retention, latas, basket, flow, channel, meta:{tickets:T.length, window_tickets:W.length, start:P.start, today:P.today, margin_base:{tickets:base.tickets, rev:r2(base.rev), rev_known:r2(base.rk), cost:r2(base.cost), units:r2(base.units)}}};
 }
 
 // ── Gestor SQL: exportar una consulta guardada ──────────────────────────────────────────────────
@@ -129,7 +167,7 @@ async function posRefresh(opts = {}) {
   const store = await exportQuery(POS_QUERY_IDS.store, token);
   const bvs = await exportQuery(POS_QUERY_IDS.bvs, token);
   const codes = await exportQuery(POS_QUERY_IDS.codes, token);
-  out.push(await upsert('pos_store_monthly', store.map((r) => ({ year: N(r[0]), month: N(r[1]), store: cap(r[2]), tickets: N(r[3]), tickets_ident: N(r[4]), customers: N(r[5]), revenue: N(r[6]), revenue_excl: N(r[7]), coupon_discount: N(r[8]), promo_discount: N(r[9]), tickets_discount: N(r[10]) })), 'year,month,store', key));
+  out.push(await upsert('pos_store_monthly', store.map((r) => ({ year: N(r[0]), month: N(r[1]), store: cap(r[2]), tickets: N(r[3]), tickets_ident: N(r[4]), customers: N(r[5]), revenue: N(r[6]), revenue_excl: N(r[7]), coupon_discount: N(r[8]), promo_discount: N(r[9]), tickets_discount: N(r[10]), coupon_excl: N(r[11]) })), 'year,month,store', key));
   out.push(await upsert('pos_bvs_monthly', bvs.map((r) => ({ year: N(r[0]), month: N(r[1]), store: cap(r[2]), brand: r[3], tickets: N(r[4]), units: N(r[5]), revenue: N(r[6]) })), 'year,month,store,brand', key));
   out.push(await upsert('pos_codes_monthly', codes.map((r) => ({ year: N(r[0]), month: N(r[1]), src: r[2], code: r[3], tickets: N(r[4]), customers: N(r[5]), discount: N(r[6]), revenue: N(r[7]) })), 'year,month,src,code', key));
 
@@ -137,10 +175,24 @@ async function posRefresh(opts = {}) {
   const tickets = (await exportQuery(POS_QUERY_IDS.tickets, token)).map((r) => ({ o: N(r[0]), c: N(r[1]), d: r[2], t: N(r[3]), s: r[4] }));
   const tcodes = (await exportQuery(POS_QUERY_IDS.ticketCodes, token)).map((r) => ({ o: N(r[0]), src: r[1], code: r[2] }));
   const latasX = (await exportQuery(POS_QUERY_IDS.latas, token)).map((r) => ({ o: N(r[0]), u: N(r[1]) }));
-  const P = computePos({ tickets, codes: tcodes, latas: latasX, today, start });
-  out.push(await upsert('pos_retention_monthly', P.retention_monthly.filter((r) => r.n30 || r.n60 || r.n90 || r.ns).map((r) => ({ year: r.year, month: r.month, grp: r.grp, n30: r.n30, r30: r.r30, e30: r.e30, n60: r.n60, r60: r.r60, e60: r.e60, n90: r.n90, r90: r.r90, e90: r.e90, ns: r.ns, s60: r.s60, es60: r.es60 })), 'year,month,grp', key));
-  out.push(await upsert('pos_code_retention', P.code_retention.map((r) => ({ code: r.code, tickets: r.tickets, customers: r.customers, n30: r.n30, r30: r.r30, e30: r.e30, n60: r.n60, r60: r.r60, e60: r.e60, n90: r.n90, r90: r.r90, e90: r.e90, ns: r.ns, s60: r.s60, es60: r.es60, pct_fiel: r.pct_fiel, avg_ticket: r.avg_ticket })), 'code', key));
+  // 2b) v2: margen, marcas por ticket, hora y día, zona, clientes web
+  const marg = await exportQuery(POS_QUERY_IDS.margin, token);
+  const brands = (await exportQuery(POS_QUERY_IDS.brands, token)).map((r) => ({ o: N(r[0]), brand: r[1], units: N(r[2]), rev: N(r[3]), rk: N(r[4]), cost: N(r[5]) }));
+  const hourly = await exportQuery(POS_QUERY_IDS.hourly, token);
+  const zone = await exportQuery(POS_QUERY_IDS.zone, token);
+  const webq = (await exportQuery(POS_QUERY_IDS.webq, token)).map((r) => ({ y: r[0], q: r[1], customers: N(r[2]), orders: N(r[3]), rev: N(r[4]) }));
+  const custweb = (await exportQuery(POS_QUERY_IDS.custweb, token)).map((r) => ({ c: N(r[0]), y: r[1], q: r[2], n: N(r[3]), rev: N(r[4]) }));
+  out.push(await upsert('pos_margin_monthly', marg.map((r) => ({ year: N(r[0]), month: N(r[1]), store: cap(r[2]), tickets: N(r[3]), rev_lines: N(r[4]), rev_known: N(r[5]), cost: N(r[6]) })), 'year,month,store', key));
+  out.push(await upsert('pos_hourly', hourly.map((r) => ({ year: N(r[0]), month: N(r[1]), store: cap(r[2]), dow: N(r[3]), hour: N(r[4]), tickets: N(r[5]), revenue: N(r[6]) })), 'year,month,store,dow,hour', key));
+  out.push(await upsert('pos_zone', zone.map((r) => ({ year: N(r[0]), month: N(r[1]), store: cap(r[2]), cp: r[3], city: r[4], tickets: N(r[5]), revenue: N(r[6]) })), 'year,month,store,cp', key));
+  const P = computePos({ tickets, codes: tcodes, latas: latasX, brands, custweb, webq, today, start });
+  out.push(await upsert('pos_retention_monthly', P.retention_monthly.filter((r) => r.n30 || r.n60 || r.n90 || r.ns).map((r) => ({ year: r.year, month: r.month, grp: r.grp, n30: r.n30, r30: r.r30, e30: r.e30, n60: r.n60, r60: r.r60, e60: r.e60, n90: r.n90, r90: r.r90, e90: r.e90, ns: r.ns, s60: r.s60, es60: r.es60, ss60: r.ss60 })), 'year,month,grp', key));
+  out.push(await upsert('pos_code_retention', P.code_retention.map((r) => ({ code: r.code, tickets: r.tickets, customers: r.customers, n30: r.n30, r30: r.r30, e30: r.e30, n60: r.n60, r60: r.r60, e60: r.e60, n90: r.n90, r90: r.r90, e90: r.e90, ns: r.ns, s60: r.s60, es60: r.es60, pct_fiel: r.pct_fiel, avg_ticket: r.avg_ticket, ss60: r.ss60, tickets_all: r.tickets_all, rev_all: r.rev_all, rev_known: r.rev_known, cost: r.cost, units_all: r.units_all })), 'code', key));
   out.push(await upsert('pos_latas', P.latas.map((r) => ({ grp: r.grp, seg: r.seg, n: r.n, ret60: r.ret60, again60: r.again60, units_avg: r.units_avg, ticket_avg: r.ticket_avg })), 'grp,seg', key));
+
+  out.push(await upsert('pos_basket', P.basket, 'code,brand', key));
+  out.push(await upsert('pos_flow', P.flow, 'year,quarter,store_from,dest_kind,dest_store', key));
+  out.push(await upsert('pos_channel_quarter', P.channel, 'year,quarter,seg', key));
 
   // 3) Meta (fecha del cálculo → "Datos de tienda actualizados el …" en la pestaña)
   out.push(await upsert('pos_meta', [{ key: 'pos', value: { ...P.meta, computed_at: new Date().toISOString(), generic_customers: [1, 2703803], discount_log_since: '2026-06-11' } }], 'key', key));
