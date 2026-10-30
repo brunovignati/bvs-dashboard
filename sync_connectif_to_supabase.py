@@ -21,12 +21,11 @@ from datetime import datetime
 # âââââââââââââââââââââââââââââââââââââââââââââ
 # CONFIGURACIÃN â credenciales desde variables de entorno o hardcoded
 # âââââââââââââââââââââââââââââââââââââââââââââ
-CONNECTIF_API_KEY  = os.environ.get("CONNECTIF_API_KEY",  "r11ZJclyFV2LyXsPjtG6ZU:uXYhtDUR37vBR1M12vejPC")
+CONNECTIF_API_KEY  = os.environ["CONNECTIF_API_KEY"]
 CONNECTIF_BASE_URL = "https://api.connectif.cloud"
 
-SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://tdygooblqxldyakijgda.supabase.co")
-SUPABASE_KEY = os.environ.get("SUPABASE_SERVICE_ROLE_KEY",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRkeWdvb2JscXhsZHlha2lqZ2RhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4MTQ5OTgwNSwiZXhwIjoyMDk3MDc1ODA1fQ.ks59ROyIph2wg_543nFbutdwEIPt_ZIJ9K830x7WNwY")
+SUPABASE_URL = os.environ["SUPABASE_URL"]
+SUPABASE_KEY = os.environ["SUPABASE_SERVICE_ROLE_KEY"]
 
 logging.basicConfig(
     level=logging.INFO,
