@@ -42,6 +42,9 @@ export default function PosDiscountsCard({ delay }) {
   const prev = summarize(total(prevBy));
   const hasData = cur.tickets > 0;
   const partial = rangeB.start.year * 12 + rangeB.start.month < PROMO_LOG_START;
+  // Si el periodo de comparación es anterior al registro de promos, el descuento medio y el % no son comparables
+  // (antes solo se contaban cupones): se oculta la variación y se avisa.
+  const prevPartial = prev.tickets > 0 && rangeA.start.year * 12 + rangeA.start.month < PROMO_LOG_START;
 
   const rows = Object.entries(curBy)
     .map(([store, a]) => ({ store, ...summarize(a) }))
@@ -79,12 +82,12 @@ export default function PosDiscountsCard({ delay }) {
       question="¿Cuánto facturamos y cuánto descontamos en tienda?"
       kpis={hasData ? [
         { value: fmtCurrency(cur.revenue), label: `Facturación · ${labelRange(rangeB)}`, delta: pctChange(cur.revenue, prev.revenue) ?? undefined },
-        { value: `${cur.avgDto.toFixed(2)} €`, label: "Descuento medio por pedido con descuento", delta: pctChange(cur.avgDto, prev.avgDto) ?? undefined },
-        { value: `${cur.pct.toFixed(1)}%`, label: "Descuento sobre la venta bruta", delta: prev.tickets > 0 ? cur.pct - prev.pct : undefined, deltaSuffix: " pts" },
+        { value: `${cur.avgDto.toFixed(2)} €`, label: "Descuento medio por pedido con descuento", delta: prevPartial ? undefined : pctChange(cur.avgDto, prev.avgDto) ?? undefined },
+        { value: `${cur.pct.toFixed(1)}%`, label: "Descuento sobre la venta bruta", delta: prev.tickets > 0 && !prevPartial ? cur.pct - prev.pct : undefined, deltaSuffix: " pts" },
       ] : undefined}
       answer={!hasData ? "Sin ventas de tienda en el periodo" : undefined}
       context={hasData
-        ? `${fmtCurrency(cur.dto)} descontados en ${fmtNumber(cur.tkDto)} de ${fmtNumber(cur.tickets)} tickets (${cur.shareTk.toFixed(0)}%). Variación vs ${labelRange(rangeA)} (${cmpWord(compMode)}).${hi ? ` Más descuento: ${hi.store} (${hi.pct.toFixed(1)}%).` : ""}${partial ? " Ojo: antes de jun-26 solo se registran cupones, no las promos del TPV; el % real era algo mayor." : ""}`
+        ? `${fmtCurrency(cur.dto)} descontados en ${fmtNumber(cur.tkDto)} de ${fmtNumber(cur.tickets)} tickets (${cur.shareTk.toFixed(0)}%). Variación vs ${labelRange(rangeA)} (${cmpWord(compMode)}).${hi ? ` Más descuento: ${hi.store} (${hi.pct.toFixed(1)}%).` : ""}${partial ? " Ojo: antes de jun-26 solo se registran cupones, no las promos del TPV; el % real era algo mayor." : ""}${!partial && prevPartial ? ` Sin variación en descuento: en ${labelRange(rangeA)} solo se registraban cupones (las promos del TPV empiezan en jun-26), no es comparable.` : ""}`
         : undefined}
       maturity="amber"
       actions={[
