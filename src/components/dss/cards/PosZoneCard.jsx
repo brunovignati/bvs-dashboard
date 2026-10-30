@@ -12,6 +12,8 @@ import { fmtNumber } from "@/lib/dashboardData";
 import { COLORS, num } from "./posUtils";
 
 const MIN_SHARED = 20; // tickets mínimos de cada tienda para hablar de zona compartida
+// Las direcciones vienen con erratas y mayúsculas mezcladas ("agorta", "BASAURI"): se vota el nombre más usado de cada código postal.
+const title = (s) => (s || "").toLowerCase().replace(/(^|[\s-])\S/g, (c) => c.toUpperCase()).trim();
 
 export default function PosZoneCard({ delay }) {
   const { data: raw = [] } = usePosZone();
@@ -19,6 +21,9 @@ export default function PosZoneCard({ delay }) {
   const [sel, setSel] = useState("Todas");
 
   const inP = raw.filter((r) => inRange(rangeB, r) && r.cp);
+  const votes = {};
+  for (const r of raw) { if (!r.cp || !r.city) continue; const v = (votes[r.cp] ||= {}); const k = title(r.city); v[k] = (v[k] || 0) + num(r.tickets); }
+  const cityName = (cp) => Object.entries(votes[cp] || {}).sort((a, b) => b[1] - a[1])[0]?.[0] || "";
   const tkByStore = {};
   for (const r of inP) tkByStore[r.store] = (tkByStore[r.store] || 0) + num(r.tickets);
   const stores = Object.entries(tkByStore).sort((a, b) => b[1] - a[1]).map(([s]) => s);
@@ -27,9 +32,8 @@ export default function PosZoneCard({ delay }) {
   const sub = store === "Todas" ? inP : inP.filter((r) => r.store === store);
   const cps = {};
   for (const r of sub) {
-    const c = (cps[r.cp] ||= { cp: r.cp, city: r.city || "", tickets: 0, revenue: 0 });
+    const c = (cps[r.cp] ||= { cp: r.cp, city: cityName(r.cp), tickets: 0, revenue: 0 });
     c.tickets += num(r.tickets); c.revenue += num(r.revenue);
-    if (!c.city && r.city) c.city = r.city;
   }
   const list = Object.values(cps).sort((a, b) => b.tickets - a.tickets);
   const total = list.reduce((s, c) => s + c.tickets, 0);
@@ -42,9 +46,8 @@ export default function PosZoneCard({ delay }) {
   // Vista B: zonas compartidas (todas las tiendas del periodo)
   const byCp = {};
   for (const r of inP) {
-    const c = (byCp[r.cp] ||= { cp: r.cp, city: r.city || "", total: 0, st: {} });
+    const c = (byCp[r.cp] ||= { cp: r.cp, city: cityName(r.cp), total: 0, st: {} });
     c.total += num(r.tickets); c.st[r.store] = (c.st[r.store] || 0) + num(r.tickets);
-    if (!c.city && r.city) c.city = r.city;
   }
   const shared = Object.values(byCp).map((c) => {
     const s = Object.entries(c.st).sort((a, b) => b[1] - a[1]);

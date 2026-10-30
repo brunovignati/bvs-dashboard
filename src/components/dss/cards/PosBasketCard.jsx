@@ -22,7 +22,9 @@ export default function PosBasketCard({ delay }) {
   for (const r of raw) { if (!r.brand) tot[r.code] = r; else (br[r.code] ||= []).push(r); }
   const base = tot[BASE];
   const codes = Object.values(tot).filter((r) => r.code !== BASE && !isNotPromo(r.code)).sort((a, b) => num(b.tickets) - num(a.tickets));
-  const code = codes.find((c) => c.code === sel)?.code || codes[0]?.code;
+  // Un código que identifica un solo artículo (p. ej. SNACKBAR: el 100% de sus tickets lleva esa marca) no dice nada de la cesta.
+  const own = (c) => (br[c.code] || []).some((b) => num(b.tickets) / num(c.tickets) >= 0.95);
+  const code = codes.find((c) => c.code === sel)?.code || (codes.find((c) => !own(c)) || codes[0])?.code;
   const t = code ? tot[code] : null;
   const hasData = !!(t && base && num(base.tickets) > 0);
 
@@ -40,7 +42,7 @@ export default function PosBasketCard({ delay }) {
     };
   }
   const byShare = [...rows].sort((a, b) => b.share - a.share).slice(0, 8);
-  const lifted = rows.filter((r) => r.lift != null && r.tickets >= MIN_BRAND_TK && r.baseShare >= 1).sort((a, b) => b.lift - a.lift);
+  const lifted = rows.filter((r) => r.lift != null && r.tickets >= MIN_BRAND_TK && r.baseShare >= 1 && r.share < 95).sort((a, b) => b.lift - a.lift);
   const up = lifted.slice(0, 6), down = [...lifted].reverse().filter((r) => r.lift < 0.8).slice(0, 3);
   const bestLift = up[0];
 
