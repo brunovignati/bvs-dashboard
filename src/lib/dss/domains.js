@@ -2,7 +2,7 @@
  * domains.js — los 8 dominios de negocio (arquitectura congelada).
  * La navegación se organiza por disciplina de negocio, no por dataset ni por modo.
  */
-import { HeartPulse, TrendingUp, Users, Megaphone, Zap, Layers, Package, Wrench } from "lucide-react";
+import { HeartPulse, TrendingUp, Users, Megaphone, Zap, Layers, Package, Wrench, Store } from "lucide-react";
 
 // ── Vistas de alto nivel (rol × momento) — la navegación agrupa los 8 dominios en 3 ──
 // Daily Health (café de la mañana) · Growth & Marketing (análisis) · Ops & CRM (mantenimiento).
@@ -13,6 +13,8 @@ export const VIEWS = [
     objetivo: "Ingresos, economía del cliente y automatizaciones." },
   { id: "marketing", label: "Marketing",          icon: Megaphone,
     objetivo: "Que cada canal y campaña rinda sin dañar la lista." },
+  { id: "tiendas",   label: "Tiendas",            icon: Store,
+    objetivo: "Ventas, marca propia, descuentos y recompra en las tiendas físicas." },
   { id: "ops",       label: "Ops & CRM",          icon: Wrench,
     objetivo: "Salud de la base y de la maquinaria de envío." },
 ];
