@@ -22,3 +22,5 @@ jobs:
         run: python sync_connectif_to_supabase.py
         env:
           CONNECTIF_API_KEY: ${{ secrets.CONNECTIF_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_KEY }}
