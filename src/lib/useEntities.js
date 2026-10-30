@@ -433,3 +433,66 @@ export function useMiCompiRegistrations() {
     initialData: [],
   })
 }
+
+// ── Tiendas físicas (TPV / Presta POS) ───────────────────────────────────────────────
+// Origen: PrestaShop Gestor SQL (consultas BVS_pos_*) + script scripts/pos_refresh.js → tablas pos_*.
+// Se refrescan con la tarea semanal "Refresco Presta dashboard BVS" (vía navegador, igual que category_sales).
+export function usePosStoreMonthly() {
+  // Ventas y descuentos por tienda y mes (tickets TPV válidos desde ene-2024).
+  return useQuery({
+    queryKey: ['pos_store_monthly'],
+    queryFn: () => fetchPaged('pos_store_monthly', [['year', true], ['month', true], ['store', true]], 5000),
+    initialData: [],
+  })
+}
+
+export function usePosBvsMonthly() {
+  // Venta de marca propia (BVS Vet Shop / Bawi) por tienda y mes.
+  return useQuery({
+    queryKey: ['pos_bvs_monthly'],
+    queryFn: () => fetchPaged('pos_bvs_monthly', [['year', true], ['month', true], ['store', true], ['brand', true]], 5000),
+    initialData: [],
+  })
+}
+
+export function usePosCodesMonthly() {
+  // Códigos (cupón de caja o promo POS) por mes: tickets, clientes, descuento e ingreso.
+  return useQuery({
+    queryKey: ['pos_codes_monthly'],
+    queryFn: () => fetchPaged('pos_codes_monthly', [['year', true], ['month', true], ['src', true], ['code', true]], 10000),
+    initialData: [],
+  })
+}
+
+export function usePosRetentionMonthly() {
+  // ¿Vuelve el cliente con código frente a lo esperado sin código? (ventana desde 11-jun-2026)
+  return useQuery({
+    queryKey: ['pos_retention_monthly'],
+    queryFn: () => fetchTable('pos_retention_monthly', 'year', true),
+    initialData: [],
+  })
+}
+
+export function usePosCodeRetention() {
+  return useQuery({
+    queryKey: ['pos_code_retention'],
+    queryFn: () => fetchTable('pos_code_retention', 'tickets', false, 500),
+    initialData: [],
+  })
+}
+
+export function usePosLatas() {
+  return useQuery({
+    queryKey: ['pos_latas'],
+    queryFn: () => fetchTable('pos_latas', 'grp', true),
+    initialData: [],
+  })
+}
+
+export function usePosMeta() {
+  return useQuery({
+    queryKey: ['pos_meta'],
+    queryFn: () => fetchTable('pos_meta', 'key', true),
+    initialData: [],
+  })
+}
